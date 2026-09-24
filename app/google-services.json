@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "331670325129",
+    "project_id": "pathfinder-hub-c495d",
+    "storage_bucket": "pathfinder-hub-c495d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331670325129:android:0e1b131f04fdf8b8c50358",
+        "android_client_info": {
+          "package_name": "com.pathfinder.hub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBF5AK5b1zRapUOAeTIUpbfIyD7KzQKj2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

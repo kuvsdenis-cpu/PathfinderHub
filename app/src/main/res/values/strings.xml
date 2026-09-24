@@ -1,0 +1,41 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Pathfinder Hub</string>
+
+    <!-- Auth -->
+    <string name="login_title">Вход</string>
+    <string name="login_subtitle">Войдите, чтобы продолжить</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_button">Войти</string>
+    <string name="login_have_invite">У меня есть инвайт-код</string>
+    <string name="login_forgot_password">Забыли пароль?</string>
+    <string name="login_error_empty_fields">Заполните все поля</string>
+    <string name="login_error_generic">Ошибка входа</string>
+    <string name="login_show_password">Показать пароль</string>
+    <string name="login_hide_password">Скрыть пароль</string>
+
+    <!-- Home -->
+    <string name="home_title">Главная</string>
+    <string name="home_welcome">Добро пожаловать!</string>
+    <string name="home_role">Роль: %1$s</string>
+    <string name="home_under_development">Экран в разработке</string>
+
+    <!-- Roles -->
+    <string name="role_teen">Следопыт</string>
+    <string name="role_parent">Родитель</string>
+    <string name="role_instructor">Наставник</string>
+    <string name="role_director">Директор клуба</string>
+    <string name="role_secretary">Секретарь клуба</string>
+    <string name="role_conference">Конференция</string>
+
+    <!-- Common -->
+    <string name="common_back">Назад</string>
+    <string name="common_next">Далее</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_loading">Загрузка…</string>
+    <string name="common_error">Ошибка</string>
+    <string name="common_retry">Повторить</string>
+</resources>
