@@ -2,26 +2,39 @@ package com.pathfinder.hub.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.pathfinder.hub.ui.challenges.ChallengeDetailScreen
+import com.pathfinder.hub.ui.challenges.ChallengesScreen
+import com.pathfinder.hub.ui.gamification.AchievementsScreen
+import com.pathfinder.hub.ui.gamification.DigitalUniformScreen
+import com.pathfinder.hub.ui.reports.ReportDetailScreen
+import com.pathfinder.hub.ui.reports.ReportHistoryScreen
 import com.pathfinder.hub.ui.screens.auth.LoginScreen
 import com.pathfinder.hub.ui.screens.auth.RegisterScreen
 import com.pathfinder.hub.ui.screens.events.EventDetailScreen
 import com.pathfinder.hub.ui.screens.events.EventsScreen
+import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
+import com.pathfinder.hub.ui.screens.home.director.ApprovalsScreen
+import com.pathfinder.hub.ui.screens.home.director.ClubMembersScreen
+import com.pathfinder.hub.ui.screens.home.director.ClubSettingsScreen
+import com.pathfinder.hub.ui.screens.home.director.DirectorHomeScreen
+import com.pathfinder.hub.ui.screens.home.director.DirectorInvitesScreen
+import com.pathfinder.hub.ui.screens.home.teen.TeenHomeScreen
 import com.pathfinder.hub.ui.screens.honors.HonorCatalogScreen
 import com.pathfinder.hub.ui.screens.honors.HonorDetailScreen
 import com.pathfinder.hub.ui.screens.honors.HonorRequirementDetailScreen
 import com.pathfinder.hub.ui.screens.honors.MyHonorsScreen
 import com.pathfinder.hub.ui.screens.honors.ReportUploadScreen
 import com.pathfinder.hub.ui.screens.honors.TestScreen
-import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
-import com.pathfinder.hub.ui.screens.home.director.DirectorInvitesScreen
-import com.pathfinder.hub.ui.screens.home.teen.TeenHomeScreen
 import com.pathfinder.hub.ui.screens.levels.LevelDetailScreen
 import com.pathfinder.hub.ui.screens.levels.MyLevelsScreen
 import com.pathfinder.hub.ui.screens.levels.RequirementDetailScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
 import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
+import com.pathfinder.hub.ui.screens.sync.SyncScreen
 import com.pathfinder.hub.ui.screens.tasks.MyTasksScreen
 
 @Composable
@@ -33,44 +46,94 @@ fun PathfinderNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        // AUTH
+        // === Auth ===
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = { role ->
-                    navController.navigate(routeForRole(role)) {
+                onLoginSuccess = { userId ->
+                    navController.navigate(Routes.ROLE_HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
-                onNavigateToInvite = { navController.navigate(Routes.REGISTER) }
+                onNavigateToInvite = {
+                    navController.navigate(Routes.REGISTER)
+                }
             )
         }
 
         composable(Routes.REGISTER) {
             RegisterScreen(
+                // ИСПРАВЛЕНО: лямбда без параметров, как в вашем RegisterScreen.kt
                 onRegisterSuccess = {
-                    navController.navigate("${Routes.ONBOARDING}/teen/demo_user") {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    navController.navigate(Routes.ONBOARDING) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 },
-                onBack = { navController.popBackStack() }
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
 
-        composable("${Routes.ONBOARDING}/{role}/{userId}") { backStackEntry ->
-            val role = backStackEntry.arguments?.getString("role") ?: "teen"
-            val userId = backStackEntry.arguments?.getString("userId") ?: "demo"
+        composable(Routes.ONBOARDING) {
             OnboardingScreen(
-                role = role,
-                userId = userId,
+                role = "teen",
+                userId = "",
                 onFinish = {
-                    navController.navigate(routeForRole(role)) {
-                        popUpTo(0) { inclusive = true }
+                    navController.navigate(Routes.ROLE_HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             )
         }
 
-        // HOME BY ROLE
+        // === Role Router ===
+        composable(Routes.ROLE_HOME) {
+            RoleHomeScreen(navController = navController)
+        }
+
+        // === Director ===
+        composable(Routes.DIRECTOR_HOME) {
+            DirectorHomeScreen(
+                onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
+                onNavigateToMembers = { navController.navigate(Routes.CLUB_MEMBERS) },
+                onNavigateToApprovals = { navController.navigate(Routes.APPROVALS) },
+                onNavigateToReports = { navController.navigate(Routes.DIRECTOR_REPORTS) },
+                onNavigateToEvents = { navController.navigate(Routes.CLUB_EVENTS) },
+                onNavigateToSettings = { navController.navigate(Routes.CLUB_SETTINGS) }
+            )
+        }
+
+        composable(Routes.DIRECTOR_INVITES) {
+            DirectorInvitesScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.CLUB_MEMBERS) {
+            ClubMembersScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.APPROVALS) {
+            ApprovalsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.DIRECTOR_REPORTS) {
+            ReportHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) }
+            )
+        }
+
+        composable(Routes.CLUB_EVENTS) {
+            EventsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
+            )
+        }
+
+        composable(Routes.CLUB_SETTINGS) {
+            ClubSettingsScreen(onBack = { navController.popBackStack() })
+        }
+
+        // === Teen Home ===
         composable(Routes.TEEN_HOME) {
             TeenHomeScreen(
                 onNavigateToLevels = { navController.navigate(Routes.MY_LEVELS) },
@@ -78,136 +141,174 @@ fun PathfinderNavHost(
                 onNavigateToMyHonors = { navController.navigate(Routes.MY_HONORS) },
                 onNavigateToEvents = { navController.navigate(Routes.EVENTS) },
                 onNavigateToTasks = { navController.navigate(Routes.MY_TASKS) },
-                onNavigateToProfile = { navController.navigate(Routes.TEEN_PROFILE) }
+                onNavigateToProfile = { navController.navigate(Routes.TEEN_PROFILE) },
+                onNavigateToDigitalUniform = { navController.navigate(Routes.DIGITAL_UNIFORM) },
+                onNavigateToAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
+                onNavigateToChallenges = { navController.navigate(Routes.CHALLENGES) },
+                onNavigateToReports = { navController.navigate(Routes.REPORT_HISTORY) }
             )
         }
-        composable(Routes.PARENT_HOME) { RoleHomeScreen(role = "Родитель") }
-        composable(Routes.INSTRUCTOR_HOME) { RoleHomeScreen(role = "Наставник") }
-        composable(Routes.DIRECTOR_HOME) {
-            RoleHomeScreen(
-                role = "Директор клуба",
-                onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) }
-            )
-        }
-        composable(Routes.SECRETARY_HOME) { RoleHomeScreen(role = "Секретарь клуба") }
-        composable(Routes.CONFERENCE_HOME) { RoleHomeScreen(role = "Конференция") }
 
-        // DIRECTOR
-        composable(Routes.DIRECTOR_INVITES) {
-            DirectorInvitesScreen(onBack = { navController.popBackStack() })
-        }
-
-        // TEEN: СТУПЕНИ
+        // === Teen - Levels ===
         composable(Routes.MY_LEVELS) {
             MyLevelsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenLevel = { levelId ->
-                    navController.navigate("${Routes.LEVEL_DETAIL}/$levelId")
-                }
+                onOpenLevel = { levelId -> navController.navigate(Routes.levelDetail(levelId)) }
             )
         }
 
-        composable("${Routes.LEVEL_DETAIL}/{levelId}") {
+        composable(
+            route = Routes.LEVEL_DETAIL,
+            arguments = listOf(navArgument("levelId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val levelId = backStackEntry.arguments?.getString("levelId") ?: ""
             LevelDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenRequirement = { lvlId, reqId ->
-                    navController.navigate("${Routes.REQUIREMENT_DETAIL}/$lvlId/$reqId")
+                onOpenRequirement = { _, requirementId ->
+                    navController.navigate(Routes.requirementDetail(requirementId))
                 }
             )
         }
 
-        composable("${Routes.REQUIREMENT_DETAIL}/{levelId}/{requirementId}") {
+        composable(
+            route = Routes.REQUIREMENT_DETAIL,
+            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
+        ) {
             RequirementDetailScreen(onBack = { navController.popBackStack() })
         }
 
-        // TEEN: СПЕЦИАЛИЗАЦИИ
+        // === Teen - Honors ===
         composable(Routes.HONOR_CATALOG) {
             HonorCatalogScreen(
                 onBack = { navController.popBackStack() },
-                onOpenHonor = { honorId ->
-                    navController.navigate("${Routes.HONOR_DETAIL}/$honorId")
-                }
+                onOpenHonor = { honorId -> navController.navigate(Routes.honorDetail(honorId)) }
             )
         }
 
-        composable("${Routes.HONOR_DETAIL}/{honorId}") {
+        composable(
+            route = Routes.HONOR_DETAIL,
+            arguments = listOf(navArgument("honorId") { type = NavType.StringType })
+        ) {
             HonorDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenRequirement = { hId, rId ->
-                    navController.navigate("${Routes.HONOR_REQUIREMENT}/$hId/$rId")
+                onOpenRequirement = { honorId, requirementId ->
+                    navController.navigate(Routes.honorRequirementDetail(requirementId))
                 }
             )
         }
 
-        composable("${Routes.HONOR_REQUIREMENT}/{honorId}/{requirementId}") { entry ->
-            val hId = entry.arguments?.getString("honorId") ?: ""
-            val rId = entry.arguments?.getString("requirementId") ?: ""
+        composable(
+            route = Routes.HONOR_REQUIREMENT_DETAIL,
+            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
+        ) {
             HonorRequirementDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenTest = {
-                    navController.navigate("${Routes.HONOR_TEST}/$hId")
-                },
-                onOpenReport = {
-                    navController.navigate("${Routes.HONOR_REPORT}/$hId/$rId")
-                }
-            )
-        }
-
-        composable("${Routes.HONOR_TEST}/{honorId}") {
-            TestScreen(
-                onBack = { navController.popBackStack() },
-                onFinished = { navController.popBackStack() }
-            )
-        }
-
-        composable("${Routes.HONOR_REPORT}/{honorId}/{requirementId}") {
-            ReportUploadScreen(
-                onBack = { navController.popBackStack() },
-                onSuccess = { navController.popBackStack() }
+                onOpenTest = { navController.navigate(Routes.testScreen("placeholder_honor_id")) },
+                onOpenReport = { navController.navigate(Routes.reportUpload("placeholder_req_id")) }
             )
         }
 
         composable(Routes.MY_HONORS) {
             MyHonorsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenHonor = { honorId ->
-                    navController.navigate("${Routes.HONOR_DETAIL}/$honorId")
-                }
+                onOpenHonor = { honorId -> navController.navigate(Routes.honorDetail(honorId)) }
             )
         }
 
-        // TEEN: СОБЫТИЯ
+        composable(
+            route = Routes.TEST_SCREEN,
+            arguments = listOf(navArgument("honorId") { type = NavType.StringType })
+        ) {
+            TestScreen(
+                onBack = { navController.popBackStack() },
+                onFinished = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Routes.REPORT_UPLOAD,
+            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
+        ) {
+            ReportUploadScreen(
+                onBack = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() }
+            )
+        }
+
+        // === Teen - Events & Tasks ===
         composable(Routes.EVENTS) {
             EventsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenEvent = { eventId ->
-                    navController.navigate("${Routes.EVENT_DETAIL}/$eventId")
-                }
+                onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
             )
         }
 
-        composable("${Routes.EVENT_DETAIL}/{eventId}") {
+        composable(
+            route = Routes.EVENT_DETAIL,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) {
             EventDetailScreen(onBack = { navController.popBackStack() })
         }
 
-        // TEEN: ЗАДАЧИ
         composable(Routes.MY_TASKS) {
             MyTasksScreen(onBack = { navController.popBackStack() })
         }
 
-        // TEEN: ПРОФИЛЬ
+        // === Teen - Profile ===
         composable(Routes.TEEN_PROFILE) {
             TeenProfileScreen(onBack = { navController.popBackStack() })
         }
-    }
-}
 
-private fun routeForRole(role: String): String = when (role) {
-    "teen" -> Routes.TEEN_HOME
-    "parent" -> Routes.PARENT_HOME
-    "instructor" -> Routes.INSTRUCTOR_HOME
-    "director" -> Routes.DIRECTOR_HOME
-    "secretary" -> Routes.SECRETARY_HOME
-    "conference" -> Routes.CONFERENCE_HOME
-    else -> Routes.TEEN_HOME
+        // === Teen - Gamification ===
+        composable(Routes.DIGITAL_UNIFORM) {
+            DigitalUniformScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.ACHIEVEMENTS) {
+            AchievementsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        // === Teen - Challenges ===
+        composable(Routes.CHALLENGES) {
+            ChallengesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onChallengeClick = { challengeId -> navController.navigate(Routes.challengeDetail(challengeId)) }
+            )
+        }
+
+        composable(
+            route = Routes.CHALLENGE_DETAIL,
+            arguments = listOf(navArgument("challengeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val challengeId = backStackEntry.arguments?.getString("challengeId") ?: ""
+            ChallengeDetailScreen(
+                challengeId = challengeId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // === Reports ===
+        composable(Routes.REPORT_HISTORY) {
+            ReportHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) }
+            )
+        }
+
+        composable(
+            route = Routes.REPORT_DETAIL,
+            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
+            ReportDetailScreen(
+                reportId = reportId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // === Sync ===
+        composable(Routes.SYNC) {
+            SyncScreen(onBack = { navController.popBackStack() })
+        }
+    }
 }

@@ -21,6 +21,7 @@ import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
 import com.pathfinder.hub.data.sync.SyncScheduler
+import com.pathfinder.hub.domain.usecase.gamification.SeedAchievementsUseCase
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,9 @@ class PathfinderApp : Application(), Configuration.Provider {
     @Inject
     lateinit var syncScheduler: SyncScheduler
 
+    @Inject
+    lateinit var seedAchievementsUseCase: SeedAchievementsUseCase
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -47,6 +51,7 @@ class PathfinderApp : Application(), Configuration.Provider {
         initAppCheck()
         initFirestore()
         seedDemoData()            // временно — для тестирования входа
+        seedAchievements()        // НОВОЕ: загрузка начальных ачивок в БД
         scheduleContentUpdate()   // обновление контента из assets
         syncScheduler.schedulePeriodic()   // фоновая синхронизация с Firestore
         syncScheduler.syncNow()            // ВРЕМЕННО: разобрать очередь сразу при старте
@@ -214,6 +219,19 @@ class PathfinderApp : Application(), Configuration.Provider {
                 Log.d(TAG, "Демо-данные созданы: директор, клуб, 2 инвайта")
             } catch (e: Exception) {
                 Log.e(TAG, "Ошибка создания демо-данных", e)
+            }
+        }
+    }
+
+    // ==================== ЗАГРУЗКА АЧИВОК (НОВОЕ) ====================
+
+    private fun seedAchievements() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                seedAchievementsUseCase()
+                Log.d(TAG, "Ачивки успешно загружены в БД")
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка загрузки ачивок", e)
             }
         }
     }

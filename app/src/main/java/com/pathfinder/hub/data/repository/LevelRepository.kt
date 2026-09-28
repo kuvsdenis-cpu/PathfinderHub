@@ -32,6 +32,10 @@ class LevelRepository @Inject constructor(
     fun observeChecklist(leaderId: String, childId: String): Flow<LeaderChecklistEntity?> =
         dao.observeChecklist(leaderId, childId)
 
+    // НОВЫЙ МЕТОД для экрана одобрения директора
+    fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>> =
+        dao.observePendingApprovalsByClub(clubId)
+
     // ---------- Сидовый контент (без enqueue) ----------
     suspend fun upsertLevels(levels: List<LevelEntity>) = dao.upsertLevels(levels)
     suspend fun upsertLevel(level: LevelEntity) = dao.upsertLevel(level)

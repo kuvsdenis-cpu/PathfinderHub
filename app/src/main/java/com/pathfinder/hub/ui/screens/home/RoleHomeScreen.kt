@@ -1,76 +1,57 @@
 package com.pathfinder.hub.ui.screens.home
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.pathfinder.hub.ui.navigation.Routes
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoleHomeScreen(
-    role: String,
-    onNavigateToInvites: (() -> Unit)? = null
+    navController: NavHostController,
+    viewModel: RoleRouterViewModel = hiltViewModel()
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Главная") })
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Добро пожаловать!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = "Роль: $role",
-                style = MaterialTheme.typography.bodyLarge
-            )
+    val state by viewModel.state.collectAsState()
 
-            // Кнопка «Инвайты» — только для директора
-            if (onNavigateToInvites != null) {
-                Spacer(Modifier.height(24.dp))
-                Button(
-                    onClick = onNavigateToInvites,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.PersonAdd, contentDescription = null)
-                    Spacer(Modifier.height(0.dp))
-                    Text("  Инвайты клуба")
-                }
+    LaunchedEffect(state.role) {
+        if (!state.isLoading && state.role != null) {
+            val route = when (state.role) {
+                "director" -> Routes.DIRECTOR_HOME
+                "teen", "parent" -> Routes.TEEN_HOME
+                else -> Routes.TEEN_HOME // Запасной вариант
             }
 
-            Spacer(Modifier.height(24.dp))
-            Text(
-                text = "Остальной функционал в разработке",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            navController.navigate(route) {
+                popUpTo(Routes.ROLE_HOME) { inclusive = true }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (state.isLoading) {
+            CircularProgressIndicator()
+        } else if (state.errorMessage != null) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Ошибка: ${state.errorMessage}",
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } }
+                }) {
+                    Text("Вернуться ко входу")
+                }
+            }
+        } else {
+            CircularProgressIndicator()
         }
     }
 }

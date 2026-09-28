@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Разрешаем доступ к внутренней памяти приложения (где сохраняются PDF-отчеты) -->
+    <files-path name="internal_reports" path="." />
+
+    <!-- Разрешаем доступ к кэш-папке -->
+    <cache-path name="cache" path="." />
+
+    <!-- Разрешаем доступ к внешним файлам приложения (на SD-карте) -->
+    <external-files-path name="external_files" path="." />
+</paths>

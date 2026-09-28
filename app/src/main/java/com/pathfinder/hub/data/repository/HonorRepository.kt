@@ -42,6 +42,10 @@ class HonorRepository @Inject constructor(
     fun observePendingDrafts(): Flow<List<HonorDraftEntity>> = dao.observePendingDrafts()
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
 
+    // НОВЫЙ МЕТОД для экрана одобрения директора
+    fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
+        dao.observePendingApprovalsByClub(clubId)
+
     // ---------- Сидовый контент (без enqueue) ----------
     suspend fun upsertCategory(c: HonorCategoryEntity) = dao.upsertCategory(c)
     suspend fun upsertCategories(cs: List<HonorCategoryEntity>) = dao.upsertCategories(cs)
@@ -54,7 +58,6 @@ class HonorRepository @Inject constructor(
     suspend fun upsertVersion(v: HonorVersionEntity) = dao.upsertVersion(v)
 
     // ---------- Пользовательские данные (с enqueue) ----------
-
     suspend fun upsertProgress(p: HonorProgressEntity) {
         dao.upsertProgress(p)
         syncQueueManager.enqueue(

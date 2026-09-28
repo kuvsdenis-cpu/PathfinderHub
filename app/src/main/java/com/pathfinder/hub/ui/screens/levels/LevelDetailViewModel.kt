@@ -19,17 +19,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class RequirementUiModel(
-    val requirement: LevelRequirementEntity,
-    val status: String,  // not_started | in_progress | submitted | approved | rejected
-    val comment: String?
+    val id: String,
+    val sectionId: String,
+    val text: String,
+    val type: String,
+    val order: Int,
+    val status: String // "not_started", "in_progress", "submitted", "approved", "rejected"
 )
 
 data class SectionUiModel(
-    val section: LevelSectionEntity,
-    val requirements: List<RequirementUiModel>,
-    val isExpanded: Boolean,
-    val approvedCount: Int,
-    val totalCount: Int
+    val id: String,
+    val name: String,
+    val order: Int,
+    val requirements: List<RequirementUiModel>
 )
 
 data class LevelDetailUiState(
@@ -38,107 +40,92 @@ data class LevelDetailUiState(
     val sections: List<SectionUiModel> = emptyList(),
     val approvedCount: Int = 0,
     val totalCount: Int = 0,
-    val progressPercent: Int = 0,
     val errorMessage: String? = null
 )
 
 @HiltViewModel
 class LevelDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    private val levelRepository: LevelRepository,
-    private val sessionManager: SessionManager
+    private val savedStateHandle: SavedStateHandle,
+    private val sessionManager: SessionManager,
+    private val levelRepository: LevelRepository
 ) : ViewModel() {
 
+    // 1. Получаем levelId из аргументов навигации (например, "friend")
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
 
     private val _state = MutableStateFlow(LevelDetailUiState())
     val state: StateFlow<LevelDetailUiState> = _state.asStateFlow()
 
-    // Храним состояние раскрытых разделов отдельно (переживает перезагрузку данных)
-    private val expandedSections = mutableSetOf<String>()
-
     init {
-        loadLevel()
+        loadLevelData()
     }
 
-    private fun loadLevel() {
-        val userId = sessionManager.getUserId()
-        if (userId == null) {
-            _state.update { it.copy(isLoading = false, errorMessage = "Нет активной сессии") }
+    private fun loadLevelData() {
+        if (levelId.isBlank()) {
+            _state.update { it.copy(isLoading = false, errorMessage = "ID ступени не указан") }
             return
         }
 
+        val userId = sessionManager.getUserId() ?: "demo_user"
+
         viewModelScope.launch {
-            // Загружаем уровень один раз
-            val level = levelRepository.getLevel(levelId)
-            if (level == null) {
-                _state.update { it.copy(isLoading = false, errorMessage = "Ступень не найдена") }
-                return@launch
-            }
+            try {
+                // 2. Загружаем саму ступень (один раз)
+                val level = levelRepository.getLevel(levelId)
 
-            _state.update { it.copy(level = level) }
+                // 3. Объединяем потоки разделов, требований и прогресса
+                combine(
+                    levelRepository.observeSections(levelId),
+                    levelRepository.observeRequirements(levelId),
+                    levelRepository.observeProgress(userId, levelId)
+                ) { sections, requirements, progressList ->
 
-            // Реактивно следим за разделами, требованиями и прогрессом
-            combine(
-                levelRepository.observeSections(levelId),
-                levelRepository.observeRequirements(levelId),
-                levelRepository.observeProgress(userId, levelId)
-            ) { sections, requirements, progress ->
-                Triple(sections, requirements, progress)
-            }.collect { (sections, requirements, progress) ->
-                val progressMap = progress.associateBy { it.requirementId }
+                    val progressMap = progressList.associateBy { it.requirementId }
+                    var approvedCount = 0
 
-                val sectionModels = sections.map { section ->
-                    val sectionReqs = requirements.filter { it.sectionId == section.id }
-                    val reqModels = sectionReqs.map { req ->
-                        val p = progressMap[req.id]
-                        RequirementUiModel(
-                            requirement = req,
-                            status = p?.status ?: "not_started",
-                            comment = p?.comment
+                    val uiSections = sections.map { section ->
+                        val reqs = requirements.filter { it.sectionId == section.id }.map { req ->
+                            val progress = progressMap[req.id]
+                            val status = progress?.status ?: "not_started"
+                            if (status == "approved") approvedCount++
+
+                            RequirementUiModel(
+                                id = req.id,
+                                sectionId = req.sectionId,
+                                text = req.text,
+                                type = req.type,
+                                order = req.order,
+                                status = status
+                            )
+                        }.sortedBy { it.order }
+
+                        SectionUiModel(
+                            id = section.id,
+                            name = section.name,
+                            order = section.order,
+                            requirements = reqs
                         )
-                    }
-                    val approved = reqModels.count { it.status == "approved" }
+                    }.sortedBy { it.order }
 
-                    SectionUiModel(
-                        section = section,
-                        requirements = reqModels,
-                        isExpanded = expandedSections.contains(section.id),
-                        approvedCount = approved,
-                        totalCount = reqModels.size
-                    )
-                }
-
-                val totalApproved = sectionModels.sumOf { it.approvedCount }
-                val totalReqs = sectionModels.sumOf { it.totalCount }
-                val percent = if (totalReqs > 0) (totalApproved * 100) / totalReqs else 0
-
-                _state.update {
-                    it.copy(
+                    LevelDetailUiState(
                         isLoading = false,
-                        sections = sectionModels,
-                        approvedCount = totalApproved,
-                        totalCount = totalReqs,
-                        progressPercent = percent
+                        level = level,
+                        sections = uiSections,
+                        approvedCount = approvedCount,
+                        totalCount = requirements.size
                     )
+                }.collect { newState ->
+                    _state.update { newState }
                 }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
         }
     }
 
-    fun toggleSection(sectionId: String) {
-        if (expandedSections.contains(sectionId)) {
-            expandedSections.remove(sectionId)
-        } else {
-            expandedSections.add(sectionId)
-        }
-        // Обновляем UI
-        _state.update { state ->
-            state.copy(
-                sections = state.sections.map { s ->
-                    if (s.section.id == sectionId) s.copy(isExpanded = !s.isExpanded) else s
-                }
-            )
-        }
+    // Заглушка для действия. В будущем здесь будет вызов UseCase (например, SubmitRequirementUseCase)
+    fun onRequirementAction(requirementId: String, type: String) {
+        // TODO: Вызвать UseCase для изменения статуса на "submitted" или открытия экрана загрузки отчета
+        println("Действие для требования: $requirementId, тип: $type")
     }
 }

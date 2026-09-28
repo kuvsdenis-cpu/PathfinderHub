@@ -13,23 +13,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WorkspacePremium
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -55,6 +58,10 @@ fun TeenHomeScreen(
     onNavigateToEvents: () -> Unit = {},
     onNavigateToTasks: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToDigitalUniform: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {},
+    onNavigateToChallenges: () -> Unit = {},
+    onNavigateToReports: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -64,7 +71,7 @@ fun TeenHomeScreen(
             TopAppBar(
                 title = { Text("Pathfinder Hub") },
                 actions = {
-                    androidx.compose.material3.IconButton(onClick = onNavigateToProfile) {
+                    IconButton(onClick = onNavigateToProfile) {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Профиль",
@@ -143,7 +150,7 @@ fun TeenHomeScreen(
                 }
             }
 
-            // Кнопки разделов
+            // Кнопки разделов - Ряд 1
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -162,20 +169,40 @@ fun TeenHomeScreen(
                 )
             }
 
+            // Кнопки разделов - Ряд 2
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ActionTile(
-                    icon = Icons.Default.CheckCircle,
-                    label = "Мои нашивки",
-                    onClick = onNavigateToMyHonors,
+                    icon = Icons.Default.Star,
+                    label = "Цифровая форма",
+                    onClick = onNavigateToDigitalUniform,
                     modifier = Modifier.weight(1f)
                 )
                 ActionTile(
-                    icon = Icons.Default.Event,
-                    label = "События",
-                    onClick = onNavigateToEvents,
+                    icon = Icons.Default.CheckCircle,
+                    label = "Достижения",
+                    onClick = onNavigateToAchievements,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            // Кнопки разделов - Ряд 3
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ActionTile(
+                    icon = Icons.Default.EmojiEvents,
+                    label = "Челленджи",
+                    onClick = onNavigateToChallenges,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionTile(
+                    icon = Icons.Default.AccountBalance,
+                    label = "Отчёты",
+                    onClick = onNavigateToReports,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -258,8 +285,8 @@ fun TeenHomeScreen(
             SectionCard(
                 icon = Icons.Default.Star,
                 title = "Последние достижения",
-                actionLabel = "Мои нашивки",
-                onActionClick = onNavigateToMyHonors
+                actionLabel = "Все достижения",
+                onActionClick = onNavigateToAchievements
             ) {
                 if (state.recentAchievements.isEmpty()) {
                     Text(
@@ -280,7 +307,7 @@ fun TeenHomeScreen(
                             )
                             Spacer(Modifier.size(8.dp))
                             Text(
-                                text = ach.achievementId,
+                                text = ach.achievementId, // В будущем здесь будет ach.name
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -343,7 +370,7 @@ private fun SectionCard(
                     modifier = Modifier.weight(1f)
                 )
                 if (actionLabel != null && onActionClick != null) {
-                    androidx.compose.material3.TextButton(onClick = onActionClick) {
+                    TextButton(onClick = onActionClick) {
                         Text(actionLabel, style = MaterialTheme.typography.labelLarge)
                     }
                 }

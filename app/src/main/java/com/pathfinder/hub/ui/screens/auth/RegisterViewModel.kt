@@ -2,6 +2,7 @@ package com.pathfinder.hub.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.repository.InviteRepository
 import com.pathfinder.hub.domain.usecase.auth.RegisterByInviteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +31,8 @@ data class RegisterUiState(
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterByInviteUseCase,
-    private val inviteRepository: InviteRepository
+    private val inviteRepository: InviteRepository,
+    private val sessionManager: SessionManager // <-- ДОБАВЛЕНО
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterUiState())
@@ -56,7 +58,6 @@ class RegisterViewModel @Inject constructor(
         _state.update { it.copy(birthDate = value) }
     }
 
-    /** Проверка инвайт-кода перед регистрацией. */
     fun validateInvite() {
         val code = _state.value.inviteCode.trim()
         if (code.isBlank()) {
@@ -69,23 +70,10 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             val invite = inviteRepository.getByCode(code)
             when {
-                invite == null -> _state.update {
-                    it.copy(isLoading = false, errorMessage = "Код не найден")
-                }
-                invite.status != "active" -> _state.update {
-                    it.copy(isLoading = false, errorMessage = "Код уже использован или просрочен")
-                }
-                invite.expiresAt.before(Date()) -> _state.update {
-                    it.copy(isLoading = false, errorMessage = "Срок действия кода истёк")
-                }
-                else -> _state.update {
-                    it.copy(
-                        isLoading = false,
-                        clubId = invite.clubId,
-                        role = invite.role,
-                        errorMessage = null
-                    )
-                }
+                invite == null -> _state.update { it.copy(isLoading = false, errorMessage = "Код не найден") }
+                invite.status != "active" -> _state.update { it.copy(isLoading = false, errorMessage = "Код уже использован или просрочен") }
+                invite.expiresAt.before(Date()) -> _state.update { it.copy(isLoading = false, errorMessage = "Срок действия кода истёк") }
+                else -> _state.update { it.copy(isLoading = false, clubId = invite.clubId, role = invite.role, errorMessage = null) }
             }
         }
     }
@@ -105,8 +93,7 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             val birthDate = try {
-                java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
-                    .parse(s.birthDate) ?: Date()
+                java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).parse(s.birthDate) ?: Date()
             } catch (e: Exception) { Date() }
 
             val result = registerUseCase(
@@ -116,18 +103,19 @@ class RegisterViewModel @Inject constructor(
                 email = s.email.trim(),
                 birthDate = birthDate
             )
+
             result.fold(
                 onSuccess = { userId ->
+                    // КРИТИЧЕСКИ ВАЖНО: сохраняем ID нового пользователя!
+                    sessionManager.saveUserId(userId)
+
                     _state.update {
                         it.copy(isLoading = false, registerSuccess = true, userId = userId)
                     }
                 },
                 onFailure = { error ->
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message ?: "Ошибка регистрации"
-                        )
+                        it.copy(isLoading = false, errorMessage = error.message ?: "Ошибка регистрации")
                     }
                 }
             )
