@@ -46,22 +46,49 @@ class ClubMembersViewModel @Inject constructor(
                 val clubId = currentUser?.clubId
 
                 if (clubId.isNullOrBlank()) {
-                    _state.update {
-                        it.copy(isLoading = false, errorMessage = "Клуб не найден")
-                    }
+                    _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
                     return@launch
                 }
 
                 _state.update { it.copy(isLoading = false, currentUserId = userId) }
 
-                // Подписываемся на реактивный список участников клуба
                 userRepository.observeClubMembers(clubId).collect { members ->
                     _state.update { it.copy(members = members) }
                 }
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки")
-                }
+                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки") }
+            }
+        }
+    }
+
+    fun changeRole(userId: String, newRole: String) {
+        viewModelScope.launch {
+            try {
+                val user = userRepository.getUser(userId) ?: return@launch
+                userRepository.update(user.copy(role = newRole))
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка смены роли") }
+            }
+        }
+    }
+
+    fun suspendUser(userId: String) {
+        viewModelScope.launch {
+            try {
+                val user = userRepository.getUser(userId) ?: return@launch
+                userRepository.update(user.copy(status = "suspended"))
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка приостановки") }
+            }
+        }
+    }
+
+    fun removeUser(userId: String) {
+        viewModelScope.launch {
+            try {
+                userRepository.requestDeletion(userId, "deleted", System.currentTimeMillis())
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка удаления") }
             }
         }
     }

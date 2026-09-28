@@ -5,11 +5,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +24,7 @@ fun ClubMembersScreen(
     viewModel: ClubMembersViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    var removeDialogUser by remember { mutableStateOf<UserEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -84,17 +84,49 @@ fun ClubMembersScreen(
                     items(state.members, key = { it.id }) { member ->
                         MemberCard(
                             member = member,
-                            isCurrentUser = member.id == state.currentUserId
+                            isCurrentUser = member.id == state.currentUserId,
+                            onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
+                            onSuspend = { viewModel.suspendUser(member.id) },
+                            onRemove = { removeDialogUser = member }
                         )
                     }
                 }
             }
         }
     }
+
+    removeDialogUser?.let { user ->
+        AlertDialog(
+            onDismissRequest = { removeDialogUser = null },
+            title = { Text("Удалить участника") },
+            text = { Text("Вы уверены, что хотите удалить ${user.firstName} ${user.lastName} из клуба? Это действие нельзя отменить.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.removeUser(user.id)
+                        removeDialogUser = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Удалить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { removeDialogUser = null }) { Text("Отмена") }
+            }
+        )
+    }
 }
 
 @Composable
-private fun MemberCard(member: UserEntity, isCurrentUser: Boolean) {
+private fun MemberCard(
+    member: UserEntity,
+    isCurrentUser: Boolean,
+    onChangeRole: (String) -> Unit,
+    onSuspend: () -> Unit,
+    onRemove: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var roleMenuExpanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -108,7 +140,6 @@ private fun MemberCard(member: UserEntity, isCurrentUser: Boolean) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Аватар-заглушка (круг с инициалами)
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = MaterialTheme.shapes.extraLarge,
@@ -160,7 +191,67 @@ private fun MemberCard(member: UserEntity, isCurrentUser: Boolean) {
                 onClick = { },
                 label = { Text(getStatusName(member.status)) }
             )
+
+            if (!isCurrentUser) {
+                Spacer(Modifier.width(8.dp))
+                Box {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, "Действия")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Сменить роль") },
+                            onClick = {
+                                expanded = false
+                                roleMenuExpanded = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Приостановить доступ") },
+                            onClick = {
+                                expanded = false
+                                onSuspend()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Удалить из клуба") },
+                            onClick = {
+                                expanded = false
+                                onRemove()
+                            }
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    if (roleMenuExpanded) {
+        AlertDialog(
+            onDismissRequest = { roleMenuExpanded = false },
+            title = { Text("Выберите новую роль") },
+            text = {
+                Column {
+                    listOf("teen" to "Следопыт", "instructor" to "Наставник", "secretary" to "Секретарь").forEach { (role, name) ->
+                        TextButton(
+                            onClick = {
+                                onChangeRole(role)
+                                roleMenuExpanded = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(name, modifier = Modifier.fillMaxWidth())
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { roleMenuExpanded = false }) { Text("Отмена") }
+            }
+        )
     }
 }
 

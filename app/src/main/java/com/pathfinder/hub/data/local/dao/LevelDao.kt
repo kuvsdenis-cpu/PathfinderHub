@@ -114,4 +114,5 @@ interface LevelDao {
               WHERE u.clubId = :clubId AND lp.status = 'submitted'
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
+
 }
