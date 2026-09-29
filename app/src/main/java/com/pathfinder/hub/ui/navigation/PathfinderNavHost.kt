@@ -10,6 +10,7 @@ import com.pathfinder.hub.ui.challenges.ChallengeDetailScreen
 import com.pathfinder.hub.ui.challenges.ChallengesScreen
 import com.pathfinder.hub.ui.gamification.AchievementsScreen
 import com.pathfinder.hub.ui.gamification.DigitalUniformScreen
+import com.pathfinder.hub.ui.reports.CreateReportScreen
 import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
 import com.pathfinder.hub.ui.screens.auth.LoginScreen
@@ -50,7 +51,7 @@ fun PathfinderNavHost(
         // === Auth ===
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = { userId ->
+                onLoginSuccess = {
                     navController.navigate(Routes.ROLE_HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
@@ -63,7 +64,7 @@ fun PathfinderNavHost(
 
         composable(Routes.REGISTER) {
             RegisterScreen(
-                onRegisterSuccess = { userId, role ->
+                onRegisterSuccess = {
                     navController.navigate(Routes.ONBOARDING) {
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
@@ -118,7 +119,15 @@ fun PathfinderNavHost(
         composable(Routes.DIRECTOR_REPORTS) {
             ReportHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) }
+                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) },
+                onCreateReport = { navController.navigate(Routes.CREATE_REPORT) }
+            )
+        }
+
+        composable(Routes.CREATE_REPORT) {
+            CreateReportScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
             )
         }
 

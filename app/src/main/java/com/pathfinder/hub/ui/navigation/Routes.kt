@@ -16,6 +16,7 @@ object Routes {
     const val CLUB_EVENTS = "club_events"
     const val CLUB_SETTINGS = "club_settings"
     const val CREATE_EVENT = "create_event"
+    const val CREATE_REPORT = "create_report"
 
     // === Role-specific home ===
     const val TEEN_HOME = "teen_home"
