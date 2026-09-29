@@ -109,10 +109,11 @@ interface LevelDao {
 
     @Query("SELECT * FROM leader_checklists WHERE childId = :childId")
     suspend fun getChecklistsForChild(childId: String): List<LeaderChecklistEntity>
+
+    // ✅ ДОБАВЛЕННЫЙ МЕТОД для экрана одобрения директора
     @Query("""SELECT lp.* FROM level_progress lp
               JOIN users u ON lp.userId = u.id
               WHERE u.clubId = :clubId AND lp.status = 'submitted'
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
-
 }

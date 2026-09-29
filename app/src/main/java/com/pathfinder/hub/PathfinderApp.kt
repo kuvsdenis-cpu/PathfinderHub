@@ -52,6 +52,7 @@ class PathfinderApp : Application(), Configuration.Provider {
         initFirestore()
         seedDemoData()            // временно — для тестирования входа
         seedAchievements()        // НОВОЕ: загрузка начальных ачивок в БД
+        checkAndRestoreLevelsContent() // НОВОЕ: автопроверка контента ступеней
         scheduleContentUpdate()   // обновление контента из assets
         syncScheduler.schedulePeriodic()   // фоновая синхронизация с Firestore
         syncScheduler.syncNow()            // ВРЕМЕННО: разобрать очередь сразу при старте
@@ -105,6 +106,42 @@ class PathfinderApp : Application(), Configuration.Provider {
             request
         )
         Log.d(TAG, "Запущена проверка обновления контента")
+    }
+
+    // ==================== АВТОПРОВЕРКА КОНТЕНТА СТУПЕНЕЙ ====================
+
+    private fun checkAndRestoreLevelsContent() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val db = AppDatabase.getInstance(this@PathfinderApp)
+                val levelDao = db.levelDao()
+                val honorDao = db.honorDao()
+
+                val levelsCount = levelDao.getLevelsCount()
+
+                if (levelsCount == 0) {
+                    Log.w(TAG, "⚠️ Таблица levels пуста! Принудительный сброс версии контента...")
+
+                    // Очищаем версию в БД, чтобы SeedDatabaseWorker заново загрузил данные
+                    honorDao.clearContentVersion()
+
+                    // Принудительно запускаем воркер обновления
+                    val request = OneTimeWorkRequestBuilder<SeedDatabaseWorker>()
+                        .build()
+                    WorkManager.getInstance(this@PathfinderApp).enqueueUniqueWork(
+                        SeedDatabaseWorker.WORK_NAME,
+                        ExistingWorkPolicy.REPLACE,
+                        request
+                    )
+
+                    Log.d(TAG, "✅ Воркер перезапускается для восстановления контента")
+                } else {
+                    Log.d(TAG, "✓ Контент ступеней загружен: $levelsCount уровней")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Ошибка проверки контента ступеней", e)
+            }
+        }
     }
 
     // ==================== ДЕМО-ДАННЫЕ (ВРЕМЕННО) ====================

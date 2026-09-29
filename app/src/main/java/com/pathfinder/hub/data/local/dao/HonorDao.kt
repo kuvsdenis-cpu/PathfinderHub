@@ -128,6 +128,8 @@ interface HonorDao {
 
     @Query("SELECT * FROM content_versions ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getLatestContentVersion(): ContentVersionEntity?
+
+    // ✅ ДОБАВЛЕННЫЙ МЕТОД для экрана одобрения директора
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id
               WHERE u.clubId = :clubId AND hp.status = 'submitted'
