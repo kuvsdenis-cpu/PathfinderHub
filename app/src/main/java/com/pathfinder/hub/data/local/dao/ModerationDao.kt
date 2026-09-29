@@ -37,4 +37,12 @@ interface ModerationDao {
     suspend fun resolveAppeal(id: String, status: String, by: String, at: Long)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertHistory(h: ModerationHistoryEntity)
+    @Query("""UPDATE comments SET status = 'hidden', 
+              hiddenReasonCode = 'review_timeout',
+              hiddenReasonNote = 'Истёк срок ручной модерации'
+              WHERE status = 'published' 
+              AND reviewDeadline IS NOT NULL 
+              AND reviewDeadline < :now
+              AND moderatedBy IS NULL""")
+    suspend fun hideExpiredComments(now: Long): Int
 }

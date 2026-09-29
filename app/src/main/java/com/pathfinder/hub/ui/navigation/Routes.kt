@@ -17,6 +17,12 @@ object Routes {
     const val CLUB_SETTINGS = "club_settings"
     const val CREATE_EVENT = "create_event"
     const val CREATE_REPORT = "create_report"
+    const val CREATE_TASK = "create_task"
+
+    // === Чаты и Модерация ===
+    const val CLUB_CHAT = "club_chat"
+    const val GROUP_CHAT = "group_chat/{targetType}/{targetId}"
+    const val MODERATION = "moderation"
 
     // === Role-specific home ===
     const val TEEN_HOME = "teen_home"
@@ -72,4 +78,5 @@ object Routes {
     fun eventDetail(eventId: String) = "event_detail/$eventId"
     fun challengeDetail(challengeId: String) = "challenge_detail/$challengeId"
     fun reportDetail(reportId: String) = "report_detail/$reportId"
+    fun groupChat(targetType: String, targetId: String) = "group_chat/$targetType/$targetId"
 }

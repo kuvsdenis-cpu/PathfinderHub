@@ -8,8 +8,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.pathfinder.hub.ui.challenges.ChallengeDetailScreen
 import com.pathfinder.hub.ui.challenges.ChallengesScreen
+import com.pathfinder.hub.ui.chat.ClubChatScreen
+import com.pathfinder.hub.ui.chat.GroupChatScreen
 import com.pathfinder.hub.ui.gamification.AchievementsScreen
 import com.pathfinder.hub.ui.gamification.DigitalUniformScreen
+import com.pathfinder.hub.ui.moderation.ModerationScreen
 import com.pathfinder.hub.ui.reports.CreateReportScreen
 import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
@@ -37,6 +40,7 @@ import com.pathfinder.hub.ui.screens.levels.RequirementDetailScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
 import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
 import com.pathfinder.hub.ui.screens.sync.SyncScreen
+import com.pathfinder.hub.ui.screens.tasks.CreateTaskScreen
 import com.pathfinder.hub.ui.screens.tasks.MyTasksScreen
 
 @Composable
@@ -100,7 +104,10 @@ fun PathfinderNavHost(
                 onNavigateToApprovals = { navController.navigate(Routes.APPROVALS) },
                 onNavigateToReports = { navController.navigate(Routes.DIRECTOR_REPORTS) },
                 onNavigateToEvents = { navController.navigate(Routes.CLUB_EVENTS) },
-                onNavigateToSettings = { navController.navigate(Routes.CLUB_SETTINGS) }
+                onNavigateToSettings = { navController.navigate(Routes.CLUB_SETTINGS) },
+                onNavigateToTasks = { navController.navigate(Routes.CREATE_TASK) },
+                onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) },
+                onNavigateToModeration = { navController.navigate(Routes.MODERATION) }
             )
         }
 
@@ -150,6 +157,13 @@ fun PathfinderNavHost(
             ClubSettingsScreen(onBack = { navController.popBackStack() })
         }
 
+        composable(Routes.CREATE_TASK) {
+            CreateTaskScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
+            )
+        }
+
         // === Teen Home ===
         composable(Routes.TEEN_HOME) {
             TeenHomeScreen(
@@ -162,7 +176,8 @@ fun PathfinderNavHost(
                 onNavigateToDigitalUniform = { navController.navigate(Routes.DIGITAL_UNIFORM) },
                 onNavigateToAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
                 onNavigateToChallenges = { navController.navigate(Routes.CHALLENGES) },
-                onNavigateToReports = { navController.navigate(Routes.REPORT_HISTORY) }
+                onNavigateToReports = { navController.navigate(Routes.REPORT_HISTORY) },
+                onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) }
             )
         }
 
@@ -321,6 +336,31 @@ fun PathfinderNavHost(
                 reportId = reportId,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        // === Чаты и Модерация ===
+        composable(Routes.CLUB_CHAT) {
+            ClubChatScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            route = Routes.GROUP_CHAT,
+            arguments = listOf(
+                navArgument("targetType") { type = NavType.StringType },
+                navArgument("targetId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val targetType = backStackEntry.arguments?.getString("targetType") ?: ""
+            val targetId = backStackEntry.arguments?.getString("targetId") ?: ""
+            GroupChatScreen(
+                targetType = targetType,
+                targetId = targetId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.MODERATION) {
+            ModerationScreen(onBack = { navController.popBackStack() })
         }
 
         // === Sync ===

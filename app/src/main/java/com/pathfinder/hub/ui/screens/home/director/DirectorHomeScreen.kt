@@ -27,6 +27,9 @@ fun DirectorHomeScreen(
     onNavigateToReports: () -> Unit,
     onNavigateToEvents: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToTasks: () -> Unit,
+    onNavigateToClubChat: () -> Unit,
+    onNavigateToModeration: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -79,6 +82,14 @@ fun DirectorHomeScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 DirectorActionCard(Icons.Default.Event, "События", "Расписание клуба", onNavigateToEvents, Modifier.weight(1f))
                 DirectorActionCard(Icons.Default.Settings, "Настройки", "Параметры клуба", onNavigateToSettings, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                DirectorActionCard(Icons.Default.TaskAlt, "Задания", "Назначить следопытам", onNavigateToTasks, Modifier.weight(1f))
+                DirectorActionCard(Icons.Default.Chat, "Чат клуба", "Общее обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                DirectorActionCard(Icons.Default.Shield, "Модерация", "Проверка сообщений", onNavigateToModeration, Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
             }
         }
     }

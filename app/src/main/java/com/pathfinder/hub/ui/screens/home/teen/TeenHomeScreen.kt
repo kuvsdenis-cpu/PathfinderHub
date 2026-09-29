@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
@@ -62,6 +63,7 @@ fun TeenHomeScreen(
     onNavigateToAchievements: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToReports: () -> Unit = {},
+    onNavigateToClubChat: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -205,6 +207,20 @@ fun TeenHomeScreen(
                     onClick = onNavigateToReports,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            // Кнопки разделов - Ряд 4 (НОВЫЙ: Чат клуба)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ActionTile(
+                    icon = Icons.Default.Chat,
+                    label = "Чат клуба",
+                    onClick = onNavigateToClubChat,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
             }
 
             // Задачи
