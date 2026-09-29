@@ -14,6 +14,7 @@ import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
 import com.pathfinder.hub.ui.screens.auth.LoginScreen
 import com.pathfinder.hub.ui.screens.auth.RegisterScreen
+import com.pathfinder.hub.ui.screens.events.CreateEventScreen
 import com.pathfinder.hub.ui.screens.events.EventDetailScreen
 import com.pathfinder.hub.ui.screens.events.EventsScreen
 import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
@@ -62,8 +63,7 @@ fun PathfinderNavHost(
 
         composable(Routes.REGISTER) {
             RegisterScreen(
-                // ИСПРАВЛЕНО: лямбда без параметров, как в вашем RegisterScreen.kt
-                onRegisterSuccess = {
+                onRegisterSuccess = { userId, role ->
                     navController.navigate(Routes.ONBOARDING) {
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
@@ -125,7 +125,15 @@ fun PathfinderNavHost(
         composable(Routes.CLUB_EVENTS) {
             EventsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
+                onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) },
+                onCreateEvent = { navController.navigate(Routes.CREATE_EVENT) }
+            )
+        }
+
+        composable(Routes.CREATE_EVENT) {
+            CreateEventScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
             )
         }
 

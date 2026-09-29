@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import java.util.Locale
 fun EventsScreen(
     onBack: () -> Unit,
     onOpenEvent: (String) -> Unit,
+    onCreateEvent: () -> Unit = {},
     viewModel: EventsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -43,6 +45,15 @@ fun EventsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onCreateEvent,
+                containerColor = PathfinderBlue,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, "Создать событие")
+            }
         }
     ) { padding ->
         if (state.isLoading) {
@@ -53,12 +64,23 @@ fun EventsScreen(
         }
         if (state.events.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), Alignment.Center) {
-                Text("Пока нет запланированных событий")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Пока нет запланированных событий")
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Нажмите + чтобы создать первое событие",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             return@Scaffold
         }
-        LazyColumn(contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(padding)
+        ) {
             items(state.events, key = { it.id }) { e ->
                 EventCard(e, fmt.format(e.dateStart)) { onOpenEvent(e.id) }
             }
@@ -72,12 +94,18 @@ private fun EventCard(event: EventEntity, dateStr: String, onClick: () -> Unit) 
         Column(Modifier.padding(16.dp)) {
             Text(event.title, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(4.dp))
-            Text(dateStr, style = MaterialTheme.typography.bodyLarge,
-                color = PathfinderBlue)
+            Text(
+                dateStr,
+                style = MaterialTheme.typography.bodyLarge,
+                color = PathfinderBlue
+            )
             if (event.location.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
-                Text(event.location, style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    event.location,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
