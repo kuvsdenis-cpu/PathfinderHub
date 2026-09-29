@@ -37,7 +37,9 @@ android {
                 "proguard-rules.pro"
             )
         }
-        debug { isMinifyEnabled = false }
+        debug {
+            isMinifyEnabled = false
+        }
     }
 
     compileOptions {
@@ -50,8 +52,24 @@ android {
         buildConfig = true
     }
 
+    // ИСПРАВЛЕННЫЙ И ПОЛНЫЙ БЛОК УПАКОВКИ
     packaging {
-        resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/license.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+            excludes += "META-INF/notice.txt"
+            excludes += "META-INF/ASL2.0"
+            excludes += "META-INF/*.kotlin_module"
+
+            // Исключаем все дубликаты метаданных от библиотеки Netty (AWS SDK)
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
     }
 }
 
@@ -62,9 +80,9 @@ kotlin {
 }
 
 dependencies {
-
-    // Yandex Object Storage (S3-совместимое API)
-    implementation("aws.sdk.kotlin:s3:1.4.84")
+    // Yandex Object Storage (S3-совместимое API) - стабильная Java SDK v2
+    implementation("software.amazon.awssdk:s3:2.29.0")
+    implementation("software.amazon.awssdk:url-connection-client:2.29.0")
 
     // ============ Версии ============
     val roomVersion = "2.8.4"

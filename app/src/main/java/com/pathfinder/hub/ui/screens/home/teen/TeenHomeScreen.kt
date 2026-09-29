@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WorkspacePremium
@@ -64,6 +65,7 @@ fun TeenHomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToReports: () -> Unit = {},
     onNavigateToClubChat: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -73,6 +75,13 @@ fun TeenHomeScreen(
             TopAppBar(
                 title = { Text("Pathfinder Hub") },
                 actions = {
+                    IconButton(onClick = onNavigateToNotifications) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToProfile) {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -100,7 +109,6 @@ fun TeenHomeScreen(
             }
             return@Scaffold
         }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -116,7 +124,6 @@ fun TeenHomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
-
             // Карточка текущей ступени
             Card(
                 colors = CardDefaults.cardColors(
@@ -151,7 +158,6 @@ fun TeenHomeScreen(
                     )
                 }
             }
-
             // Кнопки разделов - Ряд 1
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -170,7 +176,6 @@ fun TeenHomeScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
-
             // Кнопки разделов - Ряд 2
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -189,7 +194,6 @@ fun TeenHomeScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
-
             // Кнопки разделов - Ряд 3
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -208,8 +212,7 @@ fun TeenHomeScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
-
-            // Кнопки разделов - Ряд 4 (НОВЫЙ: Чат клуба)
+            // Кнопки разделов - Ряд 4 (Чат клуба)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -222,7 +225,6 @@ fun TeenHomeScreen(
                 )
                 Spacer(modifier = Modifier.weight(1f))
             }
-
             // Задачи
             SectionCard(
                 icon = Icons.Default.CheckCircle,
@@ -260,7 +262,6 @@ fun TeenHomeScreen(
                     }
                 }
             }
-
             // Ближайшее событие
             SectionCard(
                 icon = Icons.Default.Event,
@@ -296,7 +297,6 @@ fun TeenHomeScreen(
                     }
                 }
             }
-
             // Достижения
             SectionCard(
                 icon = Icons.Default.Star,
@@ -323,7 +323,7 @@ fun TeenHomeScreen(
                             )
                             Spacer(Modifier.size(8.dp))
                             Text(
-                                text = ach.achievementId, // В будущем здесь будет ach.name
+                                text = ach.achievementId,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -331,7 +331,6 @@ fun TeenHomeScreen(
                     }
                 }
             }
-
             Spacer(Modifier.height(8.dp))
         }
     }

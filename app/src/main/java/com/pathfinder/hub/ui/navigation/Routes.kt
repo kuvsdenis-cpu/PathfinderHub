@@ -8,6 +8,7 @@ object Routes {
     const val ROLE_HOME = "role_home"
 
     // === Director ===
+    const val NOTIFICATIONS = "notifications"
     const val DIRECTOR_HOME = "director_home"
     const val DIRECTOR_INVITES = "director_invites"
     const val CLUB_MEMBERS = "club_members"

@@ -13,6 +13,7 @@ import com.pathfinder.hub.ui.chat.GroupChatScreen
 import com.pathfinder.hub.ui.gamification.AchievementsScreen
 import com.pathfinder.hub.ui.gamification.DigitalUniformScreen
 import com.pathfinder.hub.ui.moderation.ModerationScreen
+import com.pathfinder.hub.ui.notifications.NotificationsScreen
 import com.pathfinder.hub.ui.reports.CreateReportScreen
 import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
@@ -107,7 +108,8 @@ fun PathfinderNavHost(
                 onNavigateToSettings = { navController.navigate(Routes.CLUB_SETTINGS) },
                 onNavigateToTasks = { navController.navigate(Routes.CREATE_TASK) },
                 onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) },
-                onNavigateToModeration = { navController.navigate(Routes.MODERATION) }
+                onNavigateToModeration = { navController.navigate(Routes.MODERATION) },
+                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         }
 
@@ -177,7 +179,8 @@ fun PathfinderNavHost(
                 onNavigateToAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
                 onNavigateToChallenges = { navController.navigate(Routes.CHALLENGES) },
                 onNavigateToReports = { navController.navigate(Routes.REPORT_HISTORY) },
-                onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) }
+                onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) },
+                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         }
 
@@ -361,6 +364,11 @@ fun PathfinderNavHost(
 
         composable(Routes.MODERATION) {
             ModerationScreen(onBack = { navController.popBackStack() })
+        }
+
+        // === Notifications ===
+        composable(Routes.NOTIFICATIONS) {
+            NotificationsScreen(onBack = { navController.popBackStack() })
         }
 
         // === Sync ===

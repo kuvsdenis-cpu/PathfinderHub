@@ -30,6 +30,7 @@ fun DirectorHomeScreen(
     onNavigateToTasks: () -> Unit,
     onNavigateToClubChat: () -> Unit,
     onNavigateToModeration: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -38,6 +39,15 @@ fun DirectorHomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Панель директора") },
+                actions = {
+                    IconButton(onClick = onNavigateToNotifications) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PathfinderBlue,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -58,7 +68,6 @@ fun DirectorHomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
-
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("Ваш клуб", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -68,9 +77,7 @@ fun DirectorHomeScreen(
                     Text(state.clubLocation ?: "", style = MaterialTheme.typography.bodyMedium)
                 }
             }
-
             Text("Управление клубом", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 DirectorActionCard(Icons.Default.PersonAdd, "Инвайты", "Создать и управлять кодами", onNavigateToInvites, Modifier.weight(1f))
                 DirectorActionCard(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
