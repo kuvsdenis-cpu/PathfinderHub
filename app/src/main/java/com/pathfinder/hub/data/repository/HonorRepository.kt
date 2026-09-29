@@ -42,9 +42,12 @@ class HonorRepository @Inject constructor(
     fun observePendingDrafts(): Flow<List<HonorDraftEntity>> = dao.observePendingDrafts()
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
 
-    // НОВЫЙ МЕТОД для экрана одобрения директора
+    // ✅ ДОБАВЛЕНО: Обёртка для DAO
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
+
+    // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
+    suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------
     suspend fun upsertCategory(c: HonorCategoryEntity) = dao.upsertCategory(c)

@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HonorDao {
-
     @Query("SELECT * FROM honor_categories ORDER BY `order`")
     fun observeCategories(): Flow<List<HonorCategoryEntity>>
 
@@ -129,10 +128,14 @@ interface HonorDao {
     @Query("SELECT * FROM content_versions ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getLatestContentVersion(): ContentVersionEntity?
 
-    // ✅ ДОБАВЛЕННЫЙ МЕТОД для экрана одобрения директора
+    // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id
               WHERE u.clubId = :clubId AND hp.status = 'submitted'
               ORDER BY hp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>>
+
+    // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
+    @Query("DELETE FROM content_versions")
+    suspend fun clearContentVersion()
 }

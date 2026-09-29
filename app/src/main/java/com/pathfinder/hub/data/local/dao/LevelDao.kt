@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LevelDao {
-
     @Query("SELECT * FROM levels ORDER BY `order`")
     fun observeLevels(): Flow<List<LevelEntity>>
 
@@ -110,10 +109,14 @@ interface LevelDao {
     @Query("SELECT * FROM leader_checklists WHERE childId = :childId")
     suspend fun getChecklistsForChild(childId: String): List<LeaderChecklistEntity>
 
-    // ✅ ДОБАВЛЕННЫЙ МЕТОД для экрана одобрения директора
+    // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
     @Query("""SELECT lp.* FROM level_progress lp
               JOIN users u ON lp.userId = u.id
               WHERE u.clubId = :clubId AND lp.status = 'submitted'
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
+
+    // ✅ ДОБАВЛЕНО: Для автоматической проверки наличия контента
+    @Query("SELECT COUNT(*) FROM levels")
+    suspend fun getLevelsCount(): Int
 }
