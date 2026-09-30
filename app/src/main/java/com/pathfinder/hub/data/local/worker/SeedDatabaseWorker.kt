@@ -47,18 +47,17 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
             // Текущая версия в Room
             val currentVersion = honorRepository.getLatestContentVersion()
+
             Log.d(TAG, "Текущая версия в Room: ${currentVersion?.version ?: "нет"}")
             Log.d(TAG, "Версия levels.json: $levelsVersion")
             Log.d(TAG, "Версия honors.json: $honorsVersion")
 
             // Нужно ли обновлять
             var updated = false
-
             if (levelsJson != null && shouldUpdate(currentVersion?.version, levelsVersion)) {
                 seedLevels(levelsJson)
                 updated = true
             }
-
             if (honorsJson != null && shouldUpdate(currentVersion?.version, honorsVersion)) {
                 seedHonors(honorsJson)
                 updated = true
@@ -113,25 +112,38 @@ class SeedDatabaseWorker @AssistedInject constructor(
     private suspend fun seedLevels(json: String) {
         val type = object : TypeToken<LevelsFile>() {}.type
         val file: LevelsFile = gson.fromJson(json, type)
-
         for (parsed in file.levels) {
+            // ✅ ИСПРАВЛЕНИЕ: используем ID уровня как эталонный для всех вложенных данных
+            val correctLevelId = parsed.level.id
+
+            // ✅ НОВОЕ: Логирование ПЕРЕД записью
+            Log.d(TAG, "📥 ДО ЗАПИСИ: parsed.level.id='$correctLevelId' (длина: ${correctLevelId.length})")
+            if (parsed.sections.isNotEmpty()) {
+                Log.d(TAG, "   Первый раздел из JSON: id='${parsed.sections[0].id}', levelId='${parsed.sections[0].levelId}'")
+            }
+
             // Уровень
             levelRepository.upsertLevels(listOf(parsed.level))
-
             // Разделы
             val sections = parsed.sections.map { s ->
                 LevelSectionEntity(
                     id = s.id,
-                    levelId = s.levelId,
+                    levelId = correctLevelId,
                     name = s.name,
                     order = s.order
                 )
             }
             levelRepository.upsertSections(sections)
-
             // Требования
-            val requirements = parsed.sections.flatMap { it.requirements }
+            val requirements = parsed.sections.flatMap { it.requirements }.map { req ->
+                req.copy(levelId = correctLevelId)
+            }
             levelRepository.upsertRequirements(requirements)
+
+            // ✅ НОВОЕ: Логирование ПОСЛЕ записи — проверяем что реально в БД
+            val savedSections = levelRepository.getSections(correctLevelId)
+            val savedRequirements = levelRepository.getRequirements(correctLevelId)
+            Log.d(TAG, "📤 ПОСЛЕ ЗАПИСИ в БД: уровень='$correctLevelId', разделов=${savedSections.size}, требований=${savedRequirements.size}")
 
             Log.d(TAG, "Уровень '${parsed.level.name}': " +
                     "${sections.size} разделов, ${requirements.size} требований")
@@ -143,18 +155,14 @@ class SeedDatabaseWorker @AssistedInject constructor(
     private suspend fun seedHonors(json: String) {
         val type = object : TypeToken<HonorsFile>() {}.type
         val file: HonorsFile = gson.fromJson(json, type)
-
         // Категории
         honorRepository.upsertCategories(file.categories)
-
         // Специализации
         val honors = file.honors.map { it.toEntity() }
         honorRepository.upsertHonors(honors)
-
         // Требования
         val requirements = file.honors.flatMap { it.requirements }
         honorRepository.upsertRequirements(requirements)
-
         Log.d(TAG, "Загружено: ${file.categories.size} категорий, " +
                 "${honors.size} специализаций, ${requirements.size} требований")
     }

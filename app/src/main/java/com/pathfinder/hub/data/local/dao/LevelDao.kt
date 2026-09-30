@@ -123,4 +123,5 @@ interface LevelDao {
     // ✅ НОВОЕ: Для точной проверки наличия требований
     @Query("SELECT COUNT(*) FROM level_requirements")
     suspend fun getRequirementsCount(): Int
+
 }
