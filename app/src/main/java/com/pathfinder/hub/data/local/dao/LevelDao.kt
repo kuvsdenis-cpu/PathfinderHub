@@ -116,7 +116,11 @@ interface LevelDao {
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
 
-    // ✅ ДОБАВЛЕНО: Для автоматической проверки наличия контента
+    // ✅ ДОБАВЛЕНО: Для автоматической проверки наличия контента (уровней)
     @Query("SELECT COUNT(*) FROM levels")
     suspend fun getLevelsCount(): Int
+
+    // ✅ НОВОЕ: Для точной проверки наличия требований
+    @Query("SELECT COUNT(*) FROM level_requirements")
+    suspend fun getRequirementsCount(): Int
 }

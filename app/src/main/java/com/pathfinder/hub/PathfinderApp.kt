@@ -117,10 +117,13 @@ class PathfinderApp : Application(), Configuration.Provider {
                 val levelDao = db.levelDao()
                 val honorDao = db.honorDao()
 
-                val levelsCount = levelDao.getLevelsCount()
+                // ✅ ИСПРАВЛЕНО: Проверяем именно наличие ТРЕБОВАНИЙ, а не просто уровней
+                // Раньше проверяли levelsCount, но если levels загружены, а requirements пусты —
+                // автозагрузка не срабатывала, и следопыт видел "Требования не найдены"
+                val requirementsCount = levelDao.getRequirementsCount()
 
-                if (levelsCount == 0) {
-                    Log.w(TAG, "⚠️ Таблица levels пуста! Принудительный сброс версии контента...")
+                if (requirementsCount == 0) {
+                    Log.w(TAG, "⚠️ Требования не найдены! Принудительный сброс версии контента...")
 
                     // Очищаем версию в БД, чтобы SeedDatabaseWorker заново загрузил данные
                     honorDao.clearContentVersion()
@@ -136,7 +139,7 @@ class PathfinderApp : Application(), Configuration.Provider {
 
                     Log.d(TAG, "✅ Воркер перезапускается для восстановления контента")
                 } else {
-                    Log.d(TAG, "✓ Контент ступеней загружен: $levelsCount уровней")
+                    Log.d(TAG, "✓ Контент ступеней загружен: $requirementsCount требований")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Ошибка проверки контента ступеней", e)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,11 +15,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.planning.TaskEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
-@Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTasksScreen(
     onBack: () -> Unit,
+    onCreateTask: () -> Unit = {}, // <-- ДОБАВЛЕНО
     viewModel: MyTasksViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -38,6 +39,15 @@ fun MyTasksScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        floatingActionButton = { // <-- ДОБАВЛЕНО
+            FloatingActionButton(
+                onClick = onCreateTask,
+                containerColor = PathfinderBlue,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, "Создать задачу")
+            }
         }
     ) { padding ->
         if (state.isLoading) {
@@ -52,8 +62,10 @@ fun MyTasksScreen(
             }
             return@Scaffold
         }
-        LazyColumn(contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(state.tasks, key = { it.id }) { t ->
                 TaskCard(t, viewModel)
             }

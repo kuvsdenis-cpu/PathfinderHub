@@ -275,6 +275,7 @@ fun PathfinderNavHost(
             EventsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
+                // onCreateEvent не передан (равен null), поэтому кнопка "+" у следопыта скрыта
             )
         }
 
@@ -286,7 +287,10 @@ fun PathfinderNavHost(
         }
 
         composable(Routes.MY_TASKS) {
-            MyTasksScreen(onBack = { navController.popBackStack() })
+            MyTasksScreen(
+                onBack = { navController.popBackStack() },
+                onCreateTask = { navController.navigate(Routes.CREATE_TASK) } // ✅ ИСПРАВЛЕНО: следопыт может создать задачу
+            )
         }
 
         // === Teen - Profile ===
@@ -326,7 +330,8 @@ fun PathfinderNavHost(
         composable(Routes.REPORT_HISTORY) {
             ReportHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) }
+                onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) },
+                onCreateReport = { navController.navigate(Routes.CREATE_REPORT) } // ✅ ИСПРАВЛЕНО: кнопка "+" теперь работает
             )
         }
 

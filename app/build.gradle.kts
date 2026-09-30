@@ -80,7 +80,7 @@ kotlin {
 }
 
 dependencies {
-    // Yandex Object Storage (S3-совместимое API) - стабильная Java SDK v2
+    // Yandex Object Storage (S3-совместимое API) - AWS Mobile SDK для Android
     implementation("software.amazon.awssdk:s3:2.29.0")
     implementation("software.amazon.awssdk:url-connection-client:2.29.0")
 

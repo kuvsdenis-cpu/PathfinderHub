@@ -18,13 +18,12 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(
     onBack: () -> Unit,
     onOpenEvent: (String) -> Unit,
-    onCreateEvent: () -> Unit = {},
+    onCreateEvent: (() -> Unit)? = null, // <-- ИЗМЕНЕНО: сделано nullable
     viewModel: EventsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -47,12 +46,14 @@ fun EventsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateEvent,
-                containerColor = PathfinderBlue,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, "Создать событие")
+            if (onCreateEvent != null) { // <-- ИЗМЕНЕНО: показываем только если передан колбэк (для директора)
+                FloatingActionButton(
+                    onClick = onCreateEvent,
+                    containerColor = PathfinderBlue,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(Icons.Default.Add, "Создать событие")
+                }
             }
         }
     ) { padding ->
@@ -67,11 +68,13 @@ fun EventsScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Пока нет запланированных событий")
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Нажмите + чтобы создать первое событие",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (onCreateEvent != null) {
+                        Text(
+                            "Нажмите + чтобы создать первое событие",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             return@Scaffold
