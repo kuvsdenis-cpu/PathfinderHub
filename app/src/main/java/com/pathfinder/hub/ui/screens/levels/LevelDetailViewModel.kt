@@ -58,7 +58,6 @@ class LevelDetailViewModel @Inject constructor(
     }
 
     private fun loadLevelData() {
-        // ✅ Логирование для диагностики проблемы "Требования не найдены"
         Log.d("LevelDetailVM", "Получен levelId: '$levelId'")
         Log.d("LevelDetailVM", "Длина levelId: ${levelId.length}, символы: ${levelId.map { "'$it'" }}")
 
@@ -74,14 +73,22 @@ class LevelDetailViewModel @Inject constructor(
                 val level = levelRepository.getLevel(levelId)
                 Log.d("LevelDetailVM", "Ступень загружена: ${level?.name ?: "null"}")
 
+                // ✅ ПРЯМОЙ синхронный запрос к БД для проверки (поможет найти причину пустого экрана)
+                val directSections = levelRepository.getSections(levelId)
+                val directRequirements = levelRepository.getRequirements(levelId)
+                Log.d("LevelDetailVM", "🔍 ПРЯМОЙ ЗАПРОС К БД: разделов=${directSections.size}, требований=${directRequirements.size}")
+
+                if (directRequirements.isEmpty()) {
+                    Log.e("LevelDetailVM", "⚠️ КРИТИЧЕСКАЯ ОШИБКА: База данных пуста для levelId='$levelId'!")
+                }
+
                 combine(
                     levelRepository.observeSections(levelId),
                     levelRepository.observeRequirements(levelId),
                     levelRepository.observeProgress(userId, levelId)
                 ) { sections, requirements, progressList ->
 
-                    // ✅ Логирование количества загруженных данных
-                    Log.d("LevelDetailVM", "Разделов: ${sections.size}, Требований: ${requirements.size}, Прогрессов: ${progressList.size}")
+                    Log.d("LevelDetailVM", "Flow emit: Разделов: ${sections.size}, Требований: ${requirements.size}, Прогрессов: ${progressList.size}")
 
                     val progressMap = progressList.associateBy { it.requirementId }
                     var approvedCount = 0
@@ -127,10 +134,9 @@ class LevelDetailViewModel @Inject constructor(
         }
     }
 
-    // ✅ ВОССТАНОВЛЕНО: Заглушка, чтобы код компилировался.
-    // Логику обновления статуса нужно будет реализовать в LevelRepository, если её там нет.
+    // ✅ ВОССТАНОВЛЕНО: Эта функция нужна, чтобы LevelDetailScreen.kt успешно скомпилировался
     fun onRequirementAction(requirementId: String, type: String) {
-        Log.d("LevelDetailVM", "Действие над требованием: $requirementId, тип: $type")
-        // TODO: Вызов levelRepository.updateRequirementStatus(...)
+        Log.d("LevelDetailVM", "onRequirementAction вызван: requirementId=$requirementId, type=$type")
+        // Здесь будет логика обновления статуса требования, когда мы решим проблему с отображением
     }
 }

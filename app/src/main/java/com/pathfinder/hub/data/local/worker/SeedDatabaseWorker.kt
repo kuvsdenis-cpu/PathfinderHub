@@ -113,39 +113,54 @@ class SeedDatabaseWorker @AssistedInject constructor(
         val type = object : TypeToken<LevelsFile>() {}.type
         val file: LevelsFile = gson.fromJson(json, type)
         for (parsed in file.levels) {
-            // ✅ ИСПРАВЛЕНИЕ: используем ID уровня как эталонный для всех вложенных данных
-            val correctLevelId = parsed.level.id
+            // ✅ ИСПРАВЛЕНИЕ: Принудительно проставляем правильный levelId
+            val correctLevelId = parsed.level.id.trim()
 
-            // ✅ НОВОЕ: Логирование ПЕРЕД записью
-            Log.d(TAG, "📥 ДО ЗАПИСИ: parsed.level.id='$correctLevelId' (длина: ${correctLevelId.length})")
-            if (parsed.sections.isNotEmpty()) {
-                Log.d(TAG, "   Первый раздел из JSON: id='${parsed.sections[0].id}', levelId='${parsed.sections[0].levelId}'")
-            }
+            Log.d(TAG, "📥 [${parsed.level.name}] parsed.level.id='${parsed.level.id}' (длина: ${parsed.level.id.length})")
+            Log.d(TAG, "   correctLevelId (после trim)='$correctLevelId' (длина: ${correctLevelId.length})")
 
             // Уровень
             levelRepository.upsertLevels(listOf(parsed.level))
-            // Разделы
+
+            // ✅ НОВОЕ: Логирование после записи уровня
+            val savedLevel = levelRepository.getLevel(parsed.level.id)
+            val savedLevelTrimmed = levelRepository.getLevel(correctLevelId)
+            Log.d(TAG, "📤 ПОСЛЕ upsertLevels: getLevel('${parsed.level.id}')=${savedLevel?.name ?: "null"}, getLevel('$correctLevelId')=${savedLevelTrimmed?.name ?: "null"}")
+
+            // Разделы - исправляем levelId
             val sections = parsed.sections.map { s ->
                 LevelSectionEntity(
-                    id = s.id,
+                    id = s.id.trim(),
                     levelId = correctLevelId,
-                    name = s.name,
+                    name = s.name.trim(),
                     order = s.order
                 )
             }
             levelRepository.upsertSections(sections)
-            // Требования
-            val requirements = parsed.sections.flatMap { it.requirements }.map { req ->
-                req.copy(levelId = correctLevelId)
+
+            // ✅ НОВОЕ: Логирование после записи разделов
+            val savedSections = levelRepository.getSections(correctLevelId)
+            Log.d(TAG, "📤 ПОСЛЕ upsertSections: getSections('$correctLevelId') вернул ${savedSections.size} записей")
+
+            // Требования - исправляем levelId и sectionId
+            val requirements = parsed.sections.flatMap { section ->
+                section.requirements.map { req ->
+                    req.copy(
+                        id = req.id.trim(),
+                        sectionId = section.id.trim(),
+                        levelId = correctLevelId,
+                        text = req.text.trim(),
+                        type = req.type.trim()
+                    )
+                }
             }
             levelRepository.upsertRequirements(requirements)
 
-            // ✅ НОВОЕ: Логирование ПОСЛЕ записи — проверяем что реально в БД
-            val savedSections = levelRepository.getSections(correctLevelId)
+            // ✅ НОВОЕ: Логирование после записи требований
             val savedRequirements = levelRepository.getRequirements(correctLevelId)
-            Log.d(TAG, "📤 ПОСЛЕ ЗАПИСИ в БД: уровень='$correctLevelId', разделов=${savedSections.size}, требований=${savedRequirements.size}")
+            Log.d(TAG, "📤 ПОСЛЕ upsertRequirements: getRequirements('$correctLevelId') вернул ${savedRequirements.size} записей")
 
-            Log.d(TAG, "Уровень '${parsed.level.name}': " +
+            Log.d(TAG, "Уровень '${parsed.level.name}' (id=$correctLevelId): " +
                     "${sections.size} разделов, ${requirements.size} требований")
         }
     }
