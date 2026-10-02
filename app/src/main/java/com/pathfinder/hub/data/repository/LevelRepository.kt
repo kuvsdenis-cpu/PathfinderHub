@@ -16,31 +16,48 @@ class LevelRepository @Inject constructor(
     private val dao: LevelDao,
     private val syncQueueManager: SyncQueueManager
 ) {
-    // ---------- Чтение (без enqueue) ----------
+    // ---------- Чтение ----------
     fun observeLevels(): Flow<List<LevelEntity>> = dao.observeLevels()
     fun observeLevelsWithSections(): Flow<List<LevelWithSections>> = dao.observeLevelsWithSections()
     suspend fun getLevel(id: String): LevelEntity? = dao.getLevel(id)
+
     fun observeSections(levelId: String): Flow<List<LevelSectionEntity>> = dao.observeSections(levelId)
     suspend fun getSections(levelId: String): List<LevelSectionEntity> = dao.getSections(levelId)
+
     fun observeRequirements(levelId: String): Flow<List<LevelRequirementEntity>> = dao.observeRequirements(levelId)
     suspend fun getRequirements(levelId: String): List<LevelRequirementEntity> = dao.getRequirements(levelId)
-    fun observeProgress(userId: String, levelId: String): Flow<List<LevelProgressEntity>> = dao.observeProgress(userId, levelId)
-    suspend fun getProgressSnapshot(userId: String, levelId: String): List<LevelProgressEntity> = dao.getProgressSnapshot(userId, levelId)
-    suspend fun getRequirementsForSection(levelId: String, requirementId: String): List<LevelRequirementEntity> =
-        dao.getRequirements(levelId).filter { it.id == requirementId }
+
+    suspend fun getRequirementsBySection(levelId: String, sectionId: String): List<LevelRequirementEntity> =
+        dao.getRequirementsBySection(levelId, sectionId)
+
+    /**
+     * Для RequirementDetailViewModel: найти конкретное требование по id внутри уровня.
+     */
+    suspend fun getRequirementById(levelId: String, requirementId: String): LevelRequirementEntity? =
+        dao.getRequirements(levelId).firstOrNull { it.id == requirementId }
+
+    fun observeProgress(userId: String, levelId: String): Flow<List<LevelProgressEntity>> =
+        dao.observeProgress(userId, levelId)
+
+    suspend fun getProgressSnapshot(userId: String, levelId: String): List<LevelProgressEntity> =
+        dao.getProgressSnapshot(userId, levelId)
+
     fun observeCompletions(userId: String): Flow<List<LevelCompletionEntity>> = dao.observeCompletions(userId)
     fun observeChecklist(leaderId: String, childId: String): Flow<LeaderChecklistEntity?> =
         dao.observeChecklist(leaderId, childId)
 
-    // ✅ ДОБАВЛЕНО: Обёртка для DAO
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
 
-    // ---------- Сидовый контент (без enqueue) ----------
+    // ---------- Сидовый контент ----------
     suspend fun upsertLevels(levels: List<LevelEntity>) = dao.upsertLevels(levels)
     suspend fun upsertLevel(level: LevelEntity) = dao.upsertLevel(level)
     suspend fun upsertSections(sections: List<LevelSectionEntity>) = dao.upsertSections(sections)
     suspend fun upsertRequirements(reqs: List<LevelRequirementEntity>) = dao.upsertRequirements(reqs)
+
+    // ---------- Очистка перед перезагрузкой ----------
+    suspend fun clearAllRequirements() = dao.clearAllRequirements()
+    suspend fun clearAllSections() = dao.clearAllSections()
 
     // ---------- Пользовательские данные (с enqueue) ----------
     suspend fun upsertProgress(p: LevelProgressEntity) {
@@ -98,4 +115,10 @@ class LevelRepository @Inject constructor(
             payload = c
         )
     }
+
+    // ==================== DEBUG ====================
+    suspend fun debugDistinctSectionLevelIds(): List<String> = dao.debugDistinctSectionLevelIds()
+    suspend fun debugDistinctRequirementLevelIds(): List<String> = dao.debugDistinctRequirementLevelIds()
+    suspend fun debugDumpSections(): List<LevelSectionEntity> = dao.debugDumpSections()
+    suspend fun debugDumpRequirements(): List<LevelRequirementEntity> = dao.debugDumpRequirements()
 }

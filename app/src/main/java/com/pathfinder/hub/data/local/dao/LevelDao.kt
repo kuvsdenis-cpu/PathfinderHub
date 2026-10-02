@@ -34,6 +34,8 @@ interface LevelDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertLevel(level: LevelEntity)
 
+    // ==================== СЕКЦИИ ====================
+
     @Query("SELECT * FROM level_sections WHERE levelId = :levelId ORDER BY `order`")
     fun observeSections(levelId: String): Flow<List<LevelSectionEntity>>
 
@@ -43,17 +45,21 @@ interface LevelDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSections(sections: List<LevelSectionEntity>)
 
+    // ==================== ТРЕБОВАНИЯ ====================
+
     @Query("SELECT * FROM level_requirements WHERE levelId = :levelId ORDER BY `order`")
     fun observeRequirements(levelId: String): Flow<List<LevelRequirementEntity>>
 
     @Query("SELECT * FROM level_requirements WHERE levelId = :levelId ORDER BY `order`")
     suspend fun getRequirements(levelId: String): List<LevelRequirementEntity>
 
-    @Query("SELECT * FROM level_requirements WHERE sectionId = :sectionId ORDER BY `order`")
-    suspend fun getRequirementsBySection(sectionId: String): List<LevelRequirementEntity>
+    @Query("SELECT * FROM level_requirements WHERE levelId = :levelId AND sectionId = :sectionId ORDER BY `order`")
+    suspend fun getRequirementsBySection(levelId: String, sectionId: String): List<LevelRequirementEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertRequirements(reqs: List<LevelRequirementEntity>)
+
+    // ==================== ПРОГРЕСС ====================
 
     @Query("SELECT * FROM level_progress WHERE userId = :userId AND levelId = :levelId")
     fun observeProgress(userId: String, levelId: String): Flow<List<LevelProgressEntity>>
@@ -82,6 +88,8 @@ interface LevelDao {
     @Query("DELETE FROM level_progress WHERE userId = :userId AND levelId = :levelId")
     suspend fun clearProgress(userId: String, levelId: String)
 
+    // ==================== ЗАВЕРШЕНИЯ ====================
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCompletion(c: LevelCompletionEntity)
 
@@ -97,6 +105,8 @@ interface LevelDao {
     @Delete
     suspend fun deleteCompletion(c: LevelCompletionEntity)
 
+    // ==================== ЧЕК-ЛИСТЫ ====================
+
     @Query("SELECT * FROM leader_checklists WHERE leaderId = :leaderId AND childId = :childId")
     fun observeChecklist(leaderId: String, childId: String): Flow<LeaderChecklistEntity?>
 
@@ -109,19 +119,44 @@ interface LevelDao {
     @Query("SELECT * FROM leader_checklists WHERE childId = :childId")
     suspend fun getChecklistsForChild(childId: String): List<LeaderChecklistEntity>
 
-    // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
+    // ==================== ОДОБРЕНИЯ ====================
+
     @Query("""SELECT lp.* FROM level_progress lp
               JOIN users u ON lp.userId = u.id
               WHERE u.clubId = :clubId AND lp.status = 'submitted'
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
 
-    // ✅ ДОБАВЛЕНО: Для автоматической проверки наличия контента (уровней)
+    // ==================== СЧЁТЧИКИ ====================
+
     @Query("SELECT COUNT(*) FROM levels")
     suspend fun getLevelsCount(): Int
 
-    // ✅ НОВОЕ: Для точной проверки наличия требований
     @Query("SELECT COUNT(*) FROM level_requirements")
     suspend fun getRequirementsCount(): Int
 
+    @Query("SELECT COUNT(*) FROM level_sections")
+    suspend fun getSectionsCount(): Int
+
+    // ==================== ОЧИСТКА (для перезагрузки контента) ====================
+
+    @Query("DELETE FROM level_requirements")
+    suspend fun clearAllRequirements()
+
+    @Query("DELETE FROM level_sections")
+    suspend fun clearAllSections()
+
+    // ==================== DEBUG ====================
+
+    @Query("SELECT DISTINCT levelId FROM level_sections")
+    suspend fun debugDistinctSectionLevelIds(): List<String>
+
+    @Query("SELECT DISTINCT levelId FROM level_requirements")
+    suspend fun debugDistinctRequirementLevelIds(): List<String>
+
+    @Query("SELECT * FROM level_sections LIMIT 10")
+    suspend fun debugDumpSections(): List<LevelSectionEntity>
+
+    @Query("SELECT * FROM level_requirements LIMIT 10")
+    suspend fun debugDumpRequirements(): List<LevelRequirementEntity>
 }

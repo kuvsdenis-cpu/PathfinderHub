@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -94,30 +96,64 @@ fun RequirementDetailScreen(
         when {
             state.isLoading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
                     contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
+                ) {
+                    CircularProgressIndicator()
+                }
             }
+
             state.requirement == null -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center
-                ) { Text("Требование не найдено", color = PathfinderRed) }
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "Требование не найдено",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = PathfinderRed
+                        )
+                        if (state.errorMessage != null) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                state.errorMessage!!,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
+
             else -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
+                        .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
                     // Хлебные крошки
-                    Text(
-                        text = "${state.levelName} • ${state.sectionName}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = PathfinderBlue
-                    )
-                    Spacer(Modifier.height(12.dp))
+                    if (state.levelName.isNotBlank() || state.sectionName.isNotBlank()) {
+                        Text(
+                            text = buildString {
+                                if (state.levelName.isNotBlank()) append(state.levelName)
+                                if (state.sectionName.isNotBlank()) {
+                                    if (isNotEmpty()) append(" • ")
+                                    append(state.sectionName)
+                                }
+                            },
+                            style = MaterialTheme.typography.labelLarge,
+                            color = PathfinderBlue
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
 
                     // Текст требования
                     Card(
@@ -140,34 +176,73 @@ fun RequirementDetailScreen(
                     // Статус
                     StatusCard(state.status, state.comment)
 
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(24.dp))
 
                     // Кнопки
-                    if (state.status == "not_started" || state.status == "rejected") {
-                        Button(
-                            onClick = { showConfirmDialog = true },
-                            enabled = !state.isSaving,
-                            modifier = Modifier.fillMaxWidth().height(56.dp)
-                        ) {
-                            if (state.isSaving) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text("Отметить как выполненное")
+                    when (state.status) {
+                        "not_started", "rejected" -> {
+                            Button(
+                                onClick = { showConfirmDialog = true },
+                                enabled = !state.isSaving,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                if (state.isSaving) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Отметить как выполненное")
+                                }
                             }
                         }
-                    } else if (state.status == "submitted") {
-                        OutlinedButton(
-                            onClick = { showResetDialog = true },
-                            enabled = !state.isSaving,
-                            modifier = Modifier.fillMaxWidth().height(56.dp)
-                        ) {
-                            Text("Отменить сдачу")
+
+                        "submitted" -> {
+                            OutlinedButton(
+                                onClick = { showResetDialog = true },
+                                enabled = !state.isSaving,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                if (state.isSaving) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = PathfinderBlue,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Отменить сдачу")
+                                }
+                            }
+                        }
+
+                        "approved" -> {
+                            Text(
+                                "Требование уже сдано и одобрено",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = PathfinderGreen,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        "in_progress" -> {
+                            Button(
+                                onClick = { showConfirmDialog = true },
+                                enabled = !state.isSaving,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                Text("Завершить и отправить")
+                            }
                         }
                     }
+
+                    Spacer(Modifier.height(16.dp))
                 }
             }
         }
@@ -183,10 +258,14 @@ fun RequirementDetailScreen(
                 TextButton(onClick = {
                     showConfirmDialog = false
                     viewModel.markAsCompleted()
-                }) { Text("Да, отправить") }
+                }) {
+                    Text("Да, отправить")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) { Text("Отмена") }
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Отмена")
+                }
             }
         )
     }
@@ -201,10 +280,14 @@ fun RequirementDetailScreen(
                 TextButton(onClick = {
                     showResetDialog = false
                     viewModel.resetStatus()
-                }) { Text("Да, отменить") }
+                }) {
+                    Text("Да, отменить")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) { Text("Назад") }
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Назад")
+                }
             }
         )
     }

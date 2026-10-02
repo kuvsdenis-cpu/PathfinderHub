@@ -35,6 +35,7 @@ class RequirementDetailViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
+    // ✅ Теперь levelId приходит из route
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
     private val requirementId: String = savedStateHandle.get<String>("requirementId") ?: ""
 
@@ -52,21 +53,25 @@ class RequirementDetailViewModel @Inject constructor(
             return
         }
 
+        if (levelId.isBlank() || requirementId.isBlank()) {
+            _state.update {
+                it.copy(isLoading = false, errorMessage = "levelId или requirementId не заданы")
+            }
+            return
+        }
+
         viewModelScope.launch {
-            // Загружаем требование
-            val requirements = levelRepository.getRequirementsForSection(levelId, requirementId)
-            val req = requirements.firstOrNull()
+            // ✅ Ищем требование по levelId + requirementId
+            val req = levelRepository.getRequirementById(levelId, requirementId)
             if (req == null) {
                 _state.update { it.copy(isLoading = false, errorMessage = "Требование не найдено") }
                 return@launch
             }
 
-            // Названия уровня и раздела
             val level = levelRepository.getLevel(levelId)
             val sections = levelRepository.getSections(levelId)
             val section = sections.firstOrNull { it.id == req.sectionId }
 
-            // Прогресс
             val progress = levelRepository.getProgressSnapshot(userId, levelId)
                 .firstOrNull { it.requirementId == requirementId }
 
@@ -83,7 +88,6 @@ class RequirementDetailViewModel @Inject constructor(
         }
     }
 
-    /** Отметить требование как выполненное (отправить на проверку). */
     fun markAsCompleted() {
         val userId = sessionManager.getUserId() ?: return
         val req = _state.value.requirement ?: return
@@ -120,7 +124,6 @@ class RequirementDetailViewModel @Inject constructor(
         }
     }
 
-    /** Сбросить отметку (отменить сдачу). */
     fun resetStatus() {
         val userId = sessionManager.getUserId() ?: return
 

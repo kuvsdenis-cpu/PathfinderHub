@@ -41,18 +41,14 @@ class SeedDatabaseWorker @AssistedInject constructor(
                 return Result.failure()
             }
 
-            // Извлекаем версии из JSON
             val levelsVersion = extractVersion(levelsJson)
             val honorsVersion = extractVersion(honorsJson)
-
-            // Текущая версия в Room
             val currentVersion = honorRepository.getLatestContentVersion()
 
             Log.d(TAG, "Текущая версия в Room: ${currentVersion?.version ?: "нет"}")
             Log.d(TAG, "Версия levels.json: $levelsVersion")
             Log.d(TAG, "Версия honors.json: $honorsVersion")
 
-            // Нужно ли обновлять
             var updated = false
             if (levelsJson != null && shouldUpdate(currentVersion?.version, levelsVersion)) {
                 seedLevels(levelsJson)
@@ -63,7 +59,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
                 updated = true
             }
 
-            // Сохраняем новую версию
             if (updated) {
                 val newVersion = maxOf(levelsVersion, honorsVersion)
                 honorRepository.upsertContentVersion(
@@ -77,7 +72,7 @@ class SeedDatabaseWorker @AssistedInject constructor(
                 )
                 Log.d(TAG, "✅ Контент обновлён до версии $newVersion")
             } else {
-                Log.d(TAG, "✓ Версия не изменилась, обновление не нужно")
+                Log.d(TAG, "✓ Версия не изменилась")
             }
 
             Result.success()
@@ -89,7 +84,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
     // ==================== ВЕРСИИ ====================
 
-    /** Извлекает поле "version" из JSON без полного парсинга. */
     private fun extractVersion(json: String?): String {
         if (json == null) return "0"
         return try {
@@ -100,7 +94,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
         }
     }
 
-    /** Обновлять, если версия отличается от текущей. */
     private fun shouldUpdate(current: String?, incoming: String): Boolean {
         if (incoming == "0" || incoming.isBlank()) return false
         if (current.isNullOrBlank()) return true
@@ -112,22 +105,22 @@ class SeedDatabaseWorker @AssistedInject constructor(
     private suspend fun seedLevels(json: String) {
         val type = object : TypeToken<LevelsFile>() {}.type
         val file: LevelsFile = gson.fromJson(json, type)
+
+        // ✅ ВАЖНО: чистим старые данные, т.к. схема изменилась (составной PK)
+        // CASCADE сам удалит требования при удалении секций, но делаем явно для надёжности
+        Log.d(TAG, "🧹 Очищаем старые секции и требования…")
+        levelRepository.clearAllRequirements()
+        levelRepository.clearAllSections()
+
         for (parsed in file.levels) {
-            // ✅ ИСПРАВЛЕНИЕ: Принудительно проставляем правильный levelId
             val correctLevelId = parsed.level.id.trim()
 
-            Log.d(TAG, "📥 [${parsed.level.name}] parsed.level.id='${parsed.level.id}' (длина: ${parsed.level.id.length})")
-            Log.d(TAG, "   correctLevelId (после trim)='$correctLevelId' (длина: ${correctLevelId.length})")
+            Log.d(TAG, "📥 [${parsed.level.name}] levelId='$correctLevelId'")
 
-            // Уровень
             levelRepository.upsertLevels(listOf(parsed.level))
 
-            // ✅ НОВОЕ: Логирование после записи уровня
-            val savedLevel = levelRepository.getLevel(parsed.level.id)
-            val savedLevelTrimmed = levelRepository.getLevel(correctLevelId)
-            Log.d(TAG, "📤 ПОСЛЕ upsertLevels: getLevel('${parsed.level.id}')=${savedLevel?.name ?: "null"}, getLevel('$correctLevelId')=${savedLevelTrimmed?.name ?: "null"}")
-
-            // Разделы - исправляем levelId
+            // ✅ Теперь id секции — просто "general", "spiritual", ...
+            // Составной PK (levelId, id) делает их уникальными в рамках уровня
             val sections = parsed.sections.map { s ->
                 LevelSectionEntity(
                     id = s.id.trim(),
@@ -138,11 +131,7 @@ class SeedDatabaseWorker @AssistedInject constructor(
             }
             levelRepository.upsertSections(sections)
 
-            // ✅ НОВОЕ: Логирование после записи разделов
-            val savedSections = levelRepository.getSections(correctLevelId)
-            Log.d(TAG, "📤 ПОСЛЕ upsertSections: getSections('$correctLevelId') вернул ${savedSections.size} записей")
-
-            // Требования - исправляем levelId и sectionId
+            // ✅ sectionId требований — тоже просто "general"
             val requirements = parsed.sections.flatMap { section ->
                 section.requirements.map { req ->
                     req.copy(
@@ -156,13 +145,15 @@ class SeedDatabaseWorker @AssistedInject constructor(
             }
             levelRepository.upsertRequirements(requirements)
 
-            // ✅ НОВОЕ: Логирование после записи требований
-            val savedRequirements = levelRepository.getRequirements(correctLevelId)
-            Log.d(TAG, "📤 ПОСЛЕ upsertRequirements: getRequirements('$correctLevelId') вернул ${savedRequirements.size} записей")
-
             Log.d(TAG, "Уровень '${parsed.level.name}' (id=$correctLevelId): " +
                     "${sections.size} разделов, ${requirements.size} требований")
         }
+
+        // Проверка после записи
+        val allSections = levelRepository.debugDistinctSectionLevelIds()
+        val allReqs = levelRepository.debugDistinctRequirementLevelIds()
+        Log.d(TAG, "✅ ПОСЛЕ ЗАГРУЗКИ: DISTINCT levelId (sections)=$allSections")
+        Log.d(TAG, "✅ ПОСЛЕ ЗАГРУЗКИ: DISTINCT levelId (requirements)=$allReqs")
     }
 
     // ==================== СПЕЦИАЛИЗАЦИИ ====================
@@ -170,12 +161,9 @@ class SeedDatabaseWorker @AssistedInject constructor(
     private suspend fun seedHonors(json: String) {
         val type = object : TypeToken<HonorsFile>() {}.type
         val file: HonorsFile = gson.fromJson(json, type)
-        // Категории
         honorRepository.upsertCategories(file.categories)
-        // Специализации
         val honors = file.honors.map { it.toEntity() }
         honorRepository.upsertHonors(honors)
-        // Требования
         val requirements = file.honors.flatMap { it.requirements }
         honorRepository.upsertRequirements(requirements)
         Log.d(TAG, "Загружено: ${file.categories.size} категорий, " +
@@ -201,7 +189,7 @@ class SeedDatabaseWorker @AssistedInject constructor(
     }
 }
 
-// ==================== DTO для парсинга JSON ====================
+// ==================== DTO ====================
 
 data class LevelsFile(
     val version: String,

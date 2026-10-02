@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
@@ -65,7 +66,10 @@ fun LevelDetailScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Требования не найдены", style = MaterialTheme.typography.titleLarge)
                         Spacer(Modifier.height(8.dp))
-                        Text("Проверьте, что контент загружен в БД", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Проверьте, что контент загружен в БД",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -88,11 +92,8 @@ fun LevelDetailScreen(
                         SectionCard(
                             section = section,
                             onActionClick = { req ->
-                                if (req.type == "practice" || req.type == "report") {
-                                    onOpenRequirement(state.level?.id ?: "", req.id)
-                                } else {
-                                    viewModel.onRequirementAction(req.id, req.type)
-                                }
+                                // ✅ Всегда открываем детальный экран — единообразно
+                                onOpenRequirement(state.level?.id ?: "", req.id)
                             }
                         )
                     }
@@ -107,7 +108,11 @@ private fun ProgressHeader(approved: Int, total: Int) {
     val percent = if (total > 0) (approved * 100 / total) else 0
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Прогресс ступени", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "Прогресс ступени",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(Modifier.height(8.dp))
             LinearProgressIndicator(
                 progress = { percent / 100f },
@@ -115,7 +120,10 @@ private fun ProgressHeader(approved: Int, total: Int) {
                 color = PathfinderBlue
             )
             Spacer(Modifier.height(8.dp))
-            Text("Выполнено: $approved из $total требований ($percent%)", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "Выполнено: $approved из $total требований ($percent%)",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -127,13 +135,18 @@ private fun SectionCard(
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text(section.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = PathfinderBlue)
+            Text(
+                section.name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = PathfinderBlue
+            )
             Spacer(Modifier.height(12.dp))
 
-            section.requirements.forEach { req ->
+            section.requirements.forEachIndexed { index, req ->
                 RequirementRow(req, onActionClick)
-                if (req != section.requirements.last()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                if (index != section.requirements.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
                 }
             }
         }
@@ -141,8 +154,10 @@ private fun SectionCard(
 }
 
 @Composable
-private fun RequirementRow(req: RequirementUiModel, onActionClick: (RequirementUiModel) -> Unit) {
-    // ИСПРАВЛЕНИЕ: Разделяем определение иконки и цвета, чтобы избежать неоднозначности типов
+private fun RequirementRow(
+    req: RequirementUiModel,
+    onActionClick: (RequirementUiModel) -> Unit
+) {
     val icon = when (req.status) {
         "approved" -> Icons.Default.CheckCircle
         "submitted", "in_progress" -> Icons.Default.Pending
@@ -157,51 +172,90 @@ private fun RequirementRow(req: RequirementUiModel, onActionClick: (RequirementU
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(24.dp).padding(top = 2.dp)
-        )
-        Spacer(Modifier.width(12.dp))
+    // ✅ Column — текст сверху, кнопка снизу
+    Column(modifier = Modifier.fillMaxWidth()) {
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(req.text, style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = "Тип: ${getTypeName(req.type)}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Строка 1: иконка + текст требования
+        Row(verticalAlignment = Alignment.Top) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(top = 2.dp)
             )
+            Spacer(Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = req.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    softWrap = true,
+                    maxLines = Int.MAX_VALUE,
+                    overflow = TextOverflow.Clip
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Тип: ${getTypeName(req.type)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
-        // Кнопка действия
-        if (req.status == "not_started" || req.status == "rejected") {
-            OutlinedButton(
-                onClick = { onActionClick(req) },
-                modifier = Modifier.align(Alignment.CenterVertically)
-            ) {
-                if (req.type == "practice" || req.type == "report") {
-                    Icon(Icons.Default.Upload, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp))
+        // Строка 2: кнопка «Выполнить» ПОД текстом, на всю ширину
+        Spacer(Modifier.height(8.dp))
+        when (req.status) {
+            "not_started", "rejected" -> {
+                OutlinedButton(
+                    onClick = { onActionClick(req) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (req.type == "practice" || req.type == "report") {
+                        Icon(
+                            Icons.Default.Upload,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+                    Text("Выполнить")
                 }
-                Text("Выполнить")
             }
-        } else if (req.status == "submitted") {
-            Text(
-                "На проверке",
-                style = MaterialTheme.typography.labelMedium,
-                color = Color(0xFFFFA000),
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-        } else if (req.status == "approved") {
-            Text(
-                "Сдано",
-                style = MaterialTheme.typography.labelMedium,
-                color = PathfinderGreen,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
+            "submitted" -> {
+                Text(
+                    "На проверке",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFFFFA000),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(top = 4.dp)
+                )
+            }
+            "approved" -> {
+                Text(
+                    "Сдано",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = PathfinderGreen,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(top = 4.dp)
+                )
+            }
+            "in_progress" -> {
+                Text(
+                    "В процессе",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFFFFA000),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(top = 4.dp)
+                )
+            }
         }
     }
 }

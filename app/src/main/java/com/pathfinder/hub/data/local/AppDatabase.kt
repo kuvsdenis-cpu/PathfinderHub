@@ -198,7 +198,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         NewspaperPublicationEntity::class,
         CachedNewspaperEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

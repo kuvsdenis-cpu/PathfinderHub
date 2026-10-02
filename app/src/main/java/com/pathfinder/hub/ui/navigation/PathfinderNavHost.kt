@@ -199,15 +199,19 @@ fun PathfinderNavHost(
             val levelId = backStackEntry.arguments?.getString("levelId") ?: ""
             LevelDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenRequirement = { _, requirementId ->
-                    navController.navigate(Routes.requirementDetail(requirementId))
+                onOpenRequirement = { lvlId, requirementId ->
+                    // ✅ ИСПРАВЛЕНО: передаём И levelId, И requirementId
+                    navController.navigate(Routes.requirementDetail(lvlId, requirementId))
                 }
             )
         }
 
         composable(
             route = Routes.REQUIREMENT_DETAIL,
-            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("levelId") { type = NavType.StringType },
+                navArgument("requirementId") { type = NavType.StringType }
+            )
         ) {
             RequirementDetailScreen(onBack = { navController.popBackStack() })
         }
@@ -289,7 +293,7 @@ fun PathfinderNavHost(
         composable(Routes.MY_TASKS) {
             MyTasksScreen(
                 onBack = { navController.popBackStack() },
-                onCreateTask = { navController.navigate(Routes.CREATE_TASK) } // ✅ ИСПРАВЛЕНО: следопыт может создать задачу
+                onCreateTask = { navController.navigate(Routes.CREATE_TASK) }
             )
         }
 
@@ -331,7 +335,7 @@ fun PathfinderNavHost(
             ReportHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onReportClick = { reportId -> navController.navigate(Routes.reportDetail(reportId)) },
-                onCreateReport = { navController.navigate(Routes.CREATE_REPORT) } // ✅ ИСПРАВЛЕНО: кнопка "+" теперь работает
+                onCreateReport = { navController.navigate(Routes.CREATE_REPORT) }
             )
         }
 

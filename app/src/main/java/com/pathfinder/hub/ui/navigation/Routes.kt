@@ -35,7 +35,9 @@ object Routes {
     // === Teen - Levels ===
     const val MY_LEVELS = "my_levels"
     const val LEVEL_DETAIL = "level_detail/{levelId}"
-    const val REQUIREMENT_DETAIL = "requirement_detail/{requirementId}"
+
+    // ✅ ИСПРАВЛЕНО: добавлен levelId в route
+    const val REQUIREMENT_DETAIL = "requirement_detail/{levelId}/{requirementId}"
 
     // === Teen - Honors ===
     const val HONOR_CATALOG = "honor_catalog"
@@ -71,7 +73,11 @@ object Routes {
     // === Helpers ===
     fun onboarding(role: String, userId: String) = "onboarding/$role/$userId"
     fun levelDetail(levelId: String) = "level_detail/$levelId"
-    fun requirementDetail(requirementId: String) = "requirement_detail/$requirementId"
+
+    // ✅ ИСПРАВЛЕНО
+    fun requirementDetail(levelId: String, requirementId: String) =
+        "requirement_detail/$levelId/$requirementId"
+
     fun honorDetail(honorId: String) = "honor_detail/$honorId"
     fun honorRequirementDetail(requirementId: String) = "honor_requirement_detail/$requirementId"
     fun testScreen(honorId: String) = "test_screen/$honorId"
