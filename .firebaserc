@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "pathfinder-hub-c495d"
-  }
+    "default": "pathfinder-hub-c495d",
+    "default ": "pathfinder-hub-c495d"
+  },
+  "targets": {},
+  "etags": {}
 }

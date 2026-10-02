@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
@@ -28,10 +31,24 @@ import com.pathfinder.hub.ui.theme.PathfinderRed
 @Composable
 fun LevelDetailScreen(
     onBack: () -> Unit,
-    onOpenRequirement: (String, String) -> Unit, // levelId, requirementId
+    onOpenRequirement: (String, String) -> Unit,
+    onUploadReport: (String, String) -> Unit,
+    savedStateHandle: SavedStateHandle,
     viewModel: LevelDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+
+    // ✅ Читаем результат загрузки файла
+    val pendingAttachment by savedStateHandle
+        .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
+        .collectAsState()
+
+    LaunchedEffect(pendingAttachment) {
+        pendingAttachment?.let { result ->
+            viewModel.attachUploadedFile(result)
+            savedStateHandle.remove<FileUploadResult>(FileUploadResult.SAVED_STATE_KEY)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -79,7 +96,6 @@ fun LevelDetailScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Прогресс ступени
                     item {
                         ProgressHeader(
                             approved = state.approvedCount,
@@ -87,13 +103,18 @@ fun LevelDetailScreen(
                         )
                     }
 
-                    // Разделы и требования
                     items(state.sections) { section ->
                         SectionCard(
                             section = section,
                             onActionClick = { req ->
-                                // ✅ Всегда открываем детальный экран — единообразно
-                                onOpenRequirement(state.level?.id ?: "", req.id)
+                                when (req.type) {
+                                    "practice", "report" -> {
+                                        onUploadReport(state.level?.id ?: "", req.id)
+                                    }
+                                    else -> {
+                                        onOpenRequirement(state.level?.id ?: "", req.id)
+                                    }
+                                }
                             }
                         )
                     }
@@ -172,10 +193,7 @@ private fun RequirementRow(
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    // ✅ Column — текст сверху, кнопка снизу
     Column(modifier = Modifier.fillMaxWidth()) {
-
-        // Строка 1: иконка + текст требования
         Row(verticalAlignment = Alignment.Top) {
             Icon(
                 imageVector = icon,
@@ -204,7 +222,6 @@ private fun RequirementRow(
             }
         }
 
-        // Строка 2: кнопка «Выполнить» ПОД текстом, на всю ширину
         Spacer(Modifier.height(8.dp))
         when (req.status) {
             "not_started", "rejected" -> {

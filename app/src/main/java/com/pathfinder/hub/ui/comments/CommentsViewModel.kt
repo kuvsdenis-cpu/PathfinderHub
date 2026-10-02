@@ -7,6 +7,7 @@ import com.pathfinder.hub.data.local.entity.planning.CommentEntity
 import com.pathfinder.hub.data.repository.ModerationRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.domain.service.AutoModerationService
+import com.pathfinder.hub.ui.storage.FileUploadResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ data class CommentUiModel(
     val text: String,
     val createdAt: Date,
     val isOwn: Boolean,
-    val status: String
+    val status: String,
+    val attachments: List<String> = emptyList()
 )
 
 data class CommentsUiState(
@@ -78,7 +80,8 @@ class CommentsViewModel @Inject constructor(
                             text = c.text,
                             createdAt = c.createdAt,
                             isOwn = c.authorId == userId,
-                            status = c.status
+                            status = c.status,
+                            attachments = c.attachments
                         )
                     }
                     _state.update { it.copy(comments = uiModels, isLoading = false) }
@@ -107,28 +110,48 @@ class CommentsViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val autoResult = autoModerationService.check(text)
+                publishComment(
+                    userId = userId,
+                    targetType = targetType,
+                    targetId = targetId,
+                    text = text,
+                    attachments = emptyList()
+                )
+                _state.update { it.copy(inputText = "", isSending = false) }
+            } catch (e: Exception) {
+                _state.update { it.copy(isSending = false, errorMessage = e.message) }
+            }
+        }
+    }
+
+    /**
+     * Вызывается, когда пользователь вернулся с экрана загрузки файла.
+     *
+     * ВАЖНО: вложения не проходят автомодерацию — имя файла содержит timestamp
+     * (13 цифр подряд), из-за чего phoneRegex ложно срабатывает и публикация
+     * уходит в pending_review. Файлы публикуем сразу как published.
+     */
+    fun attachFile(result: FileUploadResult) {
+        val userId = _state.value.currentUserId ?: sessionManager.getUserId() ?: return
+        val targetType = currentTargetType ?: return
+        val targetId = currentTargetId ?: return
+
+        _state.update { it.copy(isSending = true) }
+
+        viewModelScope.launch {
+            try {
                 val now = Date()
-                val reviewDeadline = if (autoResult == "ok") {
-                    Date(now.time + 6 * 60 * 60 * 1000L) // 6 часов
-                } else null
-
-                val status = when (autoResult) {
-                    "ok" -> "published"
-                    else -> "pending_review"
-                }
-
                 val comment = CommentEntity(
                     id = UUID.randomUUID().toString(),
                     targetType = targetType,
                     targetId = targetId,
                     authorId = userId,
-                    text = text,
-                    attachments = emptyList(),
-                    status = status,
-                    autoModerationResult = autoResult,
-                    publishedAt = if (status == "published") now else null,
-                    reviewDeadline = reviewDeadline,
+                    text = result.fileName,
+                    attachments = listOf(result.fileUrl),
+                    status = "published",
+                    autoModerationResult = "skipped_attachment",
+                    publishedAt = now,
+                    reviewDeadline = null,
                     moderatedBy = null,
                     moderatedAt = null,
                     hiddenReasonCode = null,
@@ -136,12 +159,54 @@ class CommentsViewModel @Inject constructor(
                     createdAt = now,
                     pendingSync = true
                 )
-
                 moderationRepository.upsertComment(comment)
-                _state.update { it.copy(inputText = "", isSending = false) }
+                _state.update { it.copy(isSending = false) }
             } catch (e: Exception) {
                 _state.update { it.copy(isSending = false, errorMessage = e.message) }
             }
         }
+    }
+
+    /**
+     * Текстовая публикация с автопроверкой (для sendComment).
+     */
+    private suspend fun publishComment(
+        userId: String,
+        targetType: String,
+        targetId: String,
+        text: String,
+        attachments: List<String>
+    ) {
+        val autoResult = autoModerationService.check(text)
+        val now = Date()
+        val reviewDeadline = if (autoResult == "ok") {
+            Date(now.time + 6 * 60 * 60 * 1000L)
+        } else null
+
+        val status = when (autoResult) {
+            "ok" -> "published"
+            else -> "pending_review"
+        }
+
+        val comment = CommentEntity(
+            id = UUID.randomUUID().toString(),
+            targetType = targetType,
+            targetId = targetId,
+            authorId = userId,
+            text = text,
+            attachments = attachments,
+            status = status,
+            autoModerationResult = autoResult,
+            publishedAt = if (status == "published") now else null,
+            reviewDeadline = reviewDeadline,
+            moderatedBy = null,
+            moderatedAt = null,
+            hiddenReasonCode = null,
+            hiddenReasonNote = null,
+            createdAt = now,
+            pendingSync = true
+        )
+
+        moderationRepository.upsertComment(comment)
     }
 }

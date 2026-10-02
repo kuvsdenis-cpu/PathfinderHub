@@ -40,7 +40,9 @@ class HonorRequirementDetailViewModel @Inject constructor(
     private val _state = MutableStateFlow(HonorRequirementDetailUiState())
     val state: StateFlow<HonorRequirementDetailUiState> = _state.asStateFlow()
 
-    init { loadRequirement() }
+    init {
+        loadRequirement()
+    }
 
     private fun loadRequirement() {
         val userId = sessionManager.getUserId()
@@ -70,6 +72,9 @@ class HonorRequirementDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Отметить теоретическое требование как выполненное (без файла).
+     */
     fun submitTheory() {
         val userId = sessionManager.getUserId() ?: return
         _state.update { it.copy(isSaving = true, successMessage = null, errorMessage = null) }
@@ -77,18 +82,65 @@ class HonorRequirementDetailViewModel @Inject constructor(
             try {
                 honorRepository.upsertProgress(
                     HonorProgressEntity(
-                        userId = userId, honorId = honorId, requirementId = requirementId,
-                        status = "submitted", submittedAt = Date(),
-                        approvedBy = null, approvedAt = null,
-                        mediaUrls = emptyList(), comment = null, pendingSync = true
+                        userId = userId,
+                        honorId = honorId,
+                        requirementId = requirementId,
+                        status = "submitted",
+                        submittedAt = Date(),
+                        approvedBy = null,
+                        approvedAt = null,
+                        mediaUrls = emptyList(),
+                        comment = null,
+                        pendingSync = true
                     )
                 )
                 _state.update {
-                    it.copy(isSaving = false, status = "submitted",
-                        successMessage = "Отправлено на проверку")
+                    it.copy(
+                        isSaving = false,
+                        status = "submitted",
+                        successMessage = "Отправлено на проверку"
+                    )
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isSaving = false, errorMessage = e.message) }
+            }
+        }
+    }
+
+    /**
+     * Прикрепить загруженный файл к требованию.
+     * Вызывается после возврата с FileUploadScreen.
+     */
+    fun attachUploadedFile(fileUrl: String, fileName: String) {
+        val userId = sessionManager.getUserId() ?: return
+        _state.update { it.copy(isSaving = true, successMessage = null, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                honorRepository.upsertProgress(
+                    HonorProgressEntity(
+                        userId = userId,
+                        honorId = honorId,
+                        requirementId = requirementId,
+                        status = "submitted",
+                        submittedAt = Date(),
+                        approvedBy = null,
+                        approvedAt = null,
+                        mediaUrls = listOf(fileUrl),
+                        comment = "Файл: $fileName",
+                        pendingSync = true
+                    )
+                )
+                _state.update {
+                    it.copy(
+                        isSaving = false,
+                        status = "submitted",
+                        successMessage = "Файл отправлен на проверку"
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(isSaving = false, errorMessage = e.message ?: "Ошибка отправки")
+                }
             }
         }
     }

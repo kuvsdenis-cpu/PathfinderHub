@@ -10,6 +10,7 @@ import com.pathfinder.hub.data.local.entity.learning.LevelSectionEntity
 import com.pathfinder.hub.data.local.relation.LevelWithSections
 import com.pathfinder.hub.data.sync.SyncQueueManager
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 import javax.inject.Inject
 
 class LevelRepository @Inject constructor(
@@ -30,9 +31,6 @@ class LevelRepository @Inject constructor(
     suspend fun getRequirementsBySection(levelId: String, sectionId: String): List<LevelRequirementEntity> =
         dao.getRequirementsBySection(levelId, sectionId)
 
-    /**
-     * Для RequirementDetailViewModel: найти конкретное требование по id внутри уровня.
-     */
     suspend fun getRequirementById(levelId: String, requirementId: String): LevelRequirementEntity? =
         dao.getRequirements(levelId).firstOrNull { it.id == requirementId }
 
@@ -68,6 +66,38 @@ class LevelRepository @Inject constructor(
             operation = "UPDATE",
             payload = p
         )
+    }
+
+    /**
+     * Прикрепить загруженный файл (отчёт) к требованию ступени.
+     * Если записи прогресса ещё нет — создаёт новую.
+     *
+     * ВАЖНО: levelId берём из уже существующей записи прогресса.
+     * Если её нет — levelId останется пустым, и запись всё равно сохранится,
+     * но лучше, чтобы LevelProgressEntity уже существовала (создаётся при первом действии).
+     */
+    suspend fun attachReportToRequirement(
+        userId: String,
+        requirementId: String,
+        fileUrl: String,
+        fileName: String
+    ) {
+        val existing = dao.getProgressForRequirement(userId, requirementId)
+        val levelId = existing?.levelId ?: ""
+
+        val updated = LevelProgressEntity(
+            userId = userId,
+            levelId = levelId,
+            requirementId = requirementId,
+            status = "submitted",
+            submittedAt = Date(),
+            approvedBy = existing?.approvedBy,
+            approvedAt = existing?.approvedAt,
+            comment = "Файл: $fileName ($fileUrl)",
+            pendingSync = true
+        )
+
+        upsertProgress(updated)
     }
 
     suspend fun approveRequirement(userId: String, requirementId: String, status: String, approvedBy: String, at: Long) {

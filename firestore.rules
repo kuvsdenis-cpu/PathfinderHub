@@ -1,9 +1,378 @@
 rules_version = '2';
 
+// ============================================================
+// Pathfinder Hub — Firestore Security Rules
+// Role-based access control, deny-by-default.
+//
+// Роли (хранятся в users/{userId}.role):
+//   - conference_admin — администратор конференции (всё)
+//   - director         — директор клуба
+//   - secretary        — секретарь клуба
+//   - instructor       — инструктор/наставник
+//   - teen             — следопыт (10-15 лет)
+//   - parent           — родитель
+// ============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- ХЕЛПЕРЫ ----------
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid())).data;
+    }
+
+    function userRole() {
+      return isAuthenticated() ? userDoc().role : null;
+    }
+
+    function userClubId() {
+      return isAuthenticated() ? userDoc().clubId : null;
+    }
+
+    function isConferenceAdmin() {
+      return isAuthenticated() && userRole() == 'conference_admin';
+    }
+
+    function isDirector() {
+      return isAuthenticated() && userRole() == 'director';
+    }
+
+    function isSecretary() {
+      return isAuthenticated() && userRole() == 'secretary';
+    }
+
+    function isInstructor() {
+      return isAuthenticated() && userRole() == 'instructor';
+    }
+
+    function isTeen() {
+      return isAuthenticated() && userRole() == 'teen';
+    }
+
+    function isParent() {
+      return isAuthenticated() && userRole() == 'parent';
+    }
+
+    // Пользователь принадлежит клубу?
+    function belongsToClub(clubId) {
+      return isAuthenticated() && userDoc().clubId == clubId;
+    }
+
+    // Директор/секретарь/инструктор клуба?
+    function isClubStaff(clubId) {
+      return isAuthenticated()
+        && userDoc().clubId == clubId
+        && userDoc().role in ['director', 'secretary', 'instructor'];
+    }
+
+    // ---------- USERS ----------
+
+    match /users/{userId} {
+      // Читать себя
+      allow read: if isAuthenticated() && uid() == userId;
+
+      // Сотрудники клуба — читать пользователей своего клуба
+      allow read: if isClubStaff(resource.data.clubId)
+                  || (isParent() && resource.data.role == 'teen'
+                      && exists(/databases/$(database)/documents/parentChildLinks/$(uid() + '_' + userId)));
+
+      // Админ конференции — всё
+      allow read: if isConferenceAdmin();
+
+      // Создать себя (при регистрации)
+      allow create: if isAuthenticated() && uid() == userId;
+
+      // Обновить себя (но НЕ роль и НЕ clubId)
+      allow update: if isAuthenticated() && uid() == userId
+                    && request.resource.data.role == resource.data.role
+                    && request.resource.data.clubId == resource.data.clubId;
+
+      // Директор/админ — менять роль в своём клубе
+      allow update: if isConferenceAdmin()
+                    || (isDirector() && resource.data.clubId == userClubId());
+
+      // Удалять — только админ
+      allow delete: if isConferenceAdmin();
+    }
+
+    // ---------- PARENT-CHILD LINKS ----------
+
+    match /parentChildLinks/{linkId} {
+      allow read: if isAuthenticated()
+                  && (linkId.split('_')[0] == uid()       // родитель
+                      || linkId.split('_')[1] == uid());  // ребёнок
+
+      allow create: if isParent()
+                    && request.resource.data.parentId == uid();
+
+      allow update, delete: if isAuthenticated()
+                            && resource.data.parentId == uid()
+                            || isDirector() && resource.data.clubId == userClubId()
+                            || isConferenceAdmin();
+    }
+
+    // ---------- CLUBS ----------
+
+    match /clubs/{clubId} {
+      // Читать — все члены клуба + админ конференции + родители детей клуба
+      allow read: if belongsToClub(clubId)
+                  || isConferenceAdmin()
+                  || (isParent() && exists(/databases/$(database)/documents/parentChildLinks/$(uid() + '_' + request.query.limit.toString())));
+
+      // Создать — только админ конференции
+      allow create: if isConferenceAdmin();
+
+      // Обновлять — директор/секретарь своего клуба
+      allow update: if (isDirector() || isSecretary()) && belongsToClub(clubId)
+                    || isConferenceAdmin();
+
+      // Удалять — только админ
+      allow delete: if isConferenceAdmin();
+
+      // ---------- SUBCOLLECTIONS клуба ----------
+
+      match /events/{eventId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        allow create: if isClubStaff(clubId) || isConferenceAdmin();
+        allow update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /tasks/{taskId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        allow create: if isClubStaff(clubId) || isConferenceAdmin();
+        allow update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /assignments/{assignmentId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        allow create: if isClubStaff(clubId) || isConferenceAdmin();
+        allow update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /comments/{commentId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        // Автор может писать свой комментарий, если он член клуба
+        allow create: if belongsToClub(clubId)
+                      && request.resource.data.authorId == uid();
+        allow update: if isClubStaff(clubId)
+                      || (resource.data.authorId == uid() && request.resource.data.authorId == uid());
+        allow delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /moderationRequests/{reqId} {
+        allow read: if isClubStaff(clubId) || isConferenceAdmin();
+        allow create: if belongsToClub(clubId);
+        allow update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /moderationHistory/{historyId} {
+        allow read: if isClubStaff(clubId) || isConferenceAdmin();
+        allow create, update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /appeals/{appealId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        allow create: if belongsToClub(clubId);
+        allow update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+
+      match /honorDrafts/{draftId} {
+        allow read: if isClubStaff(clubId) || isConferenceAdmin();
+        allow create: if isInstructor() && belongsToClub(clubId);
+        allow update: if isClubStaff(clubId) || isConferenceAdmin();
+        allow delete: if isDirector() || isConferenceAdmin();
+      }
+
+      match /reports/{reportId} {
+        allow read: if isClubStaff(clubId) || isConferenceAdmin();
+        allow create: if isClubStaff(clubId);
+        allow update, delete: if isDirector() || isConferenceAdmin();
+      }
+
+      match /events/{eventId}/occurrences/{occurrenceId} {
+        allow read: if belongsToClub(clubId) || isConferenceAdmin();
+        allow create, update, delete: if isClubStaff(clubId) || isConferenceAdmin();
+      }
+    }
+
+    // ---------- USER PROGRESS (subcollections users/{userId}) ----------
+
+    match /users/{userId}/levelProgress/{progressId} {
+      // Читать свой прогресс
+      allow read: if isAuthenticated() && uid() == userId;
+      // Наставник/директор своего клуба — читать прогресс членов клуба
+      allow read: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+      allow read: if isConferenceAdmin();
+
+      // Писать — только себе
+      allow create, update: if isAuthenticated() && uid() == userId;
+      // Директор/наставник может менять статус (approve/reject)
+      allow update: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+
+      allow delete: if isAuthenticated() && uid() == userId;
+    }
+
+    match /users/{userId}/honorProgress/{progressId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update: if isAuthenticated() && uid() == userId;
+      allow update: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+      allow delete: if isAuthenticated() && uid() == userId;
+    }
+
+    match /users/{userId}/levelCompletions/{completionId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update, delete: if isAuthenticated() && uid() == userId
+                                    || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+    }
+
+    match /users/{userId}/honorCompletions/{completionId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update, delete: if isAuthenticated() && uid() == userId
+                                    || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+    }
+
+    match /users/{userId}/testAttempts/{attemptId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create: if isAuthenticated() && uid() == userId;
+      // Проверку открытых ответов делает наставник
+      allow update: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+      allow delete: if isConferenceAdmin();
+    }
+
+    match /users/{userId}/openAnswerReviews/{reviewId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update, delete: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                                    || isConferenceAdmin();
+    }
+
+    match /users/{userId}/bookReports/{reportId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update: if isAuthenticated() && uid() == userId;
+      allow update: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId);
+      allow delete: if isAuthenticated() && uid() == userId;
+    }
+
+    match /users/{userId}/verseProgress/{progressId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update, delete: if isAuthenticated() && uid() == userId;
+    }
+
+    match /users/{userId}/leaderChecklists/{checklistId} {
+      allow read: if isAuthenticated() && uid() == userId
+                  || isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                  || isConferenceAdmin();
+      allow create, update, delete: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                                    || isConferenceAdmin();
+    }
+
+    // ---------- GLOBAL CONTENT (learning) ----------
+
+    match /levels/{levelId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    match /levelSections/{sectionId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    match /levelRequirements/{reqId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    match /honors/{honorId} {
+      allow read: if isAuthenticated();
+      // Локальные специализации может создавать директор
+      allow create: if isDirector() || isConferenceAdmin();
+      allow update, delete: if isConferenceAdmin();
+    }
+
+    match /honorCategories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    match /honorRequirements/{reqId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    match /contentVersions/{versionId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    // ---------- NOTIFICATIONS ----------
+
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, update, delete: if isAuthenticated() && uid() == userId;
+      // Создавать уведомления может система (cloud functions) или стафф
+      allow create: if isClubStaff(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+                    || isConferenceAdmin();
+    }
+
+    match /users/{userId}/notificationPreferences/{prefId} {
+      allow read, write: if isAuthenticated() && uid() == userId;
+    }
+
+    match /users/{userId}/fcmTokens/{tokenId} {
+      allow read, write: if isAuthenticated() && uid() == userId;
+    }
+
+    // ---------- SYNC QUEUE (не должна попадать в Firestore!) ----------
+
+    // SyncQueue и Offline-сущности живут ТОЛЬКО в Room.
+    // В Firestore их быть не должно.
+
+    // ---------- AUDIT LOG ----------
+
+    match /auditLog/{logId} {
+      allow read: if isDirector() || isConferenceAdmin();
+      // Записывать может система через Cloud Functions
+      allow write: if isConferenceAdmin();
+    }
+
+    match /securityLog/{logId} {
+      allow read: if isConferenceAdmin();
+      allow write: if false;   // только через Cloud Functions
+    }
+
+    // ---------- CONFERENCES ----------
+
+    match /conferences/{confId} {
+      allow read: if isAuthenticated();
+      allow write: if isConferenceAdmin();
+    }
+
+    // ---------- DENY-BY-DEFAULT ----------
+
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

@@ -1,4 +1,4 @@
-package com.pathfinder.hub.data.local.dao
+﻿package com.pathfinder.hub.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -68,6 +68,9 @@ interface HonorDao {
     @Query("SELECT * FROM honor_progress WHERE userId = :userId AND honorId = :honorId")
     suspend fun getProgressSnapshot(userId: String, honorId: String): List<HonorProgressEntity>
 
+    @Query("SELECT * FROM honor_progress WHERE userId = :userId AND requirementId = :reqId LIMIT 1")
+    suspend fun getProgressForRequirement(userId: String, reqId: String): HonorProgressEntity?
+
     @Query("SELECT * FROM honor_progress WHERE userId = :userId AND status = 'approved'")
     suspend fun getApprovedProgress(userId: String): List<HonorProgressEntity>
 
@@ -128,14 +131,14 @@ interface HonorDao {
     @Query("SELECT * FROM content_versions ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getLatestContentVersion(): ContentVersionEntity?
 
-    // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
+    // вњ… Р”РћР‘РђР’Р›Р•РќРћ: Р”Р»СЏ СЌРєСЂР°РЅР° РѕРґРѕР±СЂРµРЅРёСЏ РґРёСЂРµРєС‚РѕСЂР°
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id
               WHERE u.clubId = :clubId AND hp.status = 'submitted'
               ORDER BY hp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>>
 
-    // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
+    // вњ… Р”РћР‘РђР’Р›Р•РќРћ: Р”Р»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃР±СЂРѕСЃР° РІРµСЂСЃРёРё РєРѕРЅС‚РµРЅС‚Р°
     @Query("DELETE FROM content_versions")
     suspend fun clearContentVersion()
 }

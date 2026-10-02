@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -30,6 +31,8 @@ class StorageRepository @Inject constructor() {
                     )
                 )
             )
+            // ✅ КРИТИЧНО: используем UrlConnectionHttpClient вместо ApacheHttpClient
+            .httpClientBuilder(UrlConnectionHttpClient.builder())
             .build()
     }
 
@@ -65,7 +68,13 @@ class StorageRepository @Inject constructor() {
             "pdf" -> "application/pdf"
             "jpg", "jpeg" -> "image/jpeg"
             "png" -> "image/png"
+            "gif" -> "image/gif"
+            "webp" -> "image/webp"
+            "mp4" -> "video/mp4"
+            "mov" -> "video/quicktime"
             "txt" -> "text/plain"
+            "doc" -> "application/msword"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             else -> "application/octet-stream"
         }
     }

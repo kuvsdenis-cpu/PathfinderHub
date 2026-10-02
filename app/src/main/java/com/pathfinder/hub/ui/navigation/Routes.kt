@@ -1,5 +1,7 @@
 package com.pathfinder.hub.ui.navigation
 
+import android.net.Uri
+
 object Routes {
     // === Auth ===
     const val LOGIN = "login"
@@ -35,17 +37,18 @@ object Routes {
     // === Teen - Levels ===
     const val MY_LEVELS = "my_levels"
     const val LEVEL_DETAIL = "level_detail/{levelId}"
-
-    // ✅ ИСПРАВЛЕНО: добавлен levelId в route
     const val REQUIREMENT_DETAIL = "requirement_detail/{levelId}/{requirementId}"
 
     // === Teen - Honors ===
     const val HONOR_CATALOG = "honor_catalog"
     const val HONOR_DETAIL = "honor_detail/{honorId}"
-    const val HONOR_REQUIREMENT_DETAIL = "honor_requirement_detail/{requirementId}"
+    // ✅ ИСПРАВЛЕНО: добавлен honorId в route
+    const val HONOR_REQUIREMENT_DETAIL = "honor_requirement_detail/{honorId}/{requirementId}"
     const val MY_HONORS = "my_honors"
     const val TEST_SCREEN = "test_screen/{honorId}"
-    const val REPORT_UPLOAD = "report_upload/{requirementId}"
+
+    // === Универсальная загрузка файлов ===
+    const val FILE_UPLOAD = "file_upload/{contextType}/{contextId}"
 
     // === Teen - Events & Tasks ===
     const val EVENTS = "events"
@@ -73,15 +76,20 @@ object Routes {
     // === Helpers ===
     fun onboarding(role: String, userId: String) = "onboarding/$role/$userId"
     fun levelDetail(levelId: String) = "level_detail/$levelId"
-
-    // ✅ ИСПРАВЛЕНО
     fun requirementDetail(levelId: String, requirementId: String) =
         "requirement_detail/$levelId/$requirementId"
-
     fun honorDetail(honorId: String) = "honor_detail/$honorId"
-    fun honorRequirementDetail(requirementId: String) = "honor_requirement_detail/$requirementId"
+
+    // ✅ ИСПРАВЛЕНО: honorId + requirementId
+    fun honorRequirementDetail(honorId: String, requirementId: String) =
+        "honor_requirement_detail/$honorId/$requirementId"
+
     fun testScreen(honorId: String) = "test_screen/$honorId"
-    fun reportUpload(requirementId: String) = "report_upload/$requirementId"
+
+    // ✅ Универсальная загрузка
+    fun fileUpload(contextType: String, contextId: String = "") =
+        "file_upload/$contextType/${Uri.encode(contextId)}"
+
     fun eventDetail(eventId: String) = "event_detail/$eventId"
     fun challengeDetail(challengeId: String) = "challenge_detail/$challengeId"
     fun reportDetail(reportId: String) = "report_detail/$reportId"

@@ -1,4 +1,4 @@
-package com.pathfinder.hub.ui.navigation
+﻿package com.pathfinder.hub.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -33,7 +33,6 @@ import com.pathfinder.hub.ui.screens.honors.HonorCatalogScreen
 import com.pathfinder.hub.ui.screens.honors.HonorDetailScreen
 import com.pathfinder.hub.ui.screens.honors.HonorRequirementDetailScreen
 import com.pathfinder.hub.ui.screens.honors.MyHonorsScreen
-import com.pathfinder.hub.ui.screens.honors.ReportUploadScreen
 import com.pathfinder.hub.ui.screens.honors.TestScreen
 import com.pathfinder.hub.ui.screens.levels.LevelDetailScreen
 import com.pathfinder.hub.ui.screens.levels.MyLevelsScreen
@@ -43,6 +42,8 @@ import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
 import com.pathfinder.hub.ui.screens.sync.SyncScreen
 import com.pathfinder.hub.ui.screens.tasks.CreateTaskScreen
 import com.pathfinder.hub.ui.screens.tasks.MyTasksScreen
+import com.pathfinder.hub.ui.storage.FileUploadResult
+import com.pathfinder.hub.ui.storage.FileUploadScreen
 
 @Composable
 fun PathfinderNavHost(
@@ -61,9 +62,7 @@ fun PathfinderNavHost(
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
-                onNavigateToInvite = {
-                    navController.navigate(Routes.REGISTER)
-                }
+                onNavigateToInvite = { navController.navigate(Routes.REGISTER) }
             )
         }
 
@@ -74,9 +73,7 @@ fun PathfinderNavHost(
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 },
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -200,9 +197,17 @@ fun PathfinderNavHost(
             LevelDetailScreen(
                 onBack = { navController.popBackStack() },
                 onOpenRequirement = { lvlId, requirementId ->
-                    // ✅ ИСПРАВЛЕНО: передаём И levelId, И requirementId
                     navController.navigate(Routes.requirementDetail(lvlId, requirementId))
-                }
+                },
+                onUploadReport = { lvlId, requirementId ->
+                    navController.navigate(
+                        Routes.fileUpload(
+                            contextType = "LEVEL_REQUIREMENT",
+                            contextId = requirementId
+                        )
+                    )
+                },
+                savedStateHandle = backStackEntry.savedStateHandle
             )
         }
 
@@ -227,23 +232,42 @@ fun PathfinderNavHost(
         composable(
             route = Routes.HONOR_DETAIL,
             arguments = listOf(navArgument("honorId") { type = NavType.StringType })
-        ) {
+        ) { backStackEntry ->
+            val honorId = backStackEntry.arguments?.getString("honorId") ?: ""
             HonorDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenRequirement = { honorId, requirementId ->
-                    navController.navigate(Routes.honorRequirementDetail(requirementId))
+                onOpenRequirement = { _, requirementId ->
+                    // вњ… РўРµРїРµСЂСЊ РїРµСЂРµРґР°С‘Рј honorId Рё requirementId
+                    navController.navigate(
+                        Routes.honorRequirementDetail(honorId, requirementId)
+                    )
                 }
             )
         }
 
         composable(
             route = Routes.HONOR_REQUIREMENT_DETAIL,
-            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
-        ) {
+            arguments = listOf(
+                navArgument("honorId") { type = NavType.StringType },
+                navArgument("requirementId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val honorId = backStackEntry.arguments?.getString("honorId") ?: ""
+            val requirementId = backStackEntry.arguments?.getString("requirementId") ?: ""
             HonorRequirementDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenTest = { navController.navigate(Routes.testScreen("placeholder_honor_id")) },
-                onOpenReport = { navController.navigate(Routes.reportUpload("placeholder_req_id")) }
+                onOpenTest = {
+                    navController.navigate(Routes.testScreen(honorId))
+                },
+                onOpenReport = {
+                    navController.navigate(
+                        Routes.fileUpload(
+                            contextType = "HONOR_REQUIREMENT",
+                            contextId = requirementId
+                        )
+                    )
+                },
+                navBackStackEntry = backStackEntry
             )
         }
 
@@ -264,13 +288,23 @@ fun PathfinderNavHost(
             )
         }
 
+        // === РЈРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° С„Р°Р№Р»Р° ===
         composable(
-            route = Routes.REPORT_UPLOAD,
-            arguments = listOf(navArgument("requirementId") { type = NavType.StringType })
+            route = Routes.FILE_UPLOAD,
+            arguments = listOf(
+                navArgument("contextType") { type = NavType.StringType },
+                navArgument("contextId") { type = NavType.StringType; defaultValue = "" }
+            )
         ) {
-            ReportUploadScreen(
+            FileUploadScreen(
                 onBack = { navController.popBackStack() },
-                onSuccess = { navController.popBackStack() }
+                onSuccess = { result ->
+                    // Р’РѕР·РІСЂР°С‰Р°РµРј СЂРµР·СѓР»СЊС‚Р°С‚ РЅР° РїСЂРµРґС‹РґСѓС‰РёР№ СЌРєСЂР°РЅ
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(FileUploadResult.SAVED_STATE_KEY, result)
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -279,7 +313,6 @@ fun PathfinderNavHost(
             EventsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
-                // onCreateEvent не передан (равен null), поэтому кнопка "+" у следопыта скрыта
             )
         }
 
@@ -350,9 +383,20 @@ fun PathfinderNavHost(
             )
         }
 
-        // === Чаты и Модерация ===
-        composable(Routes.CLUB_CHAT) {
-            ClubChatScreen(onBack = { navController.popBackStack() })
+        // === Р§Р°С‚С‹ Рё РњРѕРґРµСЂР°С†РёСЏ ===
+        composable(Routes.CLUB_CHAT) { backStackEntry ->
+            ClubChatScreen(
+                onBack = { navController.popBackStack() },
+                onAttachFile = { clubId ->
+                    navController.navigate(
+                        Routes.fileUpload(
+                            contextType = "CHAT",
+                            contextId = clubId
+                        )
+                    )
+                },
+                savedStateHandle = backStackEntry.savedStateHandle
+            )
         }
 
         composable(
@@ -375,12 +419,10 @@ fun PathfinderNavHost(
             ModerationScreen(onBack = { navController.popBackStack() })
         }
 
-        // === Notifications ===
         composable(Routes.NOTIFICATIONS) {
             NotificationsScreen(onBack = { navController.popBackStack() })
         }
 
-        // === Sync ===
         composable(Routes.SYNC) {
             SyncScreen(onBack = { navController.popBackStack() })
         }

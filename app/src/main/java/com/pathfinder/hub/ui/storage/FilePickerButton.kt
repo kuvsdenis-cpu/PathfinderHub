@@ -56,9 +56,15 @@ fun FilePickerButton(
                     )
                 }
             }
-        } else if (state.fileUrl != null) {
+        } else if (state.uploadedUrl != null) {
+            // ✅ ИЗМЕНЕНО: fileUrl → uploadedUrl
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.CheckCircle,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -78,12 +84,20 @@ fun FilePickerButton(
                 }
             }
             // Уведомляем родительский компонент о новой ссылке
-            LaunchedEffect(state.fileUrl) {
-                onFileUploaded(state.fileUrl!!)
+            LaunchedEffect(state.uploadedUrl) {
+                // ✅ ИЗМЕНЕНО: fileUrl → uploadedUrl
+                state.uploadedUrl?.let { url ->
+                    onFileUploaded(url)
+                }
             }
         } else if (state.errorMessage != null) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.Error, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.Error,
+                    null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = state.errorMessage!!,

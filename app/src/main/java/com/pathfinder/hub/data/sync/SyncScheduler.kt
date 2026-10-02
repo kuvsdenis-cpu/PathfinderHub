@@ -19,6 +19,10 @@ class SyncScheduler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
+    /**
+     * Запустить sync немедленно.
+     * KEEP — если уже запущен, не отменяем, а ждём.
+     */
     fun syncNow() {
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(
@@ -34,11 +38,14 @@ class SyncScheduler @Inject constructor(
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             SyncWorker.WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
+            ExistingWorkPolicy.KEEP,   // ← KEEP вместо REPLACE
             request
         )
     }
 
+    /**
+     * Периодическая синхронизация каждые 15 минут.
+     */
     fun schedulePeriodic() {
         val request = PeriodicWorkRequestBuilder<SyncWorker>(
             15, TimeUnit.MINUTES
@@ -48,12 +55,20 @@ class SyncScheduler @Inject constructor(
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                1, TimeUnit.MINUTES
+            )
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            "periodic_sync",
+            PERIODIC_WORK_NAME,
             ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
+    }
+
+    companion object {
+        private const val PERIODIC_WORK_NAME = "periodic_sync"
     }
 }

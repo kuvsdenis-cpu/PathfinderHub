@@ -19,6 +19,7 @@ import com.pathfinder.hub.data.local.entity.learning.VerseProgressEntity
 import com.pathfinder.hub.data.local.relation.HonorWithRequirements
 import com.pathfinder.hub.data.sync.SyncQueueManager
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 import javax.inject.Inject
 
 class HonorRepository @Inject constructor(
@@ -42,11 +43,9 @@ class HonorRepository @Inject constructor(
     fun observePendingDrafts(): Flow<List<HonorDraftEntity>> = dao.observePendingDrafts()
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
 
-    // ✅ ДОБАВЛЕНО: Обёртка для DAO
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
 
-    // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
     suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------
@@ -68,6 +67,35 @@ class HonorRepository @Inject constructor(
             entityId = "${p.userId}_${p.requirementId}",
             operation = "UPDATE",
             payload = p
+        )
+    }
+
+    /**
+     * Прикрепить загруженный файл (отчёт) к требованию специализации.
+     * URL добавляется к mediaUrls, если запись прогресса уже существует.
+     */
+    suspend fun attachReportToRequirement(
+        userId: String,
+        requirementId: String,
+        fileUrl: String,
+        fileName: String
+    ) {
+        val existing = dao.getProgressForRequirement(userId, requirementId)
+        val honorId = existing?.honorId ?: ""
+
+        upsertProgress(
+            HonorProgressEntity(
+                userId = userId,
+                honorId = honorId,
+                requirementId = requirementId,
+                status = "submitted",
+                submittedAt = Date(),
+                approvedBy = existing?.approvedBy,
+                approvedAt = existing?.approvedAt,
+                mediaUrls = (existing?.mediaUrls ?: emptyList()) + fileUrl,
+                comment = "Файл: $fileName",
+                pendingSync = true
+            )
         )
     }
 

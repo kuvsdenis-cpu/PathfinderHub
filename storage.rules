@@ -1,9 +1,73 @@
 rules_version = '2';
 
+// ============================================================
+// Pathfinder Hub — Firebase Storage Security Rules
+// ============================================================
+
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function userRole() {
+      return firestore.get(/databases/(default)/documents/users/$(uid())).data.role;
+    }
+
+    function userClubId() {
+      return firestore.get(/databases/(default)/documents/users/$(uid())).data.clubId;
+    }
+
+    function isConferenceAdmin() {
+      return isAuthenticated() && userRole() == 'conference_admin';
+    }
+
+    function isClubStaff() {
+      return isAuthenticated() && userRole() in ['director', 'secretary', 'instructor'];
+    }
+
+    // ---------- AVATARS ----------
+
+    match /avatars/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && uid() == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ---------- REPORT UPLOADS ----------
+
+    match /reports/{userId}/{reportId}/{fileName} {
+      allow read: if isAuthenticated() && (uid() == userId || isClubStaff());
+      allow write: if isAuthenticated() && uid() == userId
+                   && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    // ---------- MEDIA (photos, videos) ----------
+
+    match /media/{clubId}/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && uid() == userId
+                   && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // ---------- NEWSPAPER PDF ----------
+
+    match /newspaper/{issueId}/{fileName} {
+      allow read: if isAuthenticated();
+      // Загружать могут только стафф клуба/админ конференции
+      allow write: if isClubStaff() || isConferenceAdmin();
+    }
+
+    // ---------- DENY-BY-DEFAULT ----------
+
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
