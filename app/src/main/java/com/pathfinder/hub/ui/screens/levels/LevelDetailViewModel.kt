@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -43,7 +42,8 @@ data class RequirementUiModel(
     val text: String,
     val type: String,
     val order: Int,
-    val status: String
+    val status: String,
+    val hasAttachment: Boolean = false
 )
 
 @HiltViewModel
@@ -174,7 +174,8 @@ class LevelDetailViewModel @Inject constructor(
                     text = req.text,
                     type = req.type,
                     order = req.order,
-                    status = status
+                    status = status,
+                    hasAttachment = !progress?.mediaUrls.isNullOrEmpty()
                 )
             }.sortedBy { it.order }
 

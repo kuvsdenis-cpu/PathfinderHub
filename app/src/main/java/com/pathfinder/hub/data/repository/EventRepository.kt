@@ -1,5 +1,7 @@
 package com.pathfinder.hub.data.repository
 
+import androidx.room.withTransaction
+import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.dao.EventDao
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
 import com.pathfinder.hub.data.local.entity.planning.EventHonorEntity
@@ -9,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class EventRepository @Inject constructor(
+    private val db: AppDatabase,
     private val dao: EventDao,
     private val syncQueueManager: SyncQueueManager
 ) {
@@ -20,34 +23,51 @@ class EventRepository @Inject constructor(
     fun observeUpcoming(now: Long, limit: Int): Flow<List<EventEntity>> = dao.observeUpcoming(now, limit)
 
     suspend fun upsert(event: EventEntity) {
-        dao.upsert(event)
-        syncQueueManager.enqueue("event", event.id, "CREATE", event)
+        db.withTransaction {
+            dao.upsert(event)
+            syncQueueManager.enqueue("event", event.id, "CREATE", event)
+        }
     }
 
     suspend fun upsertAll(events: List<EventEntity>) {
-        dao.upsertAll(events)
-        events.forEach { syncQueueManager.enqueue("event", it.id, "CREATE", it) }
+        db.withTransaction {
+            dao.upsertAll(events)
+            events.forEach { syncQueueManager.enqueue("event", it.id, "CREATE", it) }
+        }
     }
 
     suspend fun update(event: EventEntity) {
-        dao.update(event)
-        syncQueueManager.enqueue("event", event.id, "UPDATE", event)
+        db.withTransaction {
+            dao.update(event)
+            syncQueueManager.enqueue("event", event.id, "UPDATE", event)
+        }
     }
 
     suspend fun updateModeration(id: String, status: String, by: String, at: Long) {
-        dao.updateModeration(id, status, by, at)
-        dao.getEvent(id)?.let { syncQueueManager.enqueue("event", id, "UPDATE", it) }
+        db.withTransaction {
+            dao.updateModeration(id, status, by, at)
+            dao.getEvent(id)?.let { syncQueueManager.enqueue("event", id, "UPDATE", it) }
+        }
     }
 
     suspend fun delete(event: EventEntity) {
-        dao.delete(event)
-        syncQueueManager.enqueue("event", event.id, "DELETE", event)
+        db.withTransaction {
+            dao.delete(event)
+            syncQueueManager.enqueue("event", event.id, "DELETE", event)
+        }
     }
 
     suspend fun getPendingSync(): List<EventEntity> = dao.getPendingSync()
 
-    suspend fun upsertOccurrences(items: List<EventOccurrenceEntity>) = dao.upsertOccurrences(items)
+    suspend fun upsertOccurrences(items: List<EventOccurrenceEntity>) {
+        db.withTransaction { dao.upsertOccurrences(items) }
+    }
+
     suspend fun getOccurrences(eventId: String): List<EventOccurrenceEntity> = dao.getOccurrences(eventId)
-    suspend fun upsertEventHonors(items: List<EventHonorEntity>) = dao.upsertEventHonors(items)
+
+    suspend fun upsertEventHonors(items: List<EventHonorEntity>) {
+        db.withTransaction { dao.upsertEventHonors(items) }
+    }
+
     suspend fun getEventHonors(eventId: String): List<EventHonorEntity> = dao.getEventHonors(eventId)
 }

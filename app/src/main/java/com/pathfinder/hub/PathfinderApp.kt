@@ -10,6 +10,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
@@ -32,7 +35,7 @@ import java.util.Date
 import javax.inject.Inject
 
 @HiltAndroidApp
-class PathfinderApp : Application(), Configuration.Provider {
+class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -50,18 +53,30 @@ class PathfinderApp : Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .build()
 
+    /**
+     * Coil: disk cache 512 МБ. URL картинок ступеней стабильные
+     * (публичный бакет) → Coil скачивает один раз и дальше отдаёт с диска.
+     */
+    override fun newImageLoader(): ImageLoader =
+        ImageLoader.Builder(this)
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(512L * 1024 * 1024)
+                    .build()
+            }
+            .build()
+
     override fun onCreate() {
         super.onCreate()
         initAppCheck()
         initFirestore()
 
-        // ✅ Все фоновые инициализации — ПОСЛЕДОВАТЕЛЬНО, в одной корутине
         appScope.launch {
             seedDemoData()
             seedAchievements()
-            scheduleContentUpdate()          // ставим воркер в очередь
-            waitForSeedWorker()              // ждём завершения воркера
-            verifyContentLoaded()            // проверяем, что данные есть
+            scheduleContentUpdate()
+            observeSeedCompletion()
         }
 
         syncScheduler.schedulePeriodic()
@@ -112,24 +127,35 @@ class PathfinderApp : Application(), Configuration.Provider {
 
         WorkManager.getInstance(this).enqueueUniqueWork(
             SeedDatabaseWorker.WORK_NAME,
-            ExistingWorkPolicy.KEEP,   // ✅ KEEP вместо REPLACE
+            ExistingWorkPolicy.REPLACE,
             request
         )
-        Log.d(TAG, "Воркер SeedDatabaseWorker поставлен в очередь (KEEP)")
+        Log.d(TAG, "Воркер SeedDatabaseWorker поставлен в очередь (REPLACE)")
     }
 
     /**
-     * Ждём завершения SeedDatabaseWorker (до 30 секунд).
+     * Наблюдает за завершением воркера в фоне.
+     * НЕ блокирует старт приложения.
      */
-    private suspend fun waitForSeedWorker() {
+    private suspend fun observeSeedCompletion() {
         val workManager = WorkManager.getInstance(this)
-        val startTime = System.currentTimeMillis()
-        val timeoutMs = 30_000L
 
-        while (System.currentTimeMillis() - startTime < timeoutMs) {
+        kotlinx.coroutines.delay(500L)
+
+        while (true) {
             val infos = workManager
                 .getWorkInfosForUniqueWork(SeedDatabaseWorker.WORK_NAME)
                 .get()
+
+            val failed = infos.any {
+                it.state == WorkInfo.State.FAILED ||
+                        it.state == WorkInfo.State.CANCELLED
+            }
+            if (failed) {
+                Log.e(TAG, "❌ SeedDatabaseWorker завершился неудачей")
+                verifyContentLoaded()
+                return
+            }
 
             val anyRunning = infos.any {
                 it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
@@ -137,20 +163,14 @@ class PathfinderApp : Application(), Configuration.Provider {
 
             if (!anyRunning) {
                 Log.d(TAG, "✓ SeedDatabaseWorker завершён")
+                verifyContentLoaded()
                 return
             }
 
-            Log.d(TAG, "⏳ Ждём завершения SeedDatabaseWorker...")
-            kotlinx.coroutines.delay(500L)
+            kotlinx.coroutines.delay(1000L)
         }
-
-        Log.w(TAG, "⚠️ SeedDatabaseWorker не завершился за $timeoutMs мс")
     }
 
-    /**
-     * Проверяем, что контент реально загружен в БД.
-     * Если нет — логируем (без перезапуска воркера — это предотвращает гонку).
-     */
     private suspend fun verifyContentLoaded() {
         try {
             val db = AppDatabase.getInstance(this)
@@ -163,10 +183,6 @@ class PathfinderApp : Application(), Configuration.Provider {
 
             if (requirements == 0) {
                 Log.e(TAG, "❌ ВНИМАНИЕ: требования НЕ загружены после воркера!")
-                Log.e(TAG, "   Возможные причины:")
-                Log.e(TAG, "   1. JSON в assets пуст или не читается")
-                Log.e(TAG, "   2. SeedDatabaseWorker падает с ошибкой (см. логи выше)")
-                Log.e(TAG, "   3. Версия контента не изменилась — воркер пропустил загрузку")
             } else {
                 Log.d(TAG, "✅ Контент загружен: $requirements требований")
             }

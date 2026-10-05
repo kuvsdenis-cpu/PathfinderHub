@@ -7,6 +7,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.ui.storage.FileUploadResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,8 @@ data class RequirementDetailUiState(
     val requirement: LevelRequirementEntity? = null,
     val status: String = "not_started",
     val comment: String? = null,
+    val mediaUrls: List<String> = emptyList(),
+    val imageUrls: List<String> = emptyList(),   // <-- ДОБАВЛЕНО: картинки из PDF
     val levelName: String = "",
     val sectionName: String = "",
     val isSaving: Boolean = false,
@@ -35,7 +38,6 @@ class RequirementDetailViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    // ✅ Теперь levelId приходит из route
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
     private val requirementId: String = savedStateHandle.get<String>("requirementId") ?: ""
 
@@ -46,7 +48,9 @@ class RequirementDetailViewModel @Inject constructor(
         loadRequirement()
     }
 
-    private fun loadRequirement() {
+    fun getLevelId(): String = levelId
+
+    fun loadRequirement() {
         val userId = sessionManager.getUserId()
         if (userId == null) {
             _state.update { it.copy(isLoading = false, errorMessage = "Нет сессии") }
@@ -61,7 +65,6 @@ class RequirementDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            // ✅ Ищем требование по levelId + requirementId
             val req = levelRepository.getRequirementById(levelId, requirementId)
             if (req == null) {
                 _state.update { it.copy(isLoading = false, errorMessage = "Требование не найдено") }
@@ -81,6 +84,8 @@ class RequirementDetailViewModel @Inject constructor(
                     requirement = req,
                     status = progress?.status ?: "not_started",
                     comment = progress?.comment,
+                    mediaUrls = progress?.mediaUrls ?: emptyList(),
+                    imageUrls = req.imageUrls,   // <-- из PDF
                     levelName = level?.name ?: "",
                     sectionName = section?.name ?: ""
                 )
@@ -90,7 +95,6 @@ class RequirementDetailViewModel @Inject constructor(
 
     fun markAsCompleted() {
         val userId = sessionManager.getUserId() ?: return
-        val req = _state.value.requirement ?: return
 
         _state.update { it.copy(isSaving = true, errorMessage = null, successMessage = null) }
 
@@ -106,6 +110,7 @@ class RequirementDetailViewModel @Inject constructor(
                         approvedBy = null,
                         approvedAt = null,
                         comment = null,
+                        mediaUrls = _state.value.mediaUrls,
                         pendingSync = true
                     )
                 )
@@ -136,12 +141,52 @@ class RequirementDetailViewModel @Inject constructor(
                     it.copy(
                         isSaving = false,
                         status = "not_started",
+                        mediaUrls = emptyList(),
+                        comment = null,
                         successMessage = "Отметка сброшена"
                     )
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(isSaving = false, errorMessage = e.message ?: "Ошибка")
+                }
+            }
+        }
+    }
+
+    fun attachUploadedFile(result: FileUploadResult) {
+        val userId = sessionManager.getUserId() ?: return
+        val newMediaUrls = (_state.value.mediaUrls + result.fileUrl).distinct()
+
+        _state.update { it.copy(isSaving = true, successMessage = null, errorMessage = null) }
+
+        viewModelScope.launch {
+            try {
+                levelRepository.upsertProgress(
+                    LevelProgressEntity(
+                        userId = userId,
+                        levelId = levelId,
+                        requirementId = requirementId,
+                        status = "submitted",
+                        submittedAt = Date(),
+                        approvedBy = null,
+                        approvedAt = null,
+                        comment = "Файл: ${result.fileName}",
+                        mediaUrls = newMediaUrls,
+                        pendingSync = true
+                    )
+                )
+                _state.update {
+                    it.copy(
+                        isSaving = false,
+                        status = "submitted",
+                        mediaUrls = newMediaUrls,
+                        successMessage = "Файл отправлен на проверку"
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(isSaving = false, errorMessage = e.message ?: "Ошибка отправки")
                 }
             }
         }

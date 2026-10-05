@@ -2,6 +2,8 @@
 """
 Pathfinder Hub — автономный парсер контента с версионированием.
 Сам находит страницы с PDF, скачивает, парсит, сохраняет JSON.
+Также извлекает изображения из страниц ступеней и сохраняет их в
+app/src/main/assets/levels_images/, привязывая имена к требованиям.
 
 Запуск:
     python parser/parse_all.py
@@ -9,6 +11,8 @@ Pathfinder Hub — автономный парсер контента с вер�
 Зависимости установятся автоматически.
 """
 
+import hashlib
+import io
 import json
 import re
 import sys
@@ -25,9 +29,17 @@ BASE_URL = "https://yamolod.info"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "app" / "src" / "main" / "assets"
 CACHE_DIR = Path(__file__).resolve().parent / "_cache"
+IMAGES_DIR = OUTPUT_DIR / "levels_images"
 
 # Версия контента — генерируется при каждом запуске
 VERSION = datetime.now().strftime("%Y.%m.%d.%H%M")
+
+# --- Фильтр картинок ---
+MIN_SIZE = 150           # отсеять иконки/чекбоксы
+MAX_SIZE = 1500          # отсеять целые страницы PDF
+MAX_ASPECT = 5.0         # отсеять полоски/линии/разделители
+MAX_WHITE_RATIO = 0.9    # отсеять пустые бланки/фоны
+MIN_AREA = 200 * 200     # минимальная площадь (для отсева мелких артефактов)
 
 PAGES_WITH_PDF = {
     "dnevniki": "https://yamolod.info/sluzhenie/klub-sledopyt/dnevniki/",
@@ -75,7 +87,10 @@ SECTIONS = [
     {"id": "service", "name": "Служение ближним", "order": 3},
     {"id": "friendship", "name": "Развитие дружеских отношений", "order": 4},
     {"id": "health", "name": "Здоровье и физическая культура", "order": 5},
-    {"id": "nature", "name": "Природа / Активный отдых", "order": 6},
+    {"id": "leadership", "name": "Организация и развитие лидерских качеств", "order": 6},
+    {"id": "nature", "name": "Исследование природы", "order": 7},
+    {"id": "camping", "name": "Лагерные и походные навыки", "order": 8},
+    {"id": "life_skills", "name": "Жизненные навыки", "order": 9},
 ]
 
 HEADERS = {
@@ -91,10 +106,11 @@ HEADERS = {
 # ============================================================
 
 def ensure_deps():
-    for pkg in ["pdfplumber", "requests", "beautifulsoup4"]:
-        module_name = pkg.replace("-", "_")
+    for pkg in ["pdfplumber", "requests", "beautifulsoup4", "PyMuPDF", "Pillow"]:
+        module_name = pkg.replace("-", "_").lower()
+        import_name = "fitz" if pkg == "PyMuPDF" else module_name
         try:
-            __import__(module_name)
+            __import__(import_name)
         except ImportError:
             print(f"📦 Устанавливаю {pkg}…")
             subprocess.check_call(
@@ -304,50 +320,261 @@ def parse_honors_pdf(pdf_path):
     return result
 
 # ============================================================
-# ПАРСИНГ СТУПЕНЕЙ
+# ПАРСИНГ СТУПЕНЕЙ (ИСПРАВЛЕННАЯ ВЕРСИЯ + КАРТИНКИ)
 # ============================================================
 
-def detect_section(line):
-    low = line.lower()
-    for sec in SECTIONS:
-        if sec["name"].lower() in low:
-            return sec["id"]
+def detect_section(line: str):
+    """
+    Ищет заголовки секций в строке, игнорируя регистр и опечатки.
+    Возвращает id секции или None.
+    """
+    low = line.strip().upper()
+    clean_low = re.sub(r'^[\d\.\)\s•▪✓-]+', '', low).strip()
+    if not clean_low:
+        return None
+
+    section_keywords = {
+        "general": ["ОБЩИЕ", "ОБШИЕ"],
+        "spiritual": ["ДУХОВНОЕ ВОЗРАСТАНИЕ"],
+        "service": ["СЛУЖЕНИЕ БЛИЖНИМ", "СПУЖЕНИЕ БЛИЖНИМ"],
+        "friendship": ["РАЗВИТИЕ ДРУЖЕСКИХ ОТНОШЕНИЙ"],
+        "health": ["ЗДОРОВЬЕ И ФИЗИЧЕСКАЯ КУЛЬТУРА", "ЭДОРОВЬЕ И ФИЗИЧЕСКАЯ КУЛЬТУРА"],
+        "leadership": ["ОРГАНИЗАЦИЯ И РАЗВИТИЕ ЛИДЕРСКИХ КАЧЕСТВ", "ОРГАНИЗАЦИЯ И РАЗВИТИЕ ПИДЕРСКИХ КАЧЕСТВ"],
+        "nature": ["ИССЛЕДОВАНИЕ ПРИРОДЫ", "ИССПЕДОВАНИЕ ПРИРОДЫ"],
+        "camping": ["ЛАГЕРНЫЕ И ПОХОДНЫЕ НАВЫКИ", "ПАГЕРНЫЕ И ПОХОДНЫЕ НАВЫКИ"],
+        "life_skills": ["ЖИЗНЕННЫЕ НАВЫКИ"],
+    }
+
+    for section_id, keywords in section_keywords.items():
+        for keyword in keywords:
+            if keyword in clean_low:
+                return section_id
     return None
+
+
+def _pil_metrics(image_bytes):
+    """
+    Возвращает (w, h, white_ratio, aspect) или None, если картинку
+    не удалось прочитать. white_ratio — доля пикселей, близких к белому.
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        if img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+        w, h = img.size
+        aspect = max(w / h, h / w) if h else 0
+
+        # Уменьшаем до 100×100 для скорости и считаем долю белых
+        small = img.resize((100, 100))
+        if hasattr(small, "get_flattened_data"):
+            pixels = list(small.get_flattened_data())
+        else:
+            pixels = list(small.getdata())
+
+        if small.mode == "RGB":
+            whites = sum(1 for p in pixels if p[0] > 240 and p[1] > 240 and p[2] > 240)
+        else:
+            whites = sum(1 for p in pixels if p > 240)
+        white_ratio = whites / len(pixels)
+        return w, h, white_ratio, aspect
+    except Exception:
+        return None
+
+
+def should_keep_image(w, h, white_ratio, aspect, md5, seen_md5):
+    """
+    True — картинка полезная, False — мусор.
+    Фильтры: дедупликация, размер, пропорции, белизна, площадь.
+    """
+    # 1. Дедупликация
+    if md5 in seen_md5:
+        return False
+
+    # 2. Мелкие иконки / чекбоксы
+    if w < MIN_SIZE or h < MIN_SIZE:
+        return False
+
+    # 3. Целые страницы PDF
+    if w > MAX_SIZE or h > MAX_SIZE:
+        return False
+
+    # 4. Вытянутые полоски / линии
+    if aspect > MAX_ASPECT:
+        return False
+
+    # 5. Пустые бланки / фоны
+    if white_ratio > MAX_WHITE_RATIO:
+        return False
+
+    # 6. Совсем мелкие по площади
+    if w * h < MIN_AREA:
+        return False
+
+    return True
+
+
+def extract_images_from_pdf(pdf_path, level_meta):
+    """
+    Извлекает изображения из PDF, фильтрует мусор, сохраняет оставшиеся
+    в IMAGES_DIR. Возвращает dict: {page_num_1_based: [image_path, ...]}
+    """
+    import fitz
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    page_images = {}
+
+    seen_md5 = set()
+    stats = {"saved": 0, "skipped": 0}
+
+    with fitz.open(pdf_path) as doc:
+        for page_num_0, page in enumerate(doc):
+            page_num = page_num_0 + 1
+            filenames = []
+
+            for img_index, img_info in enumerate(page.get_images(full=True)):
+                xref = img_info[0]
+                try:
+                    base_image = doc.extract_image(xref)
+                except Exception:
+                    continue
+                image_bytes = base_image["image"]
+                image_ext = base_image["ext"]
+
+                # Метрики
+                metrics = _pil_metrics(image_bytes)
+                if metrics is None:
+                    stats["skipped"] += 1
+                    continue
+                w, h, white_ratio, aspect = metrics
+
+                # Дедупликация по MD5
+                md5 = hashlib.md5(image_bytes).hexdigest()
+
+                if not should_keep_image(w, h, white_ratio, aspect, md5, seen_md5):
+                    stats["skipped"] += 1
+                    continue
+
+                seen_md5.add(md5)
+
+                filename = f"{level_meta['id']}_page{page_num}_img{img_index+1}.{image_ext}"
+                filepath = IMAGES_DIR / filename
+                try:
+                    with open(filepath, "wb") as f:
+                        f.write(image_bytes)
+                    filenames.append(f"levels_images/{filename}")
+                    stats["saved"] += 1
+                except Exception as e:
+                    print(f"   ⚠️  Не сохранил {filename}: {e}")
+
+            if filenames:
+                page_images[page_num] = filenames
+
+    print(f"   🖼  {level_meta['name']}: сохранено {stats['saved']}, "
+          f"отфильтровано {stats['skipped']}")
+    return page_images
 
 
 def parse_level_pdf(pdf_path, level_meta):
     import pdfplumber
-    sections = {
+
+    # Картинки по страницам (уже отфильтрованные)
+    page_images = extract_images_from_pdf(pdf_path, level_meta)
+
+    all_sections = {
         s["id"]: {"id": s["id"], "levelId": level_meta["id"], "name": s["name"],
                   "order": s["order"], "requirements": []}
         for s in SECTIONS
     }
-    current_section = "general"
+
+    current_section_id = "general"
+    current_req_text = ""
+    current_req_is_advanced = False
+    current_req_page = 1  # страница, на которой началось требование
+
+    def finalize_requirement():
+        nonlocal current_req_text, current_req_is_advanced, current_req_page
+        text = current_req_text.strip()
+        if text:
+            section = all_sections[current_section_id]
+            req_index = len(section["requirements"]) + 1
+            rid = f"{level_meta['id']}_{current_section_id}_req_{req_index:02d}"
+            # Собираем картинки с текущей страницы (и соседних, если требование跨)
+            imgs = []
+            for pg in {current_req_page, current_req_page - 1, current_req_page + 1}:
+                imgs.extend(page_images.get(pg, []))
+            # Дедупликация с сохранением порядка
+            seen = set()
+            imgs_unique = []
+            for im in imgs:
+                if im not in seen:
+                    seen.add(im)
+                    imgs_unique.append(im)
+
+            section["requirements"].append({
+                "id": rid,
+                "sectionId": current_section_id,
+                "levelId": level_meta["id"],
+                "text": text,
+                "type": "boolean",
+                "order": req_index,
+                "isAdvanced": current_req_is_advanced,
+                "imageUrls": imgs_unique,
+            })
+        current_req_text = ""
+        current_req_is_advanced = False
+        current_req_page = 1
 
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
+        for page_idx, page in enumerate(pdf.pages):
+            page_num = page_idx + 1
             text = page.extract_text()
             if not text:
                 continue
+
             for line in text.split("\n"):
                 line = line.strip()
-                if not line:
+                if not line or re.match(r'^\d+\s*$', line):
                     continue
-                sec = detect_section(line)
-                if sec:
-                    current_section = sec
+
+                # 1. Заголовок раздела?
+                section_id = detect_section(line)
+                if section_id:
+                    finalize_requirement()
+                    if section_id not in all_sections:
+                        all_sections[section_id] = {
+                            "id": section_id, "levelId": level_meta["id"],
+                            "name": line.strip(), "order": 99, "requirements": []
+                        }
+                    current_section_id = section_id
                     continue
-                match = re.match(r"^(\d+[\.\)]|[•▪✓])\s*(.+)", line)
-                if match and len(match.group(2)) > 10:
-                    req_text = match.group(2).strip()
-                    section = sections[current_section]
-                    rid = f"{level_meta['id']}_{current_section}_req_{len(section['requirements']) + 1:02d}"
-                    section["requirements"].append({
-                        "id": rid, "sectionId": current_section,
-                        "levelId": level_meta["id"], "text": req_text,
-                        "type": "boolean", "order": len(section["requirements"]) + 1,
-                        "isAdvanced": False,
-                    })
+
+                # 2. Пометка "Повышенное"?
+                if "повышенное" in line.lower() or "повышенные" in line.lower():
+                    finalize_requirement()
+                    current_req_is_advanced = True
+                    continue
+
+                # 3. Новое требование или продолжение?
+                match = re.match(r"^\s*(\d+[\.\)]|[•▪✓-])\s*(.*)", line)
+                if match:
+                    finalize_requirement()
+                    current_req_text = match.group(2).strip()
+                    current_req_page = page_num
+                elif current_req_text:
+                    current_req_text += " " + line
+                else:
+                    # Строка до первого требования — игнорируем (мусор/заголовки PDF)
+                    pass
+
+        finalize_requirement()
+
+    sorted_sections = sorted(
+        [s for s in all_sections.values() if s["requirements"]],
+        key=lambda s: s.get("order", 99)
+    )
 
     return {
         "level": {
@@ -356,7 +583,7 @@ def parse_level_pdf(pdf_path, level_meta):
             "grade": level_meta["grade"], "icon": None,
             "contentVersion": VERSION,
         },
-        "sections": list(sections.values()),
+        "sections": sorted_sections,
     }
 
 # ============================================================
@@ -371,7 +598,9 @@ def main():
 
     ensure_deps()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     print(f"\n📁 Вывод: {OUTPUT_DIR}")
+    print(f"📁 Картинки: {IMAGES_DIR}")
     print(f"📁 Кэш:  {CACHE_DIR}")
 
     print("\n" + "─" * 60)
@@ -421,7 +650,8 @@ def main():
                 parsed = parse_level_pdf(pdf_path, meta)
                 levels_data["levels"].append(parsed)
                 total = sum(len(s["requirements"]) for s in parsed["sections"])
-                print(f"   ✓ {meta['name']}: {total} требований")
+                imgs = sum(len(r.get("imageUrls", [])) for s in parsed["sections"] for r in s["requirements"])
+                print(f"   ✓ {meta['name']}: {total} требований, {imgs} привязок картинок")
             except Exception as e:
                 print(f"   ❌ Ошибка: {e}")
 
@@ -436,6 +666,7 @@ def main():
     print("  ГОТОВО")
     print("=" * 60)
     print(f"\n📁 JSON: {OUTPUT_DIR}")
+    print(f"📁 Картинки: {IMAGES_DIR}")
     print(f"🔢 Версия: {VERSION}\n")
 
 

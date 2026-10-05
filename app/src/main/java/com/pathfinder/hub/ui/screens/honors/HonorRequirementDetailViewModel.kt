@@ -21,6 +21,7 @@ data class HonorRequirementDetailUiState(
     val requirement: HonorRequirementEntity? = null,
     val status: String = "not_started",
     val comment: String? = null,
+    val mediaUrls: List<String> = emptyList(),
     val honorName: String = "",
     val isSaving: Boolean = false,
     val successMessage: String? = null,
@@ -66,15 +67,13 @@ class HonorRequirementDetailViewModel @Inject constructor(
                     requirement = req,
                     status = p?.status ?: "not_started",
                     comment = p?.comment,
+                    mediaUrls = p?.mediaUrls ?: emptyList(),
                     honorName = honor?.name ?: ""
                 )
             }
         }
     }
 
-    /**
-     * Отметить теоретическое требование как выполненное (без файла).
-     */
     fun submitTheory() {
         val userId = sessionManager.getUserId() ?: return
         _state.update { it.copy(isSaving = true, successMessage = null, errorMessage = null) }
@@ -89,7 +88,7 @@ class HonorRequirementDetailViewModel @Inject constructor(
                         submittedAt = Date(),
                         approvedBy = null,
                         approvedAt = null,
-                        mediaUrls = emptyList(),
+                        mediaUrls = _state.value.mediaUrls,
                         comment = null,
                         pendingSync = true
                     )
@@ -109,11 +108,14 @@ class HonorRequirementDetailViewModel @Inject constructor(
 
     /**
      * Прикрепить загруженный файл к требованию.
-     * Вызывается после возврата с FileUploadScreen.
+     * URL добавляется к mediaUrls, а не перезаписывает их.
      */
     fun attachUploadedFile(fileUrl: String, fileName: String) {
         val userId = sessionManager.getUserId() ?: return
         _state.update { it.copy(isSaving = true, successMessage = null, errorMessage = null) }
+
+        val newMediaUrls = (_state.value.mediaUrls + fileUrl).distinct()
+
         viewModelScope.launch {
             try {
                 honorRepository.upsertProgress(
@@ -125,7 +127,7 @@ class HonorRequirementDetailViewModel @Inject constructor(
                         submittedAt = Date(),
                         approvedBy = null,
                         approvedAt = null,
-                        mediaUrls = listOf(fileUrl),
+                        mediaUrls = newMediaUrls,
                         comment = "Файл: $fileName",
                         pendingSync = true
                     )
@@ -134,6 +136,7 @@ class HonorRequirementDetailViewModel @Inject constructor(
                     it.copy(
                         isSaving = false,
                         status = "submitted",
+                        mediaUrls = newMediaUrls,
                         successMessage = "Файл отправлен на проверку"
                     )
                 }

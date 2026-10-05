@@ -34,9 +34,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // ============================================================
-        // Yandex Object Storage — читаем из local.properties
-        // ============================================================
         buildConfigField(
             "String",
             "YANDEX_ACCESS_KEY_ID",
@@ -74,7 +71,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    // ✅ Для AGP 8.x правильный способ — kotlinOptions
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -101,6 +97,13 @@ android {
             pickFirsts.add("META-INF/services/javax.xml.stream.XMLInputFactory")
         }
     }
+}
+
+// ============================================================
+// Room: schemaLocation нужен для @AutoMigration
+// ============================================================
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -148,7 +151,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$navigationVersion")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // ============ Coil (для будущих превью картинок в чате) ============
+    // ============ Coil ============
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // ============ Room ============
@@ -176,7 +179,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    // firebase-storage убран — используем Yandex Object Storage
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
     implementation("com.google.firebase:firebase-appcheck-debug")

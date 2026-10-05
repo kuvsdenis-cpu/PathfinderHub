@@ -1,13 +1,10 @@
 package com.pathfinder.hub.ui.comments
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,13 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
@@ -44,7 +38,6 @@ fun CommentsSection(
         viewModel.init(targetType, targetId)
     }
 
-    // ✅ Как только пришёл FileUploadResult — публикуем комментарий с вложением
     LaunchedEffect(pendingAttachment) {
         pendingAttachment?.let { result ->
             viewModel.attachFile(result)
@@ -168,61 +161,12 @@ private fun CommentBubble(comment: CommentUiModel) {
                         text = comment.text,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    // ✅ Рендер вложений
                     comment.attachments.forEach { url ->
                         Spacer(Modifier.height(8.dp))
                         AttachmentPreview(url = url)
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AttachmentPreview(url: String) {
-    val lower = url.lowercase()
-    val isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") ||
-            lower.endsWith(".png") || lower.endsWith(".gif") ||
-            lower.endsWith(".webp")
-
-    if (isImage) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(url)
-                .crossfade(true)
-                .build(),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 220.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { /* TODO: открыть полноэкранный просмотр */ }
-        )
-    } else {
-        // PDF / прочее — показываем иконку и имя файла
-        val fileName = url.substringAfterLast('/')
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { /* TODO: открыть файл */ }
-                .padding(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.Description,
-                contentDescription = null,
-                tint = PathfinderBlue,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = fileName,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1
-            )
         }
     }
 }

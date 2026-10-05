@@ -3,13 +3,39 @@ package com.pathfinder.hub.ui.storage
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -157,17 +183,13 @@ fun FileUploadScreen(
             if (state.uploadedUrl == null) {
                 Button(
                     onClick = {
-                        val mime = when {
-                            state.context.allowedMimeTypes == "image/*" -> "image/*"
-                            state.context.allowedMimeTypes == "application/pdf" -> "application/pdf"
-                            state.context.allowedMimeTypes == "video/*" -> "video/*"
-                            state.context.allowedMimeTypes.contains("image") -> "image/*"
-                            else -> "*/*"
-                        }
+                        val mime = resolvePickerMime(state.context.allowedMimeTypes)
                         filePicker.launch(mime)
                     },
                     enabled = !state.isUploading,
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
                 ) {
                     if (state.isUploading) {
                         CircularProgressIndicator(
@@ -186,12 +208,37 @@ fun FileUploadScreen(
     }
 }
 
-private fun allowedTypesLabel(ctx: FileUploadContext): String = when {
-    ctx.allowedMimeTypes.contains("image") && ctx.allowedMimeTypes.contains("pdf") -> "Изображения, PDF"
-    ctx.allowedMimeTypes.contains("image") && ctx.allowedMimeTypes.contains("video") -> "Изображения, видео"
-    ctx.allowedMimeTypes == "image/*" -> "Изображения"
-    ctx.allowedMimeTypes == "application/pdf" -> "PDF"
-    else -> "Любые файлы"
+private fun resolvePickerMime(allowed: String): String {
+    val trimmed = allowed.trim()
+    if (trimmed.isBlank()) return "*/*"
+    if (trimmed.contains(',')) return "*/*"
+    return when (trimmed) {
+        "image/*", "video/*", "audio/*", "application/pdf" -> trimmed
+        else -> "*/*"
+    }
+}
+
+private fun allowedTypesLabel(ctx: FileUploadContext): String {
+    val types = ctx.allowedMimeTypes
+        .split(',')
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .toSet()
+
+    if (types.isEmpty() || types.contains("*/*")) return "Любые файлы"
+
+    val labels = mutableListOf<String>()
+    if (types.any { it == "image/*" || it.startsWith("image/") }) labels += "Изображения"
+    if (types.any { it == "video/*" || it.startsWith("video/") }) labels += "Видео"
+    if (types.any { it == "audio/*" || it.startsWith("audio/") }) labels += "Аудио"
+    if (types.any { it.startsWith("application/pdf") }) labels += "PDF"
+    if (types.any { it.contains("word") || it == "application/msword" || it == "application/rtf" }) labels += "Документы Word"
+    if (types.any { it.contains("excel") || it.contains("spreadsheet") || it == "text/csv" }) labels += "Таблицы"
+    if (types.any { it.contains("presentation") || it.contains("powerpoint") }) labels += "Презентации"
+    if (types.any { it.contains("zip") || it.contains("rar") || it.contains("7z") }) labels += "Архивы"
+    if (types.any { it == "text/plain" || it == "application/json" || it == "application/xml" }) labels += "Текст"
+
+    return if (labels.isEmpty()) "Любые файлы" else labels.joinToString(", ")
 }
 
 private fun formatSize(bytes: Long): String = when {

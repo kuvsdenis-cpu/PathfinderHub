@@ -1,5 +1,7 @@
 package com.pathfinder.hub.data.repository
 
+import androidx.room.withTransaction
+import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.dao.HonorDao
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.local.entity.learning.BookReportEntity
@@ -23,6 +25,7 @@ import java.util.Date
 import javax.inject.Inject
 
 class HonorRepository @Inject constructor(
+    private val db: AppDatabase,
     private val dao: HonorDao,
     private val syncQueueManager: SyncQueueManager
 ) {
@@ -42,10 +45,8 @@ class HonorRepository @Inject constructor(
     suspend fun getLastAttemptNumber(userId: String, honorId: String): Int? = dao.getLastAttemptNumber(userId, honorId)
     fun observePendingDrafts(): Flow<List<HonorDraftEntity>> = dao.observePendingDrafts()
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
-
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
-
     suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------
@@ -59,32 +60,30 @@ class HonorRepository @Inject constructor(
     suspend fun upsertContentVersion(v: ContentVersionEntity) = dao.upsertContentVersion(v)
     suspend fun upsertVersion(v: HonorVersionEntity) = dao.upsertVersion(v)
 
-    // ---------- Пользовательские данные (с enqueue) ----------
+    // ---------- Пользовательские данные (с транзакциями + enqueue) ----------
     suspend fun upsertProgress(p: HonorProgressEntity) {
-        dao.upsertProgress(p)
-        syncQueueManager.enqueue(
-            entityType = "honor_progress",
-            entityId = "${p.userId}_${p.requirementId}",
-            operation = "UPDATE",
-            payload = p
-        )
+        db.withTransaction {
+            dao.upsertProgress(p)
+            syncQueueManager.enqueue(
+                entityType = "honor_progress",
+                entityId = "${p.userId}_${p.requirementId}",
+                operation = "UPDATE",
+                payload = p
+            )
+        }
     }
 
-    /**
-     * Прикрепить загруженный файл (отчёт) к требованию специализации.
-     * URL добавляется к mediaUrls, если запись прогресса уже существует.
-     */
     suspend fun attachReportToRequirement(
         userId: String,
         requirementId: String,
         fileUrl: String,
         fileName: String
     ) {
-        val existing = dao.getProgressForRequirement(userId, requirementId)
-        val honorId = existing?.honorId ?: ""
+        db.withTransaction {
+            val existing = dao.getProgressForRequirement(userId, requirementId)
+            val honorId = existing?.honorId ?: ""
 
-        upsertProgress(
-            HonorProgressEntity(
+            val newProgress = HonorProgressEntity(
                 userId = userId,
                 honorId = honorId,
                 requirementId = requirementId,
@@ -96,82 +95,110 @@ class HonorRepository @Inject constructor(
                 comment = "Файл: $fileName",
                 pendingSync = true
             )
-        )
+
+            dao.upsertProgress(newProgress)
+            syncQueueManager.enqueue(
+                entityType = "honor_progress",
+                entityId = "${userId}_${requirementId}",
+                operation = "UPDATE",
+                payload = newProgress
+            )
+        }
     }
 
-    suspend fun approveRequirement(userId: String, requirementId: String, status: String, approvedBy: String, at: Long) {
-        dao.approveRequirement(userId, requirementId, status, approvedBy, at)
-        syncQueueManager.enqueue(
-            entityType = "honor_progress",
-            entityId = "${userId}_${requirementId}",
-            operation = "UPDATE",
-            payload = mapOf(
-                "userId" to userId,
-                "requirementId" to requirementId,
-                "status" to status,
-                "approvedBy" to approvedBy,
-                "approvedAt" to at
+    suspend fun approveRequirement(
+        userId: String,
+        requirementId: String,
+        status: String,
+        approvedBy: String,
+        at: Long
+    ) {
+        db.withTransaction {
+            dao.approveRequirement(userId, requirementId, status, approvedBy, at)
+            syncQueueManager.enqueue(
+                entityType = "honor_progress",
+                entityId = "${userId}_${requirementId}",
+                operation = "UPDATE",
+                payload = mapOf(
+                    "userId" to userId,
+                    "requirementId" to requirementId,
+                    "status" to status,
+                    "approvedBy" to approvedBy,
+                    "approvedAt" to at
+                )
             )
-        )
+        }
     }
 
     suspend fun upsertCompletion(c: HonorCompletionEntity) {
-        dao.upsertCompletion(c)
-        syncQueueManager.enqueue(
-            entityType = "honor_completion",
-            entityId = "${c.userId}_${c.honorId}",
-            operation = "CREATE",
-            payload = c
-        )
+        db.withTransaction {
+            dao.upsertCompletion(c)
+            syncQueueManager.enqueue(
+                entityType = "honor_completion",
+                entityId = "${c.userId}_${c.honorId}",
+                operation = "CREATE",
+                payload = c
+            )
+        }
     }
 
     suspend fun upsertAttempt(a: TestAttemptEntity) {
-        dao.upsertAttempt(a)
-        syncQueueManager.enqueue(
-            entityType = "test_attempt",
-            entityId = a.id,
-            operation = "CREATE",
-            payload = a
-        )
+        db.withTransaction {
+            dao.upsertAttempt(a)
+            syncQueueManager.enqueue(
+                entityType = "test_attempt",
+                entityId = a.id,
+                operation = "CREATE",
+                payload = a
+            )
+        }
     }
 
     suspend fun upsertOpenAnswer(r: OpenAnswerReviewEntity) {
-        dao.upsertOpenAnswer(r)
-        syncQueueManager.enqueue(
-            entityType = "open_answer_review",
-            entityId = "${r.attemptId}_${r.questionId}",
-            operation = "CREATE",
-            payload = r
-        )
+        db.withTransaction {
+            dao.upsertOpenAnswer(r)
+            syncQueueManager.enqueue(
+                entityType = "open_answer_review",
+                entityId = "${r.attemptId}_${r.questionId}",
+                operation = "CREATE",
+                payload = r
+            )
+        }
     }
 
     suspend fun upsertDraft(d: HonorDraftEntity) {
-        dao.upsertDraft(d)
-        syncQueueManager.enqueue(
-            entityType = "honor_draft",
-            entityId = d.id,
-            operation = "CREATE",
-            payload = d
-        )
+        db.withTransaction {
+            dao.upsertDraft(d)
+            syncQueueManager.enqueue(
+                entityType = "honor_draft",
+                entityId = d.id,
+                operation = "CREATE",
+                payload = d
+            )
+        }
     }
 
     suspend fun upsertBookReport(r: BookReportEntity) {
-        dao.upsertBookReport(r)
-        syncQueueManager.enqueue(
-            entityType = "book_report",
-            entityId = r.id,
-            operation = "CREATE",
-            payload = r
-        )
+        db.withTransaction {
+            dao.upsertBookReport(r)
+            syncQueueManager.enqueue(
+                entityType = "book_report",
+                entityId = r.id,
+                operation = "CREATE",
+                payload = r
+            )
+        }
     }
 
     suspend fun upsertVerseProgress(p: VerseProgressEntity) {
-        dao.upsertVerseProgress(p)
-        syncQueueManager.enqueue(
-            entityType = "verse_progress",
-            entityId = "${p.userId}_${p.verseId}",
-            operation = "UPDATE",
-            payload = p
-        )
+        db.withTransaction {
+            dao.upsertVerseProgress(p)
+            syncQueueManager.enqueue(
+                entityType = "verse_progress",
+                entityId = "${p.userId}_${p.verseId}",
+                operation = "UPDATE",
+                payload = p
+            )
+        }
     }
 }

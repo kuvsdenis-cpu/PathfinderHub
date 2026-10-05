@@ -1,5 +1,7 @@
 package com.pathfinder.hub.data.repository
 
+import androidx.room.withTransaction
+import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.dao.TaskDao
 import com.pathfinder.hub.data.local.entity.planning.AssignmentEntity
 import com.pathfinder.hub.data.local.entity.planning.ConfirmationEntity
@@ -9,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(
+    private val db: AppDatabase,
     private val dao: TaskDao,
     private val syncQueueManager: SyncQueueManager
 ) {
@@ -20,27 +23,42 @@ class TaskRepository @Inject constructor(
     fun observeEventTasks(eventId: String): Flow<List<TaskEntity>> = dao.observeEventTasks(eventId)
 
     suspend fun upsert(task: TaskEntity) {
-        dao.upsert(task)
-        syncQueueManager.enqueue("task", task.id, "CREATE", task)
+        db.withTransaction {
+            dao.upsert(task)
+            syncQueueManager.enqueue("task", task.id, "CREATE", task)
+        }
     }
 
     suspend fun update(task: TaskEntity) {
-        dao.update(task)
-        syncQueueManager.enqueue("task", task.id, "UPDATE", task)
+        db.withTransaction {
+            dao.update(task)
+            syncQueueManager.enqueue("task", task.id, "UPDATE", task)
+        }
     }
 
     suspend fun updateStatus(id: String, status: String) {
-        dao.updateStatus(id, status)
-        dao.getTask(id)?.let { syncQueueManager.enqueue("task", id, "UPDATE", it) }
+        db.withTransaction {
+            dao.updateStatus(id, status)
+            dao.getTask(id)?.let { syncQueueManager.enqueue("task", id, "UPDATE", it) }
+        }
     }
 
     suspend fun delete(task: TaskEntity) {
-        dao.delete(task)
-        syncQueueManager.enqueue("task", task.id, "DELETE", task)
+        db.withTransaction {
+            dao.delete(task)
+            syncQueueManager.enqueue("task", task.id, "DELETE", task)
+        }
     }
 
-    suspend fun upsertAssignment(a: AssignmentEntity) = dao.upsertAssignment(a)
+    suspend fun upsertAssignment(a: AssignmentEntity) {
+        db.withTransaction { dao.upsertAssignment(a) }
+    }
+
     suspend fun getAssignments(taskId: String): List<AssignmentEntity> = dao.getAssignments(taskId)
-    suspend fun upsertConfirmation(c: ConfirmationEntity) = dao.upsertConfirmation(c)
+
+    suspend fun upsertConfirmation(c: ConfirmationEntity) {
+        db.withTransaction { dao.upsertConfirmation(c) }
+    }
+
     fun observePendingConfirmations(): Flow<List<ConfirmationEntity>> = dao.observePendingConfirmations()
 }

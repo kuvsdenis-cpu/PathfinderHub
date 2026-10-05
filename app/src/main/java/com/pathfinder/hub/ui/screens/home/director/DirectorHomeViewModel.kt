@@ -3,6 +3,7 @@ package com.pathfinder.hub.ui.screens.home.director
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
+import com.pathfinder.hub.data.repository.AuthRepository
 import com.pathfinder.hub.data.repository.ClubRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,14 +19,16 @@ data class DirectorHomeUiState(
     val directorName: String? = null,
     val clubName: String? = null,
     val clubLocation: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val loggedOut: Boolean = false,   // <-- ДОБАВЛЕНО
 )
 
 @HiltViewModel
 class DirectorHomeViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val clubRepository: ClubRepository
+    private val clubRepository: ClubRepository,
+    private val authRepository: AuthRepository    // <-- ДОБАВЛЕНО
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DirectorHomeUiState())
@@ -61,6 +64,22 @@ class DirectorHomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
+        }
+    }
+
+    /**
+     * Выход: Firebase Auth + очистка локальной сессии.
+     * После успеха ставим флаг loggedOut — UI отреагирует и навигирует на LOGIN.
+     */
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                authRepository.signOut()
+            } catch (_: Exception) {
+                // Игнорируем ошибку Firebase — всё равно чистим локальную сессию.
+            }
+            sessionManager.clear()
+            _state.update { it.copy(loggedOut = true) }
         }
     }
 }

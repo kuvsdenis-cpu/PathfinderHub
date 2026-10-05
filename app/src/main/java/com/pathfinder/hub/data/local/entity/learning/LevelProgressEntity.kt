@@ -8,5 +8,7 @@ import java.util.Date
 data class LevelProgressEntity(
     val userId: String, val levelId: String, val requirementId: String,
     val status: String, val submittedAt: Date?, val approvedBy: String?,
-    val approvedAt: Date?, val comment: String?, val pendingSync: Boolean = false
+    val approvedAt: Date?, val comment: String?,
+    val mediaUrls: List<String> = emptyList(),
+    val pendingSync: Boolean = false
 )

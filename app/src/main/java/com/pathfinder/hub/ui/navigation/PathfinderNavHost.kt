@@ -93,8 +93,7 @@ fun PathfinderNavHost(
         composable(Routes.ROLE_HOME) {
             RoleHomeScreen(navController = navController)
         }
-
-        // === Director ===
+// === Director ===
         composable(Routes.DIRECTOR_HOME) {
             DirectorHomeScreen(
                 onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
@@ -106,7 +105,12 @@ fun PathfinderNavHost(
                 onNavigateToTasks = { navController.navigate(Routes.CREATE_TASK) },
                 onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) },
                 onNavigateToModeration = { navController.navigate(Routes.MODERATION) },
-                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
+                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onLogout = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -210,15 +214,25 @@ fun PathfinderNavHost(
                 savedStateHandle = backStackEntry.savedStateHandle
             )
         }
-
         composable(
             route = Routes.REQUIREMENT_DETAIL,
             arguments = listOf(
                 navArgument("levelId") { type = NavType.StringType },
                 navArgument("requirementId") { type = NavType.StringType }
             )
-        ) {
-            RequirementDetailScreen(onBack = { navController.popBackStack() })
+        ) { backStackEntry ->
+            RequirementDetailScreen(
+                onBack = { navController.popBackStack() },
+                onUploadReport = { lvlId, requirementId ->
+                    navController.navigate(
+                        Routes.fileUpload(
+                            contextType = "LEVEL_REQUIREMENT",
+                            contextId = requirementId
+                        )
+                    )
+                },
+                savedStateHandle = backStackEntry.savedStateHandle
+            )
         }
 
         // === Teen - Honors ===
@@ -330,9 +344,16 @@ fun PathfinderNavHost(
             )
         }
 
-        // === Teen - Profile ===
+// === Teen - Profile ===
         composable(Routes.TEEN_PROFILE) {
-            TeenProfileScreen(onBack = { navController.popBackStack() })
+            TeenProfileScreen(
+                onBack = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // === Teen - Gamification ===

@@ -16,6 +16,7 @@ import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelSectionEntity
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Date
@@ -25,7 +26,8 @@ class SeedDatabaseWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val levelRepository: LevelRepository,
-    private val honorRepository: HonorRepository
+    private val honorRepository: HonorRepository,
+    private val storageRepository: StorageRepository
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -106,8 +108,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
         val type = object : TypeToken<LevelsFile>() {}.type
         val file: LevelsFile = gson.fromJson(json, type)
 
-        // ✅ ВАЖНО: чистим старые данные, т.к. схема изменилась (составной PK)
-        // CASCADE сам удалит требования при удалении секций, но делаем явно для надёжности
         Log.d(TAG, "🧹 Очищаем старые секции и требования…")
         levelRepository.clearAllRequirements()
         levelRepository.clearAllSections()
@@ -119,8 +119,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
             levelRepository.upsertLevels(listOf(parsed.level))
 
-            // ✅ Теперь id секции — просто "general", "spiritual", ...
-            // Составной PK (levelId, id) делает их уникальными в рамках уровня
             val sections = parsed.sections.map { s ->
                 LevelSectionEntity(
                     id = s.id.trim(),
@@ -131,15 +129,21 @@ class SeedDatabaseWorker @AssistedInject constructor(
             }
             levelRepository.upsertSections(sections)
 
-            // ✅ sectionId требований — тоже просто "general"
+            // Картинки уже залиты в бакет скриптом tools/upload_level_images.py.
+            // Бакет открыт на чтение levels_images/* → URL вечные, без подписи.
+            // Coil скачает один раз и закэширует на диск.
             val requirements = parsed.sections.flatMap { section ->
                 section.requirements.map { req ->
+                    val resolvedImages = req.imageUrls.map { path ->
+                        storageRepository.buildLevelImageUrl(path)
+                    }
                     req.copy(
                         id = req.id.trim(),
                         sectionId = section.id.trim(),
                         levelId = correctLevelId,
                         text = req.text.trim(),
-                        type = req.type.trim()
+                        type = req.type.trim(),
+                        imageUrls = resolvedImages,
                     )
                 }
             }
@@ -149,7 +153,6 @@ class SeedDatabaseWorker @AssistedInject constructor(
                     "${sections.size} разделов, ${requirements.size} требований")
         }
 
-        // Проверка после записи
         val allSections = levelRepository.debugDistinctSectionLevelIds()
         val allReqs = levelRepository.debugDistinctRequirementLevelIds()
         Log.d(TAG, "✅ ПОСЛЕ ЗАГРУЗКИ: DISTINCT levelId (sections)=$allSections")

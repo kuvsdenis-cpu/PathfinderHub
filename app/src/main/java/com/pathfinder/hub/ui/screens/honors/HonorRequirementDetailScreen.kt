@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
+import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.storage.FileUploadContext
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
@@ -73,7 +74,10 @@ fun HonorRequirementDetailScreen(
 
         val req = state.requirement ?: return@Scaffold
         Column(
-            Modifier.fillMaxSize().padding(padding).padding(16.dp)
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
         ) {
             Text(state.honorName, style = MaterialTheme.typography.labelLarge, color = PathfinderBlue)
             Spacer(Modifier.height(12.dp))
@@ -95,6 +99,21 @@ fun HonorRequirementDetailScreen(
                 color = PathfinderBlue
             )
 
+            // ✅ Блок прикреплённых файлов
+            if (state.mediaUrls.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Прикреплённые файлы:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(8.dp))
+                state.mediaUrls.forEach { url ->
+                    AttachmentPreview(url = url)
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+
             Spacer(Modifier.weight(1f))
 
             if (req.type == "test") {
@@ -109,7 +128,7 @@ fun HonorRequirementDetailScreen(
                     onClick = onOpenReport,
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
-                    Text("Загрузить отчёт")
+                    Text(if (state.mediaUrls.isEmpty()) "Загрузить отчёт" else "Загрузить ещё файл")
                 }
             }
             Spacer(Modifier.height(8.dp))

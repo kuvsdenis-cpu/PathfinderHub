@@ -1,5 +1,7 @@
 package com.pathfinder.hub.data.repository
 
+import androidx.room.withTransaction
+import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.dao.LevelDao
 import com.pathfinder.hub.data.local.entity.learning.LeaderChecklistEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelCompletionEntity
@@ -15,7 +17,8 @@ import javax.inject.Inject
 
 class LevelRepository @Inject constructor(
     private val dao: LevelDao,
-    private val syncQueueManager: SyncQueueManager
+    private val syncQueueManager: SyncQueueManager,
+    private val database: AppDatabase
 ) {
     // ---------- Чтение ----------
     fun observeLevels(): Flow<List<LevelEntity>> = dao.observeLevels()
@@ -57,24 +60,32 @@ class LevelRepository @Inject constructor(
     suspend fun clearAllRequirements() = dao.clearAllRequirements()
     suspend fun clearAllSections() = dao.clearAllSections()
 
-    // ---------- Пользовательские данные (с enqueue) ----------
+    // ---------- Пользовательские данные (с enqueue + транзакция) ----------
+
+    /**
+     * Запись прогресса + постановка в очередь синхронизации — атомарно.
+     * Если процесс умрёт между этими операциями, обе откатятся.
+     */
     suspend fun upsertProgress(p: LevelProgressEntity) {
-        dao.upsertProgress(p)
-        syncQueueManager.enqueue(
-            entityType = "level_progress",
-            entityId = "${p.userId}_${p.requirementId}",
-            operation = "UPDATE",
-            payload = p
-        )
+        database.withTransaction {
+            dao.upsertProgress(p)
+            syncQueueManager.enqueue(
+                entityType = "level_progress",
+                entityId = "${p.userId}_${p.requirementId}",
+                operation = "UPDATE",
+                payload = p
+            )
+        }
     }
 
     /**
      * Прикрепить загруженный файл (отчёт) к требованию ступени.
      * Если записи прогресса ещё нет — создаёт новую.
+     * URL добавляется к mediaUrls (не перезаписывает).
      *
-     * ВАЖНО: levelId берём из уже существующей записи прогресса.
-     * Если её нет — levelId останется пустым, и запись всё равно сохранится,
-     * но лучше, чтобы LevelProgressEntity уже существовала (создаётся при первом действии).
+     * Не оборачиваем в отдельную транзакцию — внутри upsertProgress уже есть.
+     * Но чтение existing и финальная запись — в одной транзакции, чтобы
+     * параллельный вызов не затирал mediaUrls.
      */
     suspend fun attachReportToRequirement(
         userId: String,
@@ -82,68 +93,92 @@ class LevelRepository @Inject constructor(
         fileUrl: String,
         fileName: String
     ) {
-        val existing = dao.getProgressForRequirement(userId, requirementId)
-        val levelId = existing?.levelId ?: ""
+        database.withTransaction {
+            val existing = dao.getProgressForRequirement(userId, requirementId)
+            val levelId = existing?.levelId ?: ""
+            val newMediaUrls = ((existing?.mediaUrls ?: emptyList()) + fileUrl).distinct()
 
-        val updated = LevelProgressEntity(
-            userId = userId,
-            levelId = levelId,
-            requirementId = requirementId,
-            status = "submitted",
-            submittedAt = Date(),
-            approvedBy = existing?.approvedBy,
-            approvedAt = existing?.approvedAt,
-            comment = "Файл: $fileName ($fileUrl)",
-            pendingSync = true
-        )
+            val updated = LevelProgressEntity(
+                userId = userId,
+                levelId = levelId,
+                requirementId = requirementId,
+                status = "submitted",
+                submittedAt = Date(),
+                approvedBy = existing?.approvedBy,
+                approvedAt = existing?.approvedAt,
+                comment = "Файл: $fileName",
+                mediaUrls = newMediaUrls,
+                pendingSync = true
+            )
 
-        upsertProgress(updated)
+            dao.upsertProgress(updated)
+            syncQueueManager.enqueue(
+                entityType = "level_progress",
+                entityId = "${userId}_${requirementId}",
+                operation = "UPDATE",
+                payload = updated
+            )
+        }
     }
 
-    suspend fun approveRequirement(userId: String, requirementId: String, status: String, approvedBy: String, at: Long) {
-        dao.approveRequirement(userId, requirementId, status, approvedBy, at)
-        syncQueueManager.enqueue(
-            entityType = "level_progress",
-            entityId = "${userId}_${requirementId}",
-            operation = "UPDATE",
-            payload = mapOf(
-                "userId" to userId,
-                "requirementId" to requirementId,
-                "status" to status,
-                "approvedBy" to approvedBy,
-                "approvedAt" to at
+    suspend fun approveRequirement(
+        userId: String,
+        requirementId: String,
+        status: String,
+        approvedBy: String,
+        at: Long
+    ) {
+        database.withTransaction {
+            dao.approveRequirement(userId, requirementId, status, approvedBy, at)
+            syncQueueManager.enqueue(
+                entityType = "level_progress",
+                entityId = "${userId}_${requirementId}",
+                operation = "UPDATE",
+                payload = mapOf(
+                    "userId" to userId,
+                    "requirementId" to requirementId,
+                    "status" to status,
+                    "approvedBy" to approvedBy,
+                    "approvedAt" to at
+                )
             )
-        )
+        }
     }
 
     suspend fun clearProgressForRequirement(userId: String, requirementId: String) {
-        dao.clearProgressForRequirement(userId, requirementId)
-        syncQueueManager.enqueue(
-            entityType = "level_progress",
-            entityId = "${userId}_${requirementId}",
-            operation = "DELETE",
-            payload = mapOf("userId" to userId, "requirementId" to requirementId)
-        )
+        database.withTransaction {
+            dao.clearProgressForRequirement(userId, requirementId)
+            syncQueueManager.enqueue(
+                entityType = "level_progress",
+                entityId = "${userId}_${requirementId}",
+                operation = "DELETE",
+                payload = mapOf("userId" to userId, "requirementId" to requirementId)
+            )
+        }
     }
 
     suspend fun upsertCompletion(c: LevelCompletionEntity) {
-        dao.upsertCompletion(c)
-        syncQueueManager.enqueue(
-            entityType = "level_completion",
-            entityId = "${c.userId}_${c.levelId}",
-            operation = "CREATE",
-            payload = c
-        )
+        database.withTransaction {
+            dao.upsertCompletion(c)
+            syncQueueManager.enqueue(
+                entityType = "level_completion",
+                entityId = "${c.userId}_${c.levelId}",
+                operation = "CREATE",
+                payload = c
+            )
+        }
     }
 
     suspend fun upsertChecklist(c: LeaderChecklistEntity) {
-        dao.upsertChecklist(c)
-        syncQueueManager.enqueue(
-            entityType = "leader_checklist",
-            entityId = "${c.leaderId}_${c.childId}_${c.levelId}",
-            operation = "UPDATE",
-            payload = c
-        )
+        database.withTransaction {
+            dao.upsertChecklist(c)
+            syncQueueManager.enqueue(
+                entityType = "leader_checklist",
+                entityId = "${c.leaderId}_${c.childId}_${c.levelId}",
+                operation = "UPDATE",
+                payload = c
+            )
+        }
     }
 
     // ==================== DEBUG ====================

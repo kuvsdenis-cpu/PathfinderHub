@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
+import com.pathfinder.hub.data.repository.AuthRepository
 import com.pathfinder.hub.data.repository.LevelRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,8 @@ data class TeenProfileUiState(
     val isLoading: Boolean = true,
     val user: UserEntity? = null,
     val completedLevels: Int = 0,
-    val achievements: Int = 0
+    val achievements: Int = 0,
+    val loggedOut: Boolean = false,   // <-- ДОБАВЛЕНО
 )
 
 @HiltViewModel
@@ -27,7 +29,8 @@ class TeenProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val levelRepository: LevelRepository,
     private val achievementRepository: AchievementRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val authRepository: AuthRepository    // <-- ДОБАВЛЕНО
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TeenProfileUiState())
@@ -55,6 +58,22 @@ class TeenProfileViewModel @Inject constructor(
                     _state.update { it.copy(achievements = a.size) }
                 }
             }
+        }
+    }
+
+    /**
+     * Выход: Firebase Auth + очистка локальной сессии.
+     * После успеха ставим флаг loggedOut — UI отреагирует и навигирует на LOGIN.
+     */
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                authRepository.signOut()
+            } catch (_: Exception) {
+                // Игнорируем ошибку Firebase — всё равно чистим локальную сессию.
+            }
+            sessionManager.clear()
+            _state.update { it.copy(loggedOut = true) }
         }
     }
 }

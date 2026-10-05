@@ -28,5 +28,11 @@ data class LevelRequirementEntity(
     val text: String,
     val type: String,
     val order: Int,
-    val isAdvanced: Boolean
+    val isAdvanced: Boolean,
+
+    /**
+     * Список URL изображений (pre-signed или локальные asset-пути).
+     * Хранится в SQLite как JSON-строка через Converters.
+     */
+    val imageUrls: List<String> = emptyList()
 )

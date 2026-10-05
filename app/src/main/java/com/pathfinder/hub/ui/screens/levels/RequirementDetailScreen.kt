@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,9 +41,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import coil.compose.AsyncImage
+import com.pathfinder.hub.ui.common.AttachmentPreview
+import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
@@ -51,6 +59,8 @@ import com.pathfinder.hub.ui.theme.PathfinderRed
 @Composable
 fun RequirementDetailScreen(
     onBack: () -> Unit,
+    onUploadReport: (String, String) -> Unit,
+    savedStateHandle: SavedStateHandle,
     viewModel: RequirementDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -58,7 +68,17 @@ fun RequirementDetailScreen(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
 
-    // Показываем сообщения
+    val pendingAttachment by savedStateHandle
+        .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
+        .collectAsState()
+
+    LaunchedEffect(pendingAttachment) {
+        pendingAttachment?.let { result ->
+            viewModel.attachUploadedFile(result)
+            savedStateHandle.remove<FileUploadResult>(FileUploadResult.SAVED_STATE_KEY)
+        }
+    }
+
     LaunchedEffect(state.successMessage) {
         state.successMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -139,7 +159,6 @@ fun RequirementDetailScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                    // Хлебные крошки
                     if (state.levelName.isNotBlank() || state.sectionName.isNotBlank()) {
                         Text(
                             text = buildString {
@@ -155,7 +174,7 @@ fun RequirementDetailScreen(
                         Spacer(Modifier.height(12.dp))
                     }
 
-                    // Текст требования
+                    // Полный текст требования
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -171,14 +190,81 @@ fun RequirementDetailScreen(
                         }
                     }
 
+                    // ===== ИЛЛЮСТРАЦИИ ИЗ PDF =====
+                    if (state.imageUrls.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "Иллюстрации:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        state.imageUrls.forEach { pathOrUrl ->
+                            val model: Any = if (
+                                pathOrUrl.startsWith("http://") ||
+                                pathOrUrl.startsWith("https://") ||
+                                pathOrUrl.startsWith("file://")
+                            ) {
+                                pathOrUrl
+                            } else {
+                                "file:///android_asset/$pathOrUrl"
+                            }
+                            AsyncImage(
+                                model = model,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Fit,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                    }
+
                     Spacer(Modifier.height(16.dp))
 
-                    // Статус
                     StatusCard(state.status, state.comment)
+
+                    // Прикреплённые пользователем файлы
+                    if (state.mediaUrls.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "Прикреплённые файлы:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        state.mediaUrls.forEach { url ->
+                            AttachmentPreview(url = url)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                    }
 
                     Spacer(Modifier.height(24.dp))
 
-                    // Кнопки
+                    val req = state.requirement
+                    if (req != null) {
+                        Button(
+                            onClick = { onUploadReport(viewModel.getLevelId(), req.id) },
+                            enabled = !state.isSaving,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Upload,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(
+                                if (state.mediaUrls.isEmpty()) "Загрузить отчёт"
+                                else "Загрузить ещё файл"
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+
                     when (state.status) {
                         "not_started", "rejected" -> {
                             Button(
@@ -248,7 +334,6 @@ fun RequirementDetailScreen(
         }
     }
 
-    // Диалог подтверждения
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
@@ -258,19 +343,14 @@ fun RequirementDetailScreen(
                 TextButton(onClick = {
                     showConfirmDialog = false
                     viewModel.markAsCompleted()
-                }) {
-                    Text("Да, отправить")
-                }
+                }) { Text("Да, отправить") }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("Отмена")
-                }
+                TextButton(onClick = { showConfirmDialog = false }) { Text("Отмена") }
             }
         )
     }
 
-    // Диалог отмены
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
@@ -280,14 +360,10 @@ fun RequirementDetailScreen(
                 TextButton(onClick = {
                     showResetDialog = false
                     viewModel.resetStatus()
-                }) {
-                    Text("Да, отменить")
-                }
+                }) { Text("Да, отменить") }
             },
             dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
-                    Text("Назад")
-                }
+                TextButton(onClick = { showResetDialog = false }) { Text("Назад") }
             }
         )
     }

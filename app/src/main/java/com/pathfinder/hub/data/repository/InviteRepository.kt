@@ -1,29 +1,61 @@
 package com.pathfinder.hub.data.repository
 
+import android.util.Log
 import com.pathfinder.hub.data.local.dao.InviteDao
 import com.pathfinder.hub.data.local.entity.auth.InviteEntity
+import com.pathfinder.hub.data.remote.FirestoreInviteDataSource
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class InviteRepository @Inject constructor(private val dao: InviteDao) {
+@Singleton
+class InviteRepository @Inject constructor(
+    private val dao: InviteDao,
+    private val remote: FirestoreInviteDataSource
+) {
 
-    suspend fun getByCode(code: String): InviteEntity? = dao.getByCode(code)
+    companion object {
+        private const val TAG = "InviteRepository"
+        private const val ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+        fun generateCode(): String =
+            (1..8).map { ALPHABET.random() }
+                .joinToString("")
+                .chunked(4)
+                .joinToString("-")
+    }
+
+    // ==================== ЧТЕНИЕ ====================
+
+    suspend fun getByCode(code: String): InviteEntity? {
+        val remoteInvite = remote.getInviteByCode(code)
+        if (remoteInvite != null) {
+            try {
+                dao.upsert(remoteInvite)
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось закэшировать инвайт $code", e)
+            }
+            return remoteInvite
+        }
+
+        val localInvite = dao.getByCode(code)
+        if (localInvite != null) {
+            Log.d(TAG, "getByCode($code): отдаём из Room (офлайн)")
+        }
+        return localInvite
+    }
 
     fun observeByClub(clubId: String): Flow<List<InviteEntity>> = dao.observeByClub(clubId)
 
-    suspend fun upsert(invite: InviteEntity) = dao.upsert(invite)
+    suspend fun upsert(invite: InviteEntity) {
+        dao.upsert(invite)
+        remote.createInvite(invite)
+    }
 
-    suspend fun markUsed(code: String, status: String, userId: String, at: Long) =
-        dao.markUsed(code, status, userId, at)
+    // ==================== СОЗДАНИЕ ====================
 
-    suspend fun expireOld(now: Long) = dao.expireOld(now)
-
-    /**
-     * Создать новый инвайт-код.
-     * Используется директором клуба.
-     */
     suspend fun createInvite(
         clubId: String,
         role: String,
@@ -44,17 +76,62 @@ class InviteRepository @Inject constructor(private val dao: InviteDao) {
             usedBy = null,
             usedAt = null
         )
+
+        val ok = remote.createInvite(invite)
+        if (!ok) {
+            Log.w(TAG, "createInvite: Firestore недоступен, инвайт только в Room")
+        }
+
         dao.upsert(invite)
         return invite
     }
 
-    companion object {
-        private const val ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    // ==================== АТОМАРНЫЙ CLAIM ====================
 
-        fun generateCode(): String =
-            (1..8).map { ALPHABET.random() }
-                .joinToString("")
-                .chunked(4)
-                .joinToString("-")
+    suspend fun reserveInvite(code: String): Result<InviteEntity> {
+        val result = remote.reserveInvite(code)
+
+        result.onSuccess { invite ->
+            try {
+                dao.upsert(invite)
+            } catch (e: Exception) {
+                Log.w(TAG, "reserveInvite: не удалось закэшировать $code", e)
+            }
+        }
+
+        return result
     }
+
+    suspend fun confirmInvite(code: String, uid: String): Result<InviteEntity> {
+        val result = remote.confirmInvite(code, uid)
+
+        result.onSuccess { invite ->
+            try {
+                dao.upsert(invite)
+            } catch (e: Exception) {
+                Log.w(TAG, "confirmInvite: не удалось закэшировать $code", e)
+            }
+        }
+
+        return result
+    }
+
+    suspend fun releaseInvite(code: String) {
+        remote.releaseInvite(code)
+        try {
+            val local = dao.getByCode(code)
+            if (local != null && local.status == "claiming") {
+                dao.upsert(local.copy(status = "active", usedBy = null, usedAt = null))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "releaseInvite: локальное обновление не удалось $code", e)
+        }
+    }
+
+    // ==================== СТАРЫЕ МЕТОДЫ ====================
+
+    suspend fun markUsed(code: String, status: String, userId: String, at: Long) =
+        dao.markUsed(code, status, userId, at)
+
+    suspend fun expireOld(now: Long) = dao.expireOld(now)
 }

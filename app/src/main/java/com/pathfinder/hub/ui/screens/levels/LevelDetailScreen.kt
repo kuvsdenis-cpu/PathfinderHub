@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Pending
@@ -32,13 +33,12 @@ import com.pathfinder.hub.ui.theme.PathfinderRed
 fun LevelDetailScreen(
     onBack: () -> Unit,
     onOpenRequirement: (String, String) -> Unit,
-    onUploadReport: (String, String) -> Unit,
+    onUploadReport: (String, String) -> Unit,   // оставлен для совместимости с NavHost
     savedStateHandle: SavedStateHandle,
     viewModel: LevelDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
-    // ✅ Читаем результат загрузки файла
     val pendingAttachment by savedStateHandle
         .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
         .collectAsState()
@@ -107,14 +107,8 @@ fun LevelDetailScreen(
                         SectionCard(
                             section = section,
                             onActionClick = { req ->
-                                when (req.type) {
-                                    "practice", "report" -> {
-                                        onUploadReport(state.level?.id ?: "", req.id)
-                                    }
-                                    else -> {
-                                        onOpenRequirement(state.level?.id ?: "", req.id)
-                                    }
-                                }
+                                // Все типы открывают детальный экран (там — загрузка отчёта)
+                                onOpenRequirement(state.level?.id ?: "", req.id)
                             }
                         )
                     }
@@ -214,11 +208,22 @@ private fun RequirementRow(
                     overflow = TextOverflow.Clip
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Тип: ${getTypeName(req.type)}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Тип: ${getTypeName(req.type)}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (req.hasAttachment) {
+                        Spacer(Modifier.width(8.dp))
+                        Icon(
+                            Icons.Default.AttachFile,
+                            contentDescription = "Есть файл",
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
         }
 
@@ -229,14 +234,13 @@ private fun RequirementRow(
                     onClick = { onActionClick(req) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (req.type == "practice" || req.type == "report") {
-                        Icon(
-                            Icons.Default.Upload,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                    }
+                    // Иконка Upload — для ВСЕХ типов требований
+                    Icon(
+                        Icons.Default.Upload,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
                     Text("Выполнить")
                 }
             }
