@@ -1,0 +1,73 @@
+package com.pathfinder.hub.data.repository
+
+import com.pathfinder.hub.data.local.dao.QrStationDao
+import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
+import com.pathfinder.hub.data.local.entity.qr.StationVisitEntity
+import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class QrStationRepository @Inject constructor(
+    private val dao: QrStationDao,
+) {
+
+    fun observeActiveStations(clubId: String): Flow<List<QrStationEntity>> =
+        dao.observeActiveByClub(clubId)
+
+    fun observeAllStations(clubId: String): Flow<List<QrStationEntity>> =
+        dao.observeAllByClub(clubId)
+
+    suspend fun getStation(id: String): QrStationEntity? = dao.getById(id)
+
+    suspend fun upsertStation(s: QrStationEntity) = dao.upsertStation(s)
+
+    suspend fun deleteStation(id: String) = dao.deleteStation(id)
+
+    suspend fun upsertVisit(v: StationVisitEntity) = dao.upsertVisit(v)
+
+    fun observeVisits(stationId: String, userId: String): Flow<List<StationVisitEntity>> =
+        dao.observeVisits(stationId, userId)
+
+    fun observeRecentVisits(userId: String): Flow<List<StationVisitEntity>> =
+        dao.observeRecentVisits(userId)
+
+    suspend fun countVisits(userId: String, stationId: String): Int =
+        dao.countVisits(userId, stationId)
+
+    suspend fun countVerifiedVisits(userId: String): Int =
+        dao.countVerifiedVisits(userId)
+
+    suspend fun countVisitsToday(userId: String, stationId: String): Int {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return dao.countVisitsSince(userId, stationId, cal.timeInMillis)
+    }
+
+    companion object {
+        private const val EARTH_RADIUS_M = 6_371_000.0
+
+        fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+            val dLat = Math.toRadians(lat2 - lat1)
+            val dLon = Math.toRadians(lon2 - lon1)
+            val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            return EARTH_RADIUS_M * c
+        }
+
+        fun isWithinRadius(
+            stationLat: Double, stationLon: Double, radiusMeters: Int,
+            userLat: Double, userLon: Double, accuracyMeters: Float?,
+        ): Boolean {
+            val d = distanceMeters(stationLat, stationLon, userLat, userLon)
+            val effectiveRadius = radiusMeters + (accuracyMeters ?: 0f).toDouble()
+            return d <= effectiveRadius
+        }
+    }
+}

@@ -1,0 +1,301 @@
+package com.pathfinder.hub.data.sync
+
+import android.content.Context
+import android.util.Log
+import androidx.hilt.work.HiltWorker
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.gson.Gson
+import com.pathfinder.hub.data.local.dao.ModerationDao
+import com.pathfinder.hub.data.local.entity.offline.SyncQueueItemEntity
+import com.pathfinder.hub.data.local.entity.planning.CommentEntity
+import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withTimeoutOrNull
+
+@HiltWorker
+class SyncWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val syncQueue: SyncQueueManager,
+    private val firestore: FirestoreSyncService,
+    private val commentDataSource: FirestoreCommentDataSource,
+    private val moderationDao: ModerationDao,
+) : CoroutineWorker(context, params) {
+
+    private val gson = Gson()
+
+    override suspend fun doWork(): Result {
+        Log.d(TAG, "▶️ Start sync...")
+
+        val batch = syncQueue.getNextBatch(50)
+        if (batch.isEmpty()) {
+            Log.d(TAG, "✓ Queue empty")
+            return Result.success()
+        }
+
+        syncQueue.updateSyncStatus(isSyncing = true, queueSize = batch.size)
+
+        var success = 0
+        var errors = 0
+        var permanentFailures = 0
+
+        for (item in batch) {
+            val result = withTimeoutOrNull(30_000L) {
+                processItem(item)
+            }
+
+            when (result) {
+                ProcessResult.SUCCESS -> {
+                    syncQueue.remove(item.id)
+                    success++
+                }
+                ProcessResult.RETRY -> {
+                    errors++
+                    val newRetry = item.retryCount + 1
+                    if (newRetry >= MAX_RETRIES) {
+                        syncQueue.updateStatus(
+                            id = item.id,
+                            status = "failed",
+                            retryCount = newRetry,
+                            errorMessage = "Max retries exceeded"
+                        )
+                        permanentFailures++
+                    } else {
+                        syncQueue.updateStatus(
+                            id = item.id,
+                            status = "pending",
+                            retryCount = newRetry,
+                            errorMessage = "Retry $newRetry"
+                        )
+                    }
+                }
+                ProcessResult.PERMANENT_FAILURE -> {
+                    syncQueue.updateStatus(
+                        id = item.id,
+                        status = "failed",
+                        retryCount = item.retryCount,
+                        errorMessage = "Permanent failure"
+                    )
+                    permanentFailures++
+                }
+                null -> {
+                    Log.w(TAG, "⏱ Timeout on item ${item.id}")
+                    syncQueue.updateStatus(
+                        id = item.id,
+                        status = "pending",
+                        retryCount = item.retryCount + 1,
+                        errorMessage = "Timeout"
+                    )
+                    errors++
+                }
+            }
+        }
+
+        syncQueue.updateSyncStatus(
+            isSyncing = false,
+            queueSize = 0,
+            lastError = when {
+                permanentFailures > 0 -> "Permanent: $permanentFailures, errors: $errors"
+                errors > 0 -> "Errors: $errors"
+                else -> null
+            }
+        )
+
+        Log.d(TAG, "✓ Sync done: success=$success, errors=$errors, permanent=$permanentFailures")
+        return Result.success()
+    }
+
+    private enum class ProcessResult {
+        SUCCESS,
+        RETRY,
+        PERMANENT_FAILURE
+    }
+
+    private suspend fun processItem(item: SyncQueueItemEntity): ProcessResult {
+        return try {
+            // ---------- Особый случай: комментарии ----------
+            // Отправляем через FirestoreCommentDataSource, а не pushDocument:
+            // только он корректно конвертирует Date → Timestamp и совпадает
+            // с кодом sendComment в ModerationRepository.
+            if (item.entityType == "comment") {
+                return processComment(item)
+            }
+
+            // ---------- Общая ветка для остальных сущностей ----------
+            @Suppress("UNCHECKED_CAST")
+            val payload = gson.fromJson(item.payload, Map::class.java) as? Map<String, Any?>
+                ?: emptyMap()
+
+            val collectionPath = resolveCollectionPath(item, payload)
+            if (collectionPath == null) {
+                Log.w(TAG, "❌ Unknown entityType: ${item.entityType}")
+                return ProcessResult.PERMANENT_FAILURE
+            }
+
+            val result = when (item.operation.lowercase()) {
+                "create", "update", "upsert" -> firestore.pushDocument(
+                    collection = collectionPath,
+                    documentId = item.entityId,
+                    data = payload
+                )
+                "delete" -> firestore.deleteDocument(
+                    collection = collectionPath,
+                    documentId = item.entityId
+                )
+                else -> {
+                    Log.w(TAG, "❌ Unknown operation: ${item.operation}")
+                    return ProcessResult.PERMANENT_FAILURE
+                }
+            }
+
+            if (result.isSuccess) {
+                ProcessResult.SUCCESS
+            } else {
+                val error = result.exceptionOrNull()
+                classifyError(error)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Process error ${item.id}", e)
+            classifyError(e)
+        }
+    }
+
+    /**
+     * Отправка комментария через FirestoreCommentDataSource.
+     *
+     * 1. Десериализуем payload в CommentEntity (не в Map!).
+     * 2. Отправляем через sendComment — единый код с ModerationRepository.
+     * 3. При успехе — снимаем pendingSync в Room.
+     */
+    private suspend fun processComment(item: SyncQueueItemEntity): ProcessResult {
+        val comment = try {
+            gson.fromJson(item.payload, CommentEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ comment deserialize failed ${item.id}", e)
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        if (comment == null || comment.clubId.isBlank()) {
+            Log.w(TAG, "❌ comment: clubId пустой ${item.id}")
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val result = commentDataSource.sendComment(comment)
+                if (result.isSuccess) {
+                    // Снимаем pendingSync, чтобы UI больше не показывал «не отправлено»
+                    try {
+                        moderationDao.upsertComment(comment.copy(pendingSync = false))
+                    } catch (e: Exception) {
+                        Log.w(TAG, "comment: не удалось снять pendingSync ${comment.id}", e)
+                    }
+                    ProcessResult.SUCCESS
+                } else {
+                    classifyError(result.exceptionOrNull())
+                }
+            }
+            "delete" -> {
+                val result = commentDataSource.deleteComment(comment.clubId, comment.id)
+                if (result.isSuccess) ProcessResult.SUCCESS
+                else classifyError(result.exceptionOrNull())
+            }
+            else -> {
+                Log.w(TAG, "❌ Unknown comment operation: ${item.operation}")
+                ProcessResult.PERMANENT_FAILURE
+            }
+        }
+    }
+
+    private fun classifyError(error: Throwable?): ProcessResult {
+        return when (error) {
+            is FirebaseFirestoreException -> when (error.code) {
+                FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
+                    Log.e(TAG, "🔒 PERMISSION_DENIED — не retry")
+                    ProcessResult.PERMANENT_FAILURE
+                }
+                FirebaseFirestoreException.Code.UNAUTHENTICATED -> {
+                    Log.e(TAG, "🔒 UNAUTHENTICATED — не retry")
+                    ProcessResult.PERMANENT_FAILURE
+                }
+                FirebaseFirestoreException.Code.INVALID_ARGUMENT -> {
+                    Log.e(TAG, "❌ INVALID_ARGUMENT — не retry")
+                    ProcessResult.PERMANENT_FAILURE
+                }
+                FirebaseFirestoreException.Code.NOT_FOUND -> {
+                    Log.d(TAG, "ℹ️ NOT_FOUND — считаем success")
+                    ProcessResult.SUCCESS
+                }
+                FirebaseFirestoreException.Code.UNAVAILABLE,
+                FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
+                FirebaseFirestoreException.Code.ABORTED,
+                FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED -> {
+                    Log.w(TAG, "🌐 ${error.code} — retry")
+                    ProcessResult.RETRY
+                }
+                else -> {
+                    Log.w(TAG, "⚠️ ${error.code} — retry")
+                    ProcessResult.RETRY
+                }
+            }
+            else -> {
+                Log.w(TAG, "⚠️ Unknown error — retry", error)
+                ProcessResult.RETRY
+            }
+        }
+    }
+
+    /**
+     * Маппинг entityType → Firestore collection path.
+     *
+     * Для "comment" сюда не попадаем — обрабатывается в processComment.
+     * clubId из payload для остальных клубных сущностей.
+     */
+    private fun resolveCollectionPath(
+        item: SyncQueueItemEntity,
+        payload: Map<String, Any?>
+    ): String? {
+        val userId = item.userId
+        val clubId = payload["clubId"] as? String
+
+        return when (item.entityType) {
+            // ---------- Глобальные ----------
+            "user" -> "users"
+            "club" -> "clubs"
+
+            // ---------- Клубные ----------
+            "event" -> if (clubId != null) "clubs/$clubId/events" else null
+            "task" -> if (clubId != null) "clubs/$clubId/tasks" else null
+            "assignment" -> if (clubId != null) "clubs/$clubId/assignments" else null
+            "moderation_request" -> if (clubId != null) "clubs/$clubId/moderationRequests" else null
+            "moderation_history" -> if (clubId != null) "clubs/$clubId/moderationHistory" else null
+            "appeal" -> if (clubId != null) "clubs/$clubId/appeals" else null
+            "honor_draft" -> if (clubId != null) "clubs/$clubId/honorDrafts" else null
+            "report" -> if (clubId != null) "clubs/$clubId/reports" else null
+
+            // ---------- Прогресс пользователя ----------
+            "level_progress" -> "users/$userId/levelProgress"
+            "honor_progress" -> "users/$userId/honorProgress"
+            "level_completion" -> "users/$userId/levelCompletions"
+            "honor_completion" -> "users/$userId/honorCompletions"
+            "test_attempt" -> "users/$userId/testAttempts"
+            "open_answer_review" -> "users/$userId/openAnswerReviews"
+            "book_report" -> "users/$userId/bookReports"
+            "verse_progress" -> "users/$userId/verseProgress"
+            "leader_checklist" -> "users/$userId/leaderChecklists"
+            "notification" -> "users/$userId/notifications"
+
+            // "comment" обрабатывается в processComment, сюда не доходит
+            else -> null
+        }
+    }
+
+    companion object {
+        const val TAG = "SyncWorker"
+        const val WORK_NAME = "firestore_sync"
+        private const val MAX_RETRIES = 5
+    }
+}

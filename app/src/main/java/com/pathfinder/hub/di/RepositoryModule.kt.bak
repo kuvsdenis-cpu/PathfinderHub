@@ -1,0 +1,73 @@
+package com.pathfinder.hub.di
+
+import com.pathfinder.hub.data.local.AppDatabase
+import com.pathfinder.hub.data.local.dao.*
+import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
+import com.pathfinder.hub.data.remote.FirestoreInviteDataSource
+import com.pathfinder.hub.data.repository.*
+import com.pathfinder.hub.data.sync.SyncQueueManager
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+
+    // ⚠️ UserRepository, LevelRepository — НЕ объявляем, у них @Inject constructor
+    // с новыми зависимостями (firestore, database). Hilt соберёт сам.
+
+    @Provides @Singleton
+    fun provideClubRepo(
+        db: AppDatabase,
+        d: ClubDao,
+        syncQueueManager: SyncQueueManager
+    ) = ClubRepository(db, d, syncQueueManager)
+
+    @Provides @Singleton
+    fun provideEventRepo(
+        db: AppDatabase,
+        d: EventDao,
+        syncQueueManager: SyncQueueManager
+    ) = EventRepository(db, d, syncQueueManager)
+
+    @Provides @Singleton
+    fun provideTaskRepo(
+        db: AppDatabase,
+        d: TaskDao,
+        syncQueueManager: SyncQueueManager
+    ) = TaskRepository(db, d, syncQueueManager)
+
+    @Provides @Singleton
+    fun provideHonorRepo(
+        db: AppDatabase,
+        d: HonorDao,
+        syncQueueManager: SyncQueueManager
+    ) = HonorRepository(db, d, syncQueueManager)
+
+    // ---------- Репозитории без SyncQueueManager ----------
+    @Provides @Singleton fun provideAchievementRepo(d: AchievementDao) = AchievementRepository(d)
+
+    @Provides @Singleton
+    fun provideModerationRepo(
+        d: ModerationDao,
+        firestore: FirestoreCommentDataSource,
+        syncQueue: SyncQueueManager
+    ) = ModerationRepository(d, firestore, syncQueue)
+
+    @Provides @Singleton fun provideNotificationRepo(d: NotificationDao) = NotificationRepository(d)
+    @Provides @Singleton fun provideSyncRepo(d: SyncDao) = SyncRepository(d)
+    @Provides @Singleton fun provideParentRepo(d: ParentDao) = ParentRepository(d)
+    @Provides @Singleton fun provideReportRepo(d: ReportDao) = ReportRepository(d)
+    @Provides @Singleton fun provideAuditRepo(d: AuditDao) = AuditRepository(d)
+    @Provides @Singleton fun provideSettingsRepo(d: SettingsDao) = SettingsRepository(d)
+    @Provides @Singleton fun provideNewspaperRepo(d: NewspaperDao) = NewspaperRepository(d)
+
+    @Provides @Singleton
+    fun provideInviteRepo(
+        d: InviteDao,
+        remote: FirestoreInviteDataSource
+    ) = InviteRepository(d, remote)
+}

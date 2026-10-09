@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "localId": "director_001",
+      "email": "director1@pathfinder.local",
+      "passwordHash": "...",
+      "salt": "...",
+      "displayName": "Иван Директоров"
+    }
+  ]
+}

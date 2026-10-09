@@ -1,0 +1,87 @@
+package com.pathfinder.hub.data.repository
+
+import android.util.Log
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
+import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Сохраняет FCM-токены в Firestore.
+ * Путь: users/{uid}/fcmTokens/{token}
+ */
+@Singleton
+class FcmTokenRepository @Inject constructor() {
+
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    suspend fun registerCurrentToken(userId: String): Result<String> {
+        return try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            if (token.isBlank()) {
+                Result.failure(IllegalStateException("Пустой FCM-токен"))
+            } else {
+                saveToken(userId, token)
+                Result.success(token)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "registerCurrentToken failed", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun saveToken(userId: String, token: String): Result<Unit> {
+        return try {
+            val data = mapOf(
+                "userId" to userId,
+                "token" to token,
+                "platform" to "android",
+                "deviceId" to android.os.Build.MODEL,
+                "updatedAt" to Timestamp(Date()),
+            )
+            firestore.collection("users")
+                .document(userId)
+                .collection("fcmTokens")
+                .document(token)
+                .set(data)
+                .await()
+            Log.d(TAG, "FCM token saved: ${token.take(12)}…")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "saveToken failed", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Удаляет текущий FCM-токен этого устройства из Firestore.
+     * Вызывается при логауте.
+     */
+    suspend fun removeCurrentToken(userId: String): Result<Unit> {
+        return try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            if (token.isBlank()) {
+                Result.success(Unit)
+            } else {
+                firestore.collection("users")
+                    .document(userId)
+                    .collection("fcmTokens")
+                    .document(token)
+                    .delete()
+                    .await()
+                Log.d(TAG, "FCM token removed for $userId")
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "removeCurrentToken failed", e)
+            Result.failure(e)
+        }
+    }
+
+    companion object {
+        private const val TAG = "FcmTokenRepo"
+    }
+}

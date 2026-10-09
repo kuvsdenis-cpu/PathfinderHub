@@ -1,0 +1,26 @@
+package com.pathfinder.hub.domain.usecase.gamification
+import com.pathfinder.hub.data.repository.AchievementRepository
+import com.pathfinder.hub.data.local.entity.gamification.ChallengeProgressEntity
+import kotlinx.coroutines.flow.first
+import javax.inject.Inject
+
+class UpdateChallengeProgressUseCase @Inject constructor(private val repo: AchievementRepository) {
+    /**
+     * Обновляет прогресс, СОХРАНЯЯ completedAt и rewardClaimed
+     * из существующей записи. Иначе при повторном апдейте
+     * статус «завершён» сбрасывался бы.
+     */
+    suspend operator fun invoke(challengeId: String, userId: String, progress: Int): Result<Unit> = try {
+        val existing = repo.observeChallengeProgress(challengeId).first()
+            .find { it.userId == userId }
+        repo.upsertChallengeProgress(ChallengeProgressEntity(
+            challengeId = challengeId,
+            userId = userId,
+            progress = progress,
+            completedAt = existing?.completedAt,
+            rewardClaimed = existing?.rewardClaimed ?: false,
+            pendingSync = true
+        ))
+        Result.success(Unit)
+    } catch (e: Exception) { Result.failure(e) }
+}

@@ -1,0 +1,457 @@
+package com.pathfinder.hub.ui.screens.home.director
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.pathfinder.hub.domain.permissions.PermissionChecker
+import com.pathfinder.hub.ui.theme.PathfinderBlue
+
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DirectorHomeScreen(
+    onNavigateToInvites: () -> Unit,
+    onNavigateToMembers: () -> Unit,
+    onNavigateToApprovals: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToEvents: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToTasks: () -> Unit,
+    onNavigateToClubChat: () -> Unit,
+    onNavigateToModeration: () -> Unit,
+    onNavigateToContentManager: () -> Unit = {},
+    onNavigateToChats: () -> Unit = {},
+    onNavigateToQrStations: () -> Unit = {},
+    onNavigateToStaff: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit,
+    onLogout: () -> Unit,
+    viewModel: DirectorHomeViewModel = hiltViewModel()
+) {
+    val state by viewModel.state.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.loggedOut) {
+        if (state.loggedOut) onLogout()
+    }
+
+    /**
+     * Обёртка: если права нет — snackbar «Нет доступа», иначе — навигация.
+     */
+    fun guard(perm: String, onAllow: () -> Unit) {
+        if (PermissionChecker.hasPerm(state.currentUser, perm)) {
+            onAllow()
+        } else {
+            // Показываем сообщение через coroutine
+            kotlinx.coroutines.MainScope().launch {
+                snackbarHostState.showSnackbar("Нет доступа. Обратитесь к владельцу клуба.")
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Панель директора") },
+                actions = {
+                    IconButton(onClick = onNavigateToNotifications) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                    IconButton(onClick = { showLogoutDialog = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Выйти",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PathfinderBlue,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            if (state.clubs.size > 1) {
+                val selectedIndex = state.clubs
+                    .indexOfFirst { it.id == state.selectedClubId }
+                    .coerceAtLeast(0)
+
+                ScrollableTabRow(
+                    selectedTabIndex = selectedIndex,
+                    edgePadding = 8.dp,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    state.clubs.forEach { club ->
+                        Tab(
+                            selected = club.id == state.selectedClubId,
+                            onClick = { viewModel.switchClub(club.id) },
+                            text = {
+                                Text(
+                                    club.name,
+                                    maxLines = 1,
+                                    fontWeight = if (club.id == state.selectedClubId)
+                                        FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Добро пожаловать, ${state.directorName ?: "Директор"}!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "Активный клуб",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            state.clubName ?: "Загрузка...",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            state.clubLocation ?: "",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Text(
+                    "Управление клубом",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                val u = state.currentUser
+
+                // ---------- Ряд 1: Инвайты + Участники ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        icon = Icons.Default.PersonAdd,
+                        title = "Инвайты",
+                        description = "Создать и управлять кодами",
+                        perm = "invites.create",
+                        user = u,
+                        onClick = { guard("invites.create") { onNavigateToInvites() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                    GuardedCard(
+                        icon = Icons.Default.Group,
+                        title = "Участники",
+                        description = "Список членов клуба",
+                        perm = "members.view",
+                        user = u,
+                        onClick = { guard("members.view") { onNavigateToMembers() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // ---------- Ряд 2: Одобрение + Отчёты ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        icon = Icons.Default.CheckCircle,
+                        title = "Одобрение",
+                        description = "Проверка требований",
+                        perm = "learning.approve",
+                        user = u,
+                        onClick = { guard("learning.approve") { onNavigateToApprovals() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                    GuardedCard(
+                        icon = Icons.Default.Assessment,
+                        title = "Отчёты",
+                        description = "Генерация и история",
+                        perm = "reports.view",
+                        user = u,
+                        onClick = { guard("reports.view") { onNavigateToReports() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // ---------- Ряд 3: События + Настройки ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        icon = Icons.Default.Event,
+                        title = "События",
+                        description = "Расписание клуба",
+                        perm = "events.create",
+                        user = u,
+                        onClick = { guard("events.create") { onNavigateToEvents() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                    GuardedCard(
+                        icon = Icons.Default.Settings,
+                        title = "Настройки",
+                        description = "Параметры клуба",
+                        perm = "settings.view",
+                        user = u,
+                        onClick = { guard("settings.view") { onNavigateToSettings() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // ---------- Ряд 4: Задания + Чат клуба (чат — всем) ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        icon = Icons.Default.TaskAlt,
+                        title = "Задания",
+                        description = "Назначить следопытам",
+                        perm = "tasks.create",
+                        user = u,
+                        onClick = { guard("tasks.create") { onNavigateToTasks() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                    DirectorActionCard(
+                        Icons.Default.Chat, "Чат клуба", "Общее обсуждение",
+                        onNavigateToClubChat, Modifier.weight(1f)
+                    )
+                }
+
+                // ---------- Ряд 5: Модерация + Контент ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        icon = Icons.Default.Shield,
+                        title = "Модерация",
+                        description = "Проверка сообщений",
+                        perm = "moderation.review",
+                        user = u,
+                        onClick = { guard("moderation.review") { onNavigateToModeration() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                    GuardedCard(
+                        icon = Icons.Default.Edit,
+                        title = "Контент",
+                        description = "Ступени и требования",
+                        perm = "content.edit",
+                        user = u,
+                        onClick = { guard("content.edit") { onNavigateToContentManager() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // ---------- Ряд 6: Чаты (всем) + QR-станции ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    DirectorActionCard(
+                        Icons.Default.Email, "Чаты", "Личные и группы",
+                        onNavigateToChats, Modifier.weight(1f)
+                    )
+                    GuardedCard(
+                        icon = Icons.Default.QrCode,
+                        title = "QR-станции",
+                        description = "Точки для сканирования",
+                        perm = "qr.create",
+                        user = u,
+                        onClick = { guard("qr.create") { onNavigateToQrStations() } },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // ---------- Сотрудники (только owner) ----------
+                if (u?.isOwnerClub == true) {
+                    Card(
+                        onClick = onNavigateToStaff,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.ManageAccounts, null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Сотрудники",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    "Управление правами со-директоров",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                state.errorMessage?.let { msg ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            msg,
+                            Modifier.padding(12.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Выйти из аккаунта?") },
+            text = { Text("Вы уверены, что хотите выйти? Для повторного входа потребуется email и пароль.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    viewModel.logout()
+                }) {
+                    Text("Выйти", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun DirectorActionCard(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier, onClick = onClick) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(32.dp))
+            Spacer(Modifier.height(8.dp))
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * Карточка с проверкой права. Если права нет — серая (alpha 0.45),
+ * но нажимается (для snackbar «Нет доступа»).
+ */
+@Composable
+private fun GuardedCard(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    perm: String,
+    user: com.pathfinder.hub.data.local.entity.core.UserEntity?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val allowed = PermissionChecker.hasPerm(user, perm)
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .then(if (allowed) Modifier else Modifier.alphaCompat(0.45f)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                icon, contentDescription = null,
+                tint = if (allowed) PathfinderBlue else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (allowed) MaterialTheme.colorScheme.onSurface
+                       else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * Локальная альтернатива Modifier.alpha — не требуем импорт
+ * androidx.compose.ui.draw.alpha (чтобы не менять build.gradle).
+ */
+private fun Modifier.alphaCompat(value: Float): Modifier = this.then(
+    androidx.compose.ui.draw.alpha(value)
+)
