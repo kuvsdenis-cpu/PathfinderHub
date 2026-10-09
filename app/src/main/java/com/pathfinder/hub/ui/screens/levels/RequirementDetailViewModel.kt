@@ -7,6 +7,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,14 +29,16 @@ data class RequirementDetailUiState(
     val sectionName: String = "",
     val isSaving: Boolean = false,
     val successMessage: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val userRole: String = ""
 )
 
 @HiltViewModel
 class RequirementDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val levelRepository: LevelRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
@@ -65,6 +68,10 @@ class RequirementDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            val user = userRepository.getUser(userId)
+            val role = user?.role ?: ""
+            _state.update { it.copy(userRole = role) }
+
             val req = levelRepository.getRequirementById(levelId, requirementId)
             if (req == null) {
                 _state.update { it.copy(isLoading = false, errorMessage = "Требование не найдено") }

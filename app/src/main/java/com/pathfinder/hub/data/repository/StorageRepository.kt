@@ -10,16 +10,33 @@ import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
+import software.amazon.awssdk.services.s3.model.CompletedPart
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.UploadPartRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import java.io.File
+import java.io.RandomAccessFile
 import java.net.URI
 import java.time.Duration
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Работа с Yandex Object Storage.
+ *
+ * Загрузка файлов:
+ *   - файлы <= 5 МБ   -> обычный putObject, onProgress(1.0) в конце
+ *   - файлы >  5 МБ   -> multipart upload частями по 5 МБ,
+ *                        onProgress(part / total) после каждой части
+ *
+ * Это даёт реальный прогресс вместо заглушки.
+ */
 @Singleton
 class StorageRepository @Inject constructor() {
 
@@ -56,31 +73,162 @@ class StorageRepository @Inject constructor() {
 
     private val bucketName = BuildConfig.YANDEX_BUCKET_NAME
 
+    companion object {
+        private const val TAG = "StorageRepository"
+
+        /** Порог для перехода на multipart (5 МБ). */
+        private const val MULTIPART_THRESHOLD = 5L * 1024 * 1024
+
+        /** Размер одной части (5 МБ). Минимум по S3 = 5 МБ, кроме последней. */
+        private const val PART_SIZE = 5L * 1024 * 1024
+    }
+
+    // ============================================================
+    // ЗАГРУЗКА С ПРОГРЕССОМ
+    // ============================================================
+
     suspend fun uploadFile(
         file: File,
         objectKey: String,
         onProgress: (Float) -> Unit = {}
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
-            Log.d("StorageRepository", "Uploading ${file.name} to $bucketName/$objectKey")
+            Log.d(TAG, "Upload start: ${file.name} (${file.length()} bytes) -> $objectKey")
 
-            val request = PutObjectRequest.builder()
+            if (file.length() <= MULTIPART_THRESHOLD) {
+                uploadSmall(file, objectKey, onProgress)
+            } else {
+                uploadMultipart(file, objectKey, onProgress)
+            }
+
+            val presignedUrl = generatePresignedUrl(objectKey)
+            Log.d(TAG, "Upload OK, presigned URL generated")
+            Result.success(presignedUrl)
+        } catch (e: Exception) {
+            Log.e(TAG, "Upload failed: $objectKey", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Маленький файл — один putObject.
+     * Прогресс: 0.1 -> 0.3 -> 1.0 (грубо, но быстро).
+     */
+    private fun uploadSmall(file: File, objectKey: String, onProgress: (Float) -> Unit) {
+        onProgress(0.1f)
+
+        val request = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(objectKey)
+            .contentType(getContentType(file.extension))
+            .build()
+
+        onProgress(0.3f)
+        s3Client.putObject(request, RequestBody.fromFile(file))
+        onProgress(1.0f)
+
+        Log.d(TAG, "Small upload OK: $objectKey")
+    }
+
+    /**
+     * Большой файл — multipart upload.
+     *
+     * Алгоритм:
+     *   1. CreateMultipartUpload -> uploadId
+     *   2. Для каждой части: UploadPart -> ETag
+     *      После каждой части вызываем onProgress(partNumber / totalParts)
+     *   3. CompleteMultipartUpload со списком частей
+     *
+     * При ошибке -> AbortMultipartUpload, чтобы не платить за мусор в бакете.
+     */
+    private fun uploadMultipart(
+        file: File,
+        objectKey: String,
+        onProgress: (Float) -> Unit
+    ) {
+        val totalSize = file.length()
+        val totalParts = ((totalSize + PART_SIZE - 1) / PART_SIZE).toInt()
+        Log.d(TAG, "Multipart: $totalParts parts of $PART_SIZE bytes, total=$totalSize")
+
+        val createResponse = s3Client.createMultipartUpload(
+            CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(objectKey)
                 .contentType(getContentType(file.extension))
                 .build()
+        )
+        val uploadId = createResponse.uploadId()
+        val completedParts = mutableListOf<CompletedPart>()
 
-            s3Client.putObject(request, RequestBody.fromFile(file))
+        try {
+            RandomAccessFile(file, "r").use { raf ->
+                for (partNumber in 1..totalParts) {
+                    val start = (partNumber - 1) * PART_SIZE
+                    val size = minOf(PART_SIZE, totalSize - start).toInt()
 
-            val presignedUrl = generatePresignedUrl(objectKey)
+                    val buffer = ByteArray(size)
+                    raf.seek(start)
+                    raf.readFully(buffer)
 
-            Log.d("StorageRepository", "Upload successful, presigned URL: $presignedUrl")
-            Result.success(presignedUrl)
+                    val partResponse = s3Client.uploadPart(
+                        UploadPartRequest.builder()
+                            .bucket(bucketName)
+                            .key(objectKey)
+                            .uploadId(uploadId)
+                            .partNumber(partNumber)
+                            .contentLength(size.toLong())
+                            .build(),
+                        RequestBody.fromBytes(buffer)
+                    )
+
+                    completedParts.add(
+                        CompletedPart.builder()
+                            .partNumber(partNumber)
+                            .eTag(partResponse.eTag())
+                            .build()
+                    )
+
+                    val fraction = partNumber.toFloat() / totalParts
+                    onProgress(fraction)
+                    Log.d(TAG, "Part $partNumber/$totalParts OK (${size} bytes), progress=${(fraction * 100).toInt()}%")
+                }
+            }
+
+            s3Client.completeMultipartUpload(
+                CompleteMultipartUploadRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .uploadId(uploadId)
+                    .multipartUpload(
+                        CompletedMultipartUpload.builder()
+                            .parts(completedParts)
+                            .build()
+                    )
+                    .build()
+            )
+
+            Log.d(TAG, "Multipart upload OK: $objectKey")
         } catch (e: Exception) {
-            Log.e("StorageRepository", "Upload failed", e)
-            Result.failure(e)
+            Log.e(TAG, "Multipart failed, aborting uploadId=$uploadId", e)
+            try {
+                s3Client.abortMultipartUpload(
+                    AbortMultipartUploadRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectKey)
+                        .uploadId(uploadId)
+                        .build()
+                )
+                Log.d(TAG, "Aborted multipart upload")
+            } catch (abortError: Exception) {
+                Log.e(TAG, "Abort failed", abortError)
+            }
+            throw e
         }
     }
+
+    // ============================================================
+    // PRESIGNED URL
+    // ============================================================
 
     fun generatePresignedUrl(
         objectKey: String,
@@ -116,6 +264,10 @@ class StorageRepository @Inject constructor() {
 
     fun getPublicUrl(objectKey: String): String =
         "https://storage.yandexcloud.net/$bucketName/$objectKey"
+
+    // ============================================================
+    // MIME-TYPE
+    // ============================================================
 
     private fun getContentType(extension: String): String {
         return when (extension.lowercase()) {

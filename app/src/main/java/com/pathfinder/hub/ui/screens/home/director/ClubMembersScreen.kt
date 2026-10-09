@@ -5,13 +5,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.core.UserEntity
@@ -21,12 +24,31 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun ClubMembersScreen(
     onBack: () -> Unit,
+    onOpenDM: (dmId: String, otherUid: String) -> Unit = { _, _ -> },
     viewModel: ClubMembersViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var removeDialogUser by remember { mutableStateOf<UserEntity?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.pendingDmId, state.pendingOtherUid) {
+        val dmId = state.pendingDmId
+        val other = state.pendingOtherUid
+        if (dmId != null && other != null) {
+            onOpenDM(dmId, other)
+            viewModel.clearPendingDM()
+        }
+    }
+
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let {
+            snackbar.showSnackbar(it)
+            viewModel.clearInfo()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 title = { Text("Участники клуба") },
@@ -85,9 +107,12 @@ fun ClubMembersScreen(
                         MemberCard(
                             member = member,
                             isCurrentUser = member.id == state.currentUserId,
+                            currentUserRole = state.currentUserRole,
                             onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
                             onSuspend = { viewModel.suspendUser(member.id) },
-                            onRemove = { removeDialogUser = member }
+                            onRemove = { removeDialogUser = member },
+                            onWrite = { viewModel.openDM(member.id) },
+                            onLinkParent = { viewModel.openLinkDialog(member) },
                         )
                     }
                 }
@@ -95,6 +120,7 @@ fun ClubMembersScreen(
         }
     }
 
+    // ---------- Диалог удаления ----------
     removeDialogUser?.let { user ->
         AlertDialog(
             onDismissRequest = { removeDialogUser = null },
@@ -114,17 +140,83 @@ fun ClubMembersScreen(
             }
         )
     }
+
+    // ---------- Диалог привязки parent<->child ----------
+    state.linkDialogMember?.let { member ->
+        val isParent = member.role == "parent"
+        val dialogTitle = if (isParent) "Привязать к ребёнку" else "Привязать родителя"
+        val emptyText = if (isParent)
+            "В клубе нет следопытов для привязки"
+        else
+            "В клубе нет родителей для привязки"
+
+        AlertDialog(
+            onDismissRequest = { viewModel.closeLinkDialog() },
+            title = { Text(dialogTitle) },
+            text = {
+                Column {
+                    Text(
+                        "${member.firstName} ${member.lastName}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    if (state.linkDialogCandidates.isEmpty()) {
+                        Text(emptyText, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Column {
+                            state.linkDialogCandidates.forEach { candidate ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    RadioButton(
+                                        selected = state.linkDialogSelected == candidate.id,
+                                        onClick = { viewModel.onLinkCandidateSelected(candidate.id) }
+                                    )
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            "${candidate.firstName} ${candidate.lastName}".trim(),
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Text(
+                                            getRoleName(candidate.role),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmLink() },
+                    enabled = state.linkDialogSelected != null,
+                ) { Text("Привязать") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.closeLinkDialog() }) { Text("Отмена") }
+            }
+        )
+    }
 }
 
 @Composable
 private fun MemberCard(
     member: UserEntity,
     isCurrentUser: Boolean,
+    currentUserRole: String,
     onChangeRole: (String) -> Unit,
     onSuspend: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onWrite: () -> Unit = {},
+    onLinkParent: () -> Unit = {},
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
     var roleMenuExpanded by remember { mutableStateOf(false) }
 
     Card(
@@ -136,93 +228,135 @@ private fun MemberCard(
                 MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = if (isCurrentUser)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.secondaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = getInitials(member.firstName, member.lastName),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isCurrentUser)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${member.firstName} ${member.lastName}".trim(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (isCurrentUser) {
-                        Spacer(Modifier.width(8.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+            // ---------- Верхняя строка ----------
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = if (isCurrentUser)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Вы",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            text = getInitials(member.firstName, member.lastName),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isCurrentUser)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = getRoleName(member.role),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+
+                Spacer(Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "${member.firstName} ${member.lastName}".trim(),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (isCurrentUser) {
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "Вы",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = getRoleName(member.role),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                AssistChip(
+                    onClick = { },
+                    label = { Text(getStatusName(member.status)) }
                 )
             }
 
-            AssistChip(
-                onClick = { },
-                label = { Text(getStatusName(member.status)) }
-            )
-
+            // ---------- Нижняя строка ----------
             if (!isCurrentUser) {
-                Spacer(Modifier.width(8.dp))
-                Box {
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(Icons.Default.MoreVert, "Действия")
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (canDM(currentUserRole, member.role)) {
+                        TextButton(onClick = onWrite) {
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Написать")
+                        }
                     }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Сменить роль") },
-                            onClick = {
-                                expanded = false
-                                roleMenuExpanded = true
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, "Действия")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            if (member.role == "parent" || member.role == "teen") {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            if (member.role == "parent")
+                                                "Привязать к ребёнку"
+                                            else
+                                                "Привязать родителя"
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.PersonAdd, null)
+                                    },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onLinkParent()
+                                    }
+                                )
                             }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Приостановить доступ") },
-                            onClick = {
-                                expanded = false
-                                onSuspend()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Удалить из клуба") },
-                            onClick = {
-                                expanded = false
-                                onRemove()
-                            }
-                        )
+                            DropdownMenuItem(
+                                text = { Text("Сменить роль") },
+                                onClick = {
+                                    menuExpanded = false
+                                    roleMenuExpanded = true
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Приостановить доступ") },
+                                onClick = {
+                                    menuExpanded = false
+                                    onSuspend()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Удалить из клуба") },
+                                onClick = {
+                                    menuExpanded = false
+                                    onRemove()
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -235,7 +369,11 @@ private fun MemberCard(
             title = { Text("Выберите новую роль") },
             text = {
                 Column {
-                    listOf("teen" to "Следопыт", "instructor" to "Наставник", "secretary" to "Секретарь").forEach { (role, name) ->
+                    listOf(
+                        "teen" to "Следопыт",
+                        "instructor" to "Наставник",
+                        "secretary" to "Секретарь"
+                    ).forEach { (role, name) ->
                         TextButton(
                             onClick = {
                                 onChangeRole(role)
@@ -267,7 +405,8 @@ private fun getRoleName(role: String): String = when (role) {
     "instructor" -> "Наставник"
     "director" -> "Директор"
     "secretary" -> "Секретарь"
-    "conference" -> "Конференция"
+    "conference_admin" -> "Администратор конференции"
+    "conference_secretary" -> "Секретарь конференции"
     else -> role
 }
 
@@ -277,4 +416,13 @@ private fun getStatusName(status: String): String = when (status) {
     "suspended" -> "Приостановлен"
     "deleted" -> "Удалён"
     else -> status
+}
+
+private fun canDM(current: String, target: String): Boolean {
+    if (current == target) return false
+    return when (current) {
+        "teen" -> target in listOf("director", "instructor")
+        "director", "instructor", "secretary", "conference_admin" -> target != "parent"
+        else -> false
+    }
 }

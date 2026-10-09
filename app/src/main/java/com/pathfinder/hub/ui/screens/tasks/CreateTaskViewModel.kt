@@ -13,9 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -23,20 +21,20 @@ data class CreateTaskUiState(
     val title: String = "",
     val description: String = "",
     val assignedTo: String = "",
-    val dueDate: String = "",
+    val dueDate: Date? = null,
     val priority: String = "normal",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isCreated: Boolean = false,
     val clubMembers: List<UserEntity> = emptyList(),
-    val currentUserId: String? = null
+    val currentUserId: String? = null,
 )
 
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateTaskUiState())
@@ -65,11 +63,11 @@ class CreateTaskViewModel @Inject constructor(
         }
     }
 
-    fun onTitleChange(value: String) = _state.update { it.copy(title = value) }
-    fun onDescriptionChange(value: String) = _state.update { it.copy(description = value) }
-    fun onAssignedToChange(value: String) = _state.update { it.copy(assignedTo = value) }
-    fun onDueDateChange(value: String) = _state.update { it.copy(dueDate = value) }
-    fun onPriorityChange(value: String) = _state.update { it.copy(priority = value) }
+    fun onTitleChange(v: String) = _state.update { it.copy(title = v) }
+    fun onDescriptionChange(v: String) = _state.update { it.copy(description = v) }
+    fun onAssignedToChange(v: String) = _state.update { it.copy(assignedTo = v) }
+    fun onDueDateChange(v: Date) = _state.update { it.copy(dueDate = v) }
+    fun onPriorityChange(v: String) = _state.update { it.copy(priority = v) }
 
     fun createTask() {
         val s = _state.value
@@ -93,10 +91,6 @@ class CreateTaskViewModel @Inject constructor(
             try {
                 val currentUser = userRepository.getUser(directorId)
                 val clubId = currentUser?.clubId
-                val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val dueDateParsed = try {
-                    if (s.dueDate.isNotBlank()) fmt.parse(s.dueDate) else null
-                } catch (e: Exception) { null }
 
                 val task = TaskEntity(
                     id = UUID.randomUUID().toString(),
@@ -107,19 +101,21 @@ class CreateTaskViewModel @Inject constructor(
                     description = s.description.trim(),
                     assignedTo = s.assignedTo,
                     assignedBy = directorId,
-                    dueDate = dueDateParsed,
+                    dueDate = s.dueDate,
                     priority = s.priority,
                     status = "assigned",
                     createdAt = Date(),
                     confirmedBy = null,
                     confirmedAt = null,
-                    pendingSync = true
+                    pendingSync = true,
                 )
 
                 taskRepository.upsert(task)
                 _state.update { it.copy(isLoading = false, isCreated = true) }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания") }
+                _state.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания")
+                }
             }
         }
     }

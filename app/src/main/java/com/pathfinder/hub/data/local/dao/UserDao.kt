@@ -17,6 +17,8 @@ interface UserDao {
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId")
     fun observeConferenceUsers(conferenceId: String): Flow<List<UserEntity>>
+    @Query("SELECT * FROM users WHERE conferenceId = :conferenceId AND role = :role")
+    fun observeConferenceMembersByRole(conferenceId: String, role: String): Flow<List<UserEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(user: UserEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE)

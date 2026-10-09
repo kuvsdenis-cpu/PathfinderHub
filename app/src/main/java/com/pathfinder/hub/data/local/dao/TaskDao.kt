@@ -23,6 +23,9 @@ interface TaskDao {
     @Query("UPDATE tasks SET status = :status WHERE id = :id")
     suspend fun updateStatus(id: String, status: String)
     @Delete suspend fun delete(task: TaskEntity)
+    @Query("SELECT COUNT(*) FROM tasks WHERE assignedTo = :userId AND status IN ('done', 'confirmed')")
+    suspend fun countCompletedByUser(userId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAssignment(a: AssignmentEntity)
     @Query("SELECT * FROM assignments WHERE taskId = :taskId")

@@ -1,14 +1,19 @@
 package com.pathfinder.hub.ui.screens.home.director
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
+import com.pathfinder.hub.data.repository.AnswerRepository
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.usecase.learning.CompleteHonorUseCase
+import com.pathfinder.hub.domain.usecase.learning.CompleteLevelUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,6 +52,15 @@ sealed class ApprovalItem {
         override val requirementId: String get() = progress.requirementId
         override val submittedAt: Date? get() = progress.submittedAt
     }
+
+    data class Answer(
+        val answer: RequirementTaskAnswerEntity,
+        override val userName: String
+    ) : ApprovalItem() {
+        override val userId: String get() = answer.userId
+        override val requirementId: String get() = answer.requirementId
+        override val submittedAt: Date? get() = answer.submittedAt
+    }
 }
 
 data class ApprovalsUiState(
@@ -54,7 +68,8 @@ data class ApprovalsUiState(
     val items: List<ApprovalItem> = emptyList(),
     val currentUserId: String? = null,
     val errorMessage: String? = null,
-    val processingId: String? = null // userId_requirementId для индикатора
+    val processingId: String? = null, // userId_requirementId для индикатора
+    val completedMessage: String? = null // «Ступень завершена!» / «Специализация завершена!»
 )
 
 @HiltViewModel
@@ -62,8 +77,15 @@ class ApprovalsViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val levelRepository: LevelRepository,
-    private val honorRepository: HonorRepository
+    private val honorRepository: HonorRepository,
+    private val answerRepository: AnswerRepository,
+    private val completeLevelUseCase: CompleteLevelUseCase,
+    private val completeHonorUseCase: CompleteHonorUseCase
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "ApprovalsVM"
+    }
 
     private val _state = MutableStateFlow(ApprovalsUiState())
     val state: StateFlow<ApprovalsUiState> = _state.asStateFlow()
@@ -91,12 +113,12 @@ class ApprovalsViewModel @Inject constructor(
 
                 _state.update { it.copy(isLoading = false, currentUserId = userId) }
 
-                // Объединяем 3 потока: пользователи клуба + заявки по ступеням + заявки по специализациям
                 combine(
                     userRepository.observeClubMembers(clubId),
                     levelRepository.observePendingApprovalsByClub(clubId),
-                    honorRepository.observePendingApprovalsByClub(clubId)
-                ) { users, levelProgress, honorProgress ->
+                    honorRepository.observePendingApprovalsByClub(clubId),
+                    answerRepository.observePendingAnswers(clubId)
+                ) { users, levelProgress, honorProgress, pendingAnswers ->
                     val userMap = users.associateBy { it.id }
                     val levelItems = levelProgress.mapNotNull { p ->
                         val user = userMap[p.userId] ?: return@mapNotNull null
@@ -106,7 +128,11 @@ class ApprovalsViewModel @Inject constructor(
                         val user = userMap[p.userId] ?: return@mapNotNull null
                         ApprovalItem.Honor(p, p.honorId, "${user.firstName} ${user.lastName}".trim())
                     }
-                    (levelItems + honorItems).sortedByDescending { it.submittedAt?.time ?: 0L }
+                    val answerItems = pendingAnswers.mapNotNull { a ->
+                        val user = userMap[a.userId] ?: return@mapNotNull null
+                        ApprovalItem.Answer(a, "${user.firstName} ${user.lastName}".trim())
+                    }
+                    (levelItems + honorItems + answerItems).sortedByDescending { it.submittedAt?.time ?: 0L }
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
                     .collect { items ->
                         _state.update { it.copy(items = items) }
@@ -155,9 +181,30 @@ class ApprovalsViewModel @Inject constructor(
                             at = now
                         )
                     }
+                    is ApprovalItem.Answer -> {
+                        if (newStatus == "approved") {
+                            answerRepository.approve(item.answer, directorId).getOrThrow()
+                        } else {
+                            answerRepository.reject(
+                                item.answer, directorId,
+                                comment?.takeIf { it.isNotBlank() } ?: "Отклонено"
+                            ).getOrThrow()
+                        }
+                    }
                 }
-                // После одобрения заявка автоматически исчезнет из списка (Flow реактивный)
+
+                // После одобрения проверяем, все ли требования ступени/специализации
+                // собраны. Если да — вызываем CompleteLevelUseCase/CompleteHonorUseCase,
+                // которые начислят ачивки и обновят цифровую форму.
+                if (newStatus == "approved") {
+                    when (item) {
+                        is ApprovalItem.Level -> checkLevelCompletion(item, directorId)
+                        is ApprovalItem.Honor -> checkHonorCompletion(item, directorId)
+                        is ApprovalItem.Answer -> Unit
+                    }
+                }
             } catch (e: Exception) {
+                Log.e(TAG, "processAction failed", e)
                 _state.update {
                     it.copy(errorMessage = e.message ?: "Ошибка обработки")
                 }
@@ -165,5 +212,101 @@ class ApprovalsViewModel @Inject constructor(
                 _state.update { it.copy(processingId = null) }
             }
         }
+    }
+
+    /**
+     * Проверяет, все ли требования ступени одобрены.
+     * Если да — вызывает CompleteLevelUseCase (начисление ачивок + шеврон).
+     */
+    private suspend fun checkLevelCompletion(item: ApprovalItem.Level, approver: String) {
+        try {
+            val allRequirements = levelRepository.getRequirements(item.levelId)
+            if (allRequirements.isEmpty()) {
+                Log.w(TAG, "checkLevelCompletion: нет требований у ступени ${item.levelId}")
+                return
+            }
+
+            val allProgress = levelRepository.getProgressSnapshot(item.userId, item.levelId)
+            val approvedIds = allProgress
+                .filter { it.status == "approved" }
+                .map { it.requirementId }
+                .toSet()
+
+            val allApproved = allRequirements.all { it.id in approvedIds }
+
+            if (allApproved) {
+                Log.d(TAG, "Ступень ${item.levelId} полностью одобрена — завершаем")
+                val result = completeLevelUseCase(
+                    userId = item.userId,
+                    levelId = item.levelId,
+                    approver = approver
+                )
+                result.fold(
+                    onSuccess = {
+                        _state.update {
+                            it.copy(completedMessage = "Ступень «${item.levelId}» завершена!")
+                        }
+                    },
+                    onFailure = { e ->
+                        Log.e(TAG, "completeLevelUseCase failed", e)
+                        _state.update {
+                            it.copy(errorMessage = "Ступень одобрена, но завершить не удалось: ${e.message}")
+                        }
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "checkLevelCompletion failed", e)
+        }
+    }
+
+    /**
+     * Проверяет, все ли требования специализации одобрены.
+     * Если да — вызывает CompleteHonorUseCase (начисление ачивок + нашивка).
+     */
+    private suspend fun checkHonorCompletion(item: ApprovalItem.Honor, approver: String) {
+        try {
+            val allRequirements = honorRepository.getRequirements(item.honorId)
+            if (allRequirements.isEmpty()) {
+                Log.w(TAG, "checkHonorCompletion: нет требований у специализации ${item.honorId}")
+                return
+            }
+
+            val allProgress = honorRepository.getProgressSnapshot(item.userId, item.honorId)
+            val approvedIds = allProgress
+                .filter { it.status == "approved" }
+                .map { it.requirementId }
+                .toSet()
+
+            val allApproved = allRequirements.all { it.id in approvedIds }
+
+            if (allApproved) {
+                Log.d(TAG, "Специализация ${item.honorId} полностью одобрена — завершаем")
+                val result = completeHonorUseCase(
+                    userId = item.userId,
+                    honorId = item.honorId,
+                    approver = approver
+                )
+                result.fold(
+                    onSuccess = {
+                        _state.update {
+                            it.copy(completedMessage = "Специализация «${item.honorId}» сдана!")
+                        }
+                    },
+                    onFailure = { e ->
+                        Log.e(TAG, "completeHonorUseCase failed", e)
+                        _state.update {
+                            it.copy(errorMessage = "Специализация одобрена, но завершить не удалось: ${e.message}")
+                        }
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "checkHonorCompletion failed", e)
+        }
+    }
+
+    fun clearCompletedMessage() {
+        _state.update { it.copy(completedMessage = null) }
     }
 }

@@ -6,6 +6,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.gamification.AchievementEntity
 import com.pathfinder.hub.data.local.entity.gamification.AchievementProgressEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
+import com.pathfinder.hub.domain.usecase.gamification.CheckAchievementsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,13 +24,16 @@ data class AchievementWithProgress(
 data class AchievementsUiState(
     val isLoading: Boolean = true,
     val achievements: List<AchievementWithProgress> = emptyList(),
+    val earnedCount: Int = 0,
+    val totalCount: Int = 0,
     val errorMessage: String? = null
 )
 
 @HiltViewModel
 class AchievementsViewModel @Inject constructor(
     private val sessionManager: SessionManager,
-    private val repository: AchievementRepository
+    private val repository: AchievementRepository,
+    private val checkAchievements: CheckAchievementsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AchievementsUiState())
@@ -47,22 +51,35 @@ class AchievementsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            // Сначала прогоняем проверки — вдруг что-то набралось с прошлого раза
+            try { checkAchievements(userId) } catch (_: Exception) {}
+        }
+
+        viewModelScope.launch {
             combine(
                 repository.observeAll(),
                 repository.observeProgress(userId)
             ) { achievements, progressList ->
                 val progressMap = progressList.associateBy { it.achievementId }
-                achievements.map { achievement ->
+                val list = achievements.map { achievement ->
                     AchievementWithProgress(
                         achievement = achievement,
                         progress = progressMap[achievement.id]
                     )
-                }
-            }.collect { list ->
+                }.sortedWith(
+                    compareByDescending<AchievementWithProgress> { it.progress?.status == "earned" }
+                        .thenBy { it.achievement.category }
+                        .thenBy { it.achievement.name }
+                )
+                val earned = list.count { it.progress?.status == "earned" }
+                Triple(list, earned, list.size)
+            }.collect { (list, earned, total) ->
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        achievements = list
+                        achievements = list,
+                        earnedCount = earned,
+                        totalCount = total
                     )
                 }
             }

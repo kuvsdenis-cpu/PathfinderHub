@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.auth.InviteEntity
+import com.pathfinder.hub.data.local.entity.core.ClubEntity
+import com.pathfinder.hub.data.repository.ClubRepository
 import com.pathfinder.hub.data.repository.InviteRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.PermissionRegistry
 import com.pathfinder.hub.domain.usecase.director.CreateInviteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +20,13 @@ import javax.inject.Inject
 
 data class DirectorInvitesUiState(
     val invites: List<InviteEntity> = emptyList(),
+    val clubs: List<ClubEntity> = emptyList(),
+    val selectedClubId: String? = null,
     val isLoading: Boolean = false,
     val lastCreated: InviteEntity? = null,
     val errorMessage: String? = null,
-    val selectedRole: String = "teen"
+    val selectedRole: String = "teen",
+    val selectedPermissions: Set<String> = emptySet(),
 )
 
 @HiltViewModel
@@ -28,14 +34,36 @@ class DirectorInvitesViewModel @Inject constructor(
     private val createInviteUseCase: CreateInviteUseCase,
     private val inviteRepository: InviteRepository,
     private val userRepository: UserRepository,
-    private val sessionManager: SessionManager
+    private val clubRepository: ClubRepository,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DirectorInvitesUiState())
     val state: StateFlow<DirectorInvitesUiState> = _state.asStateFlow()
 
     init {
+        observeDirector()
         observeInvites()
+    }
+
+    private fun observeDirector() {
+        val userId = sessionManager.getUserId() ?: return
+        viewModelScope.launch {
+            userRepository.observeUser(userId).collect { user ->
+                if (user == null) return@collect
+                val ids = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+                val clubs = ids.mapNotNull { id ->
+                    try { clubRepository.getClub(id) } catch (_: Exception) { null }
+                }
+                val activeId = user.clubId ?: clubs.firstOrNull()?.id
+                _state.update {
+                    it.copy(
+                        clubs = clubs,
+                        selectedClubId = it.selectedClubId ?: activeId,
+                    )
+                }
+            }
+        }
     }
 
     private fun observeInvites() {
@@ -50,14 +78,44 @@ class DirectorInvitesViewModel @Inject constructor(
     }
 
     fun onRoleSelected(role: String) {
-        _state.update { it.copy(selectedRole = role) }
+        _state.update {
+            it.copy(
+                selectedRole = role,
+                // При выборе "director" — предзаполняем безопасным набором
+                selectedPermissions = if (role == "director")
+                    PermissionRegistry.DEFAULT_CO_DIRECTOR.toSet()
+                else emptySet(),
+            )
+        }
+    }
+
+    fun onClubSelected(clubId: String) {
+        _state.update { it.copy(selectedClubId = clubId) }
+    }
+
+    fun onPermissionToggle(perm: String) {
+        _state.update {
+            val cur = it.selectedPermissions
+            val next = if (perm in cur) cur - perm else cur + perm
+            it.copy(selectedPermissions = next)
+        }
     }
 
     fun createInvite() {
+        val s = _state.value
+        val role = s.selectedRole
+        val clubId = s.selectedClubId
+
+        if (role == "director" && clubId == null) {
+            _state.update { it.copy(errorMessage = "Не выбран клуб") }
+            return
+        }
+
         _state.update { it.copy(isLoading = true, errorMessage = null, lastCreated = null) }
 
         viewModelScope.launch {
-            createInviteUseCase(_state.value.selectedRole).fold(
+            val permissions = if (role == "director") s.selectedPermissions.toList() else emptyList()
+            createInviteUseCase(role = role, clubId = clubId, permissions = permissions).fold(
                 onSuccess = { invite ->
                     _state.update { it.copy(isLoading = false, lastCreated = invite) }
                 },

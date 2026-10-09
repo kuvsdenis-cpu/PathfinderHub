@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- QR-станции (F) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -50,6 +56,21 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <!-- FCM: приём push-уведомлений -->
+        <service
+            android:name="com.pathfinder.hub.notifications.PathfinderMessagingService"
+            android:exported="false"
+            android:directBootAware="true" >
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Канал уведомлений по умолчанию -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="pathfinder_chats" />
 
     </application>
 

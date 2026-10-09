@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +21,8 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun TeenProfileScreen(
     onBack: () -> Unit,
-    onLogout: () -> Unit,                       // <-- ДОБАВЛЕНО
+    onLogout: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     viewModel: TeenProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -42,10 +44,16 @@ fun TeenProfileScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
                     }
                 },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, "Настройки")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PathfinderBlue,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }

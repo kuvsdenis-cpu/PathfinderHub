@@ -134,8 +134,14 @@ class RegisterViewModel @Inject constructor(
             result.fold(
                 onSuccess = { userId ->
                     sessionManager.saveUserId(userId)
+                    // Роль уже есть в s.role (из инвайта), сохраняем её вместе с userId.
                     _state.update {
-                        it.copy(isLoading = false, registerSuccess = true, userId = userId)
+                        it.copy(
+                            isLoading = false,
+                            registerSuccess = true,
+                            userId = userId
+                            // role остаётся как был
+                        )
                     }
                 },
                 onFailure = { error ->

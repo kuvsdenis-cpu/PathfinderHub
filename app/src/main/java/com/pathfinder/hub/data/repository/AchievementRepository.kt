@@ -1,10 +1,14 @@
 package com.pathfinder.hub.data.repository
 import com.pathfinder.hub.data.local.dao.AchievementDao
+import com.pathfinder.hub.data.remote.FirestoreCertificateDataSource
 import com.pathfinder.hub.data.local.entity.gamification.*
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class AchievementRepository @Inject constructor(private val dao: AchievementDao) {
+class AchievementRepository @Inject constructor(
+    private val dao: AchievementDao,
+    private val certFirestore: FirestoreCertificateDataSource,
+) {
     fun observeAll(): Flow<List<AchievementEntity>> = dao.observeAll()
     suspend fun upsertAll(items: List<AchievementEntity>) = dao.upsertAll(items)
     fun observeProgress(u: String): Flow<List<AchievementProgressEntity>> = dao.observeProgress(u)
@@ -21,12 +25,38 @@ class AchievementRepository @Inject constructor(private val dao: AchievementDao)
     suspend fun upsertTeamProgress(p: TeamChallengeProgressEntity) = dao.upsertTeamProgress(p)
     fun observeHomework(c: String): Flow<List<HomeworkEntity>> = dao.observeHomework(c)
     suspend fun upsertHomework(h: HomeworkEntity) = dao.upsertHomework(h)
+
+    fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>> =
+        dao.observePendingHomeworkByClub(clubId)
+
+    suspend fun approveHomework(h: HomeworkEntity) =
+        dao.upsertHomework(h.copy(
+            status = "approved",
+            approvedAt = java.util.Date(),
+            pendingSync = true,
+        ))
+
+    suspend fun rejectHomework(h: HomeworkEntity) =
+        dao.upsertHomework(h.copy(
+            status = "rejected",
+            approvedAt = null,
+            pendingSync = true,
+        ))
     fun observeActivityLevel(u: String): Flow<ActivityLevelEntity?> = dao.observeActivityLevel(u)
     suspend fun upsertActivityLevel(a: ActivityLevelEntity) = dao.upsertActivityLevel(a)
     fun observeReputation(u: String): Flow<ReputationEntity?> = dao.observeReputation(u)
     suspend fun upsertReputation(r: ReputationEntity) = dao.upsertReputation(r)
     fun observeCertificates(u: String): Flow<List<CertificateEntity>> = dao.observeCertificates(u)
     suspend fun upsertCertificate(c: CertificateEntity) = dao.upsertCertificate(c)
+
+    /**
+     * Сохраняет сертификат локально + в Firestore.
+     * Используется после upload PDF в Yandex.
+     */
+    suspend fun upsertCertificateWithSync(c: CertificateEntity) {
+        dao.upsertCertificate(c)
+        certFirestore.upsert(c)
+    }
     suspend fun upsertShareCard(s: ShareCardEntity) = dao.upsertShareCard(s)
     suspend fun getShareCard(t: String, id: String): ShareCardEntity? = dao.getShareCard(t, id)
 }

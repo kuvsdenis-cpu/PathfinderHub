@@ -86,6 +86,7 @@ class RegisterByInviteUseCase @Inject constructor(
         // ============================================================
         // ФАЗА 4: создаём User (Room + Firestore)
         // ============================================================
+        val isConfSec = invite.role == "conference_secretary"
         val user = UserEntity(
             id = uid,
             email = email,
@@ -93,8 +94,11 @@ class RegisterByInviteUseCase @Inject constructor(
             firstName = firstName,
             lastName = lastName,
             role = invite.role,
-            clubId = invite.clubId,
-            conferenceId = null,
+            clubId = if (isConfSec) null else invite.clubId,
+            clubIds = if (isConfSec) emptyList() else listOf(invite.clubId),
+            isOwnerClub = invite.role !in listOf("director", "conference_secretary"),
+            directorPermissions = if (invite.role == "director") invite.permissions else emptyList(),
+            conferenceId = if (isConfSec) invite.conferenceId else null,
             birthDate = birthDate,
             avatar = null,
             parentEmail = null,

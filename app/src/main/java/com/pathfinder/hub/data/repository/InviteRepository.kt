@@ -60,7 +60,9 @@ class InviteRepository @Inject constructor(
         clubId: String,
         role: String,
         createdBy: String,
-        lifetimeDays: Int = 7
+        lifetimeDays: Int = 7,
+        permissions: List<String> = emptyList(),
+        conferenceId: String? = null,
     ): InviteEntity {
         val now = Date()
         val expiresAt = Date(now.time + lifetimeDays * 24L * 3600 * 1000)
@@ -68,7 +70,9 @@ class InviteRepository @Inject constructor(
             id = UUID.randomUUID().toString(),
             code = generateCode(),
             clubId = clubId,
+            conferenceId = conferenceId,
             role = role,
+            permissions = permissions,
             createdBy = createdBy,
             createdAt = now,
             expiresAt = expiresAt,

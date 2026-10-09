@@ -21,8 +21,13 @@ fun RoleHomeScreen(
         if (!state.isLoading && state.role != null) {
             val route = when (state.role) {
                 "director" -> Routes.DIRECTOR_HOME
-                "teen", "parent" -> Routes.TEEN_HOME
-                else -> Routes.TEEN_HOME // Запасной вариант
+                "instructor" -> Routes.INSTRUCTOR_HOME
+                "secretary" -> Routes.SECRETARY_HOME
+                "parent" -> Routes.PARENT_HOME
+                "conference_admin" -> Routes.CONFERENCE_HOME
+                "conference_secretary" -> Routes.CONFERENCE_SECRETARY_HOME
+                "teen" -> Routes.TEEN_HOME
+                else -> Routes.TEEN_HOME
             }
 
             navController.navigate(route) {

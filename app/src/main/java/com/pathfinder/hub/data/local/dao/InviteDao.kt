@@ -9,6 +9,9 @@ interface InviteDao {
     suspend fun getByCode(code: String): InviteEntity?
     @Query("SELECT * FROM invites WHERE clubId = :clubId")
     fun observeByClub(clubId: String): Flow<List<InviteEntity>>
+    @Query("SELECT COUNT(*) FROM invites WHERE createdBy = :creatorId")
+    suspend fun countByCreator(creatorId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(invite: InviteEntity)
     @Query("UPDATE invites SET status = :status, usedBy = :userId, usedAt = :at WHERE code = :code")

@@ -27,7 +27,6 @@ fun ClubChatScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    // ✅ Читаем результат загрузки файла, который положил FileUploadScreen
     val pendingAttachment by savedStateHandle
         .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
         .collectAsState()
@@ -126,6 +125,7 @@ fun ClubChatScreen(
                     CommentsSection(
                         targetType = "club_chat",
                         targetId = state.clubId!!,
+                        clubId = state.clubId!!,
                         modifier = Modifier.weight(1f),
                         pendingAttachment = pendingAttachment,
                         onAttachmentConsumed = {

@@ -10,7 +10,15 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.pathfinder.hub.ui.share.ShareCardGenerator
+import com.pathfinder.hub.ui.share.ShareCardHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,7 +54,24 @@ fun DigitalUniformScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Share */ }) {
+                    val ctx = LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    IconButton(onClick = {
+                        val u = state.uniform ?: return@IconButton
+                        scope.launch {
+                            val file = withContext(Dispatchers.IO) {
+                                ShareCardGenerator.generate(
+                                    context = ctx,
+                                    emoji = "\uD83D\uDC55",
+                                    title = "Цифровая форма",
+                                    subtitle = "Нашивок: " + u.earnedBadges.size +
+                                            ", шевронов: " + u.earnedChevrons.size,
+                                    userName = null,
+                                )
+                            }
+                            ShareCardHelper.share(ctx, file, "Моя цифровая форма в Pathfinder Hub")
+                        }
+                    }) {
                         Icon(Icons.Default.Share, contentDescription = "Поделиться")
                     }
                 },

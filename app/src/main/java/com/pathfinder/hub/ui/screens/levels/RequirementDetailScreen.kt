@@ -48,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import coil.compose.AsyncImage
+import com.pathfinder.hub.ui.learning.RequirementContentViewModel
+import com.pathfinder.hub.ui.learning.RequirementContentSection
+import androidx.compose.material.icons.filled.Edit
 import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
@@ -60,13 +63,19 @@ import com.pathfinder.hub.ui.theme.PathfinderRed
 fun RequirementDetailScreen(
     onBack: () -> Unit,
     onUploadReport: (String, String) -> Unit,
+    onOpenEditor: (String, String) -> Unit = { _, _ -> },
+    onAttachTaskFile: (requirementId: String, taskId: String) -> Unit = { _, _ -> },
     savedStateHandle: SavedStateHandle,
-    viewModel: RequirementDetailViewModel = hiltViewModel()
+    viewModel: RequirementDetailViewModel = hiltViewModel(),
+    contentViewModel: RequirementContentViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
+    var showEditor by remember { mutableStateOf(false) }
+    var hasRequiredTasks by remember { mutableStateOf(false) }
+    var allRequiredDone by remember { mutableStateOf(true) }
 
     val pendingAttachment by savedStateHandle
         .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
@@ -74,7 +83,16 @@ fun RequirementDetailScreen(
 
     LaunchedEffect(pendingAttachment) {
         pendingAttachment?.let { result ->
-            viewModel.attachUploadedFile(result)
+            if (result.context == com.pathfinder.hub.ui.storage.FileUploadContext.TASK_ANSWER) {
+                // contextId = "requirementId|taskId"
+                val taskId = result.contextId.substringAfter("|", "")
+                if (taskId.isNotBlank()) {
+                    contentViewModel.attachFileToTask(taskId, result.fileUrl)
+                }
+            } else {
+                // LEVEL_REQUIREMENT, HONOR_REQUIREMENT и т.д. — старая логика
+                viewModel.attachUploadedFile(result)
+            }
             savedStateHandle.remove<FileUploadResult>(FileUploadResult.SAVED_STATE_KEY)
         }
     }
@@ -102,6 +120,16 @@ fun RequirementDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
                         )
+                    }
+                },
+                actions = {
+                    val canOpenEditor = state.userRole in listOf(
+                        "director", "conference_admin", "instructor", "secretary"
+                    )
+                    if (canOpenEditor) {
+                        IconButton(onClick = { showEditor = true }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Редактировать")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -225,6 +253,17 @@ fun RequirementDetailScreen(
 
                     StatusCard(state.status, state.comment)
 
+                    RequirementContentSection(
+                        viewModel = contentViewModel,
+                        onCompletionChanged = { hasReq, allDone ->
+                            hasRequiredTasks = hasReq
+                            allRequiredDone = allDone
+                        },
+                        onAttachFile = { taskId ->
+                            onAttachTaskFile(state.requirement?.id ?: "", taskId)
+                        }
+                    )
+
                     // Прикреплённые пользователем файлы
                     if (state.mediaUrls.isNotEmpty()) {
                         Spacer(Modifier.height(16.dp))
@@ -267,9 +306,10 @@ fun RequirementDetailScreen(
 
                     when (state.status) {
                         "not_started", "rejected" -> {
+                            val canSubmit = !hasRequiredTasks || allRequiredDone
                             Button(
                                 onClick = { showConfirmDialog = true },
-                                enabled = !state.isSaving,
+                                enabled = !state.isSaving && canSubmit,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(56.dp)
@@ -281,8 +321,21 @@ fun RequirementDetailScreen(
                                         strokeWidth = 2.dp
                                     )
                                 } else {
-                                    Text("Отметить как выполненное")
+                                    Text(
+                                        if (!hasRequiredTasks || allRequiredDone)
+                                            "Отметить как выполненное"
+                                        else
+                                            "Сначала выполните все задания"
+                                    )
                                 }
+                            }
+                            if (hasRequiredTasks && !allRequiredDone) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "Все обязательные задания должны быть проверены и приняты.",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
 
@@ -331,6 +384,17 @@ fun RequirementDetailScreen(
                     Spacer(Modifier.height(16.dp))
                 }
             }
+        }
+    }
+
+    LaunchedEffect(showEditor) {
+        if (showEditor) {
+            val lid = viewModel.getLevelId()
+            val rid = state.requirement?.id
+            if (rid != null) {
+                onOpenEditor(lid, rid)
+            }
+            showEditor = false
         }
     }
 

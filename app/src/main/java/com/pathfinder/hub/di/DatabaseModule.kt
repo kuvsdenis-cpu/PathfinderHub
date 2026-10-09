@@ -31,4 +31,9 @@ object DatabaseModule {
     @Provides fun provideSettingsDao(db: AppDatabase): SettingsDao = db.settingsDao()
     @Provides fun provideNewspaperDao(db: AppDatabase): NewspaperDao = db.newspaperDao()
     @Provides fun provideInviteDao(db: AppDatabase): InviteDao = db.inviteDao()
+
+    // ---------- Learning: материалы и задания ----------
+    @Provides fun provideRequirementMaterialDao(db: AppDatabase): RequirementMaterialDao = db.requirementMaterialDao()
+    @Provides fun provideRequirementTaskDao(db: AppDatabase): RequirementTaskDao = db.requirementTaskDao()
+    @Provides fun provideRequirementTaskAnswerDao(db: AppDatabase): RequirementTaskAnswerDao = db.requirementTaskAnswerDao()
 }

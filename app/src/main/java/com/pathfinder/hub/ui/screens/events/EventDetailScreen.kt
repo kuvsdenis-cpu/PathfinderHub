@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,6 +22,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.pathfinder.hub.ui.share.ShareCardGenerator
+import com.pathfinder.hub.ui.share.ShareCardHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -48,10 +56,35 @@ fun EventDetailScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
                     }
                 },
+                actions = {
+                    val ctx = LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    val event = state.event
+                    if (event != null) {
+                        IconButton(onClick = {
+                            scope.launch {
+                                val file = withContext(Dispatchers.IO) {
+                                    ShareCardGenerator.generate(
+                                        context = ctx,
+                                        emoji = "\uD83D\uDCC5",
+                                        title = event.title,
+                                        subtitle = event.location.ifBlank { "Событие клуба" },
+                                        userName = null,
+                                        dateText = fmt.format(event.dateStart),
+                                    )
+                                }
+                                ShareCardHelper.share(ctx, file, "Событие в Pathfinder Hub: " + event.title)
+                            }
+                        }) {
+                            Icon(Icons.Default.Share, "Поделиться")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PathfinderBlue,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }

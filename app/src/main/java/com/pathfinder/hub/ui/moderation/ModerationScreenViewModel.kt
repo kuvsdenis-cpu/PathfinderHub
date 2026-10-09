@@ -44,13 +44,30 @@ class ModerationScreenViewModel @Inject constructor(
     init {
         val userId = sessionManager.getUserId()
         _state.update { it.copy(currentUserId = userId) }
-        loadPendingComments()
+
+        if (userId == null) {
+            _state.update {
+                it.copy(isLoading = false, errorMessage = "Пользователь не авторизован")
+            }
+        } else {
+            viewModelScope.launch {
+                val user = userRepository.getUser(userId)
+                val clubId = user?.clubId
+                if (clubId.isNullOrBlank()) {
+                    _state.update {
+                        it.copy(isLoading = false, errorMessage = "Клуб не найден")
+                    }
+                } else {
+                    loadPendingComments(clubId)
+                }
+            }
+        }
     }
 
-    private fun loadPendingComments() {
+    private fun loadPendingComments(clubId: String) {
         viewModelScope.launch {
             try {
-                moderationRepository.observePendingComments().collect { pendingList ->
+                moderationRepository.observePendingComments(clubId).collect { pendingList ->
                     val moderated = pendingList.map { comment ->
                         val author = userRepository.getUser(comment.authorId)
                         val authorName = author?.let { "${it.firstName} ${it.lastName}" } ?: "Аноним"

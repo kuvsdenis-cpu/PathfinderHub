@@ -127,6 +127,9 @@ interface LevelDao {
               ORDER BY lp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>>
 
+    @Query("SELECT COUNT(*) FROM level_progress WHERE userId = :userId AND status = 'approved'")
+    suspend fun countApprovedRequirementsByUser(userId: String): Int
+
     // ==================== СЧЁТЧИКИ ====================
 
     @Query("SELECT COUNT(*) FROM levels")

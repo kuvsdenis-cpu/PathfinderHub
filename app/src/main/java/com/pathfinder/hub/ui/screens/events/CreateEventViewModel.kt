@@ -12,9 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -22,28 +20,28 @@ data class CreateEventUiState(
     val title: String = "",
     val description: String = "",
     val location: String = "",
-    val dateStart: String = "", // формат "yyyy-MM-dd HH:mm"
-    val dateEnd: String = "",
+    val dateStart: Date? = null,
+    val dateEnd: Date? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isCreated: Boolean = false
+    val isCreated: Boolean = false,
 )
 
 @HiltViewModel
 class CreateEventViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val eventRepository: EventRepository
+    private val eventRepository: EventRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateEventUiState())
     val state: StateFlow<CreateEventUiState> = _state.asStateFlow()
 
-    fun onTitleChange(value: String) = _state.update { it.copy(title = value) }
-    fun onDescriptionChange(value: String) = _state.update { it.copy(description = value) }
-    fun onLocationChange(value: String) = _state.update { it.copy(location = value) }
-    fun onDateStartChange(value: String) = _state.update { it.copy(dateStart = value) }
-    fun onDateEndChange(value: String) = _state.update { it.copy(dateEnd = value) }
+    fun onTitleChange(v: String) = _state.update { it.copy(title = v) }
+    fun onDescriptionChange(v: String) = _state.update { it.copy(description = v) }
+    fun onLocationChange(v: String) = _state.update { it.copy(location = v) }
+    fun onDateStartChange(v: Date) = _state.update { it.copy(dateStart = v) }
+    fun onDateEndChange(v: Date) = _state.update { it.copy(dateEnd = v) }
 
     fun createEvent() {
         val s = _state.value
@@ -51,8 +49,12 @@ class CreateEventViewModel @Inject constructor(
             _state.update { it.copy(errorMessage = "Введите название") }
             return
         }
-        if (s.dateStart.isBlank() || s.dateEnd.isBlank()) {
+        if (s.dateStart == null || s.dateEnd == null) {
             _state.update { it.copy(errorMessage = "Укажите дату начала и окончания") }
+            return
+        }
+        if (s.dateEnd.before(s.dateStart)) {
+            _state.update { it.copy(errorMessage = "Окончание раньше начала") }
             return
         }
 
@@ -69,10 +71,6 @@ class CreateEventViewModel @Inject constructor(
                 val currentUser = userRepository.getUser(userId)
                 val clubId = currentUser?.clubId
 
-                val fmt = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
-                val dateStart = fmt.parse(s.dateStart) ?: Date()
-                val dateEnd = fmt.parse(s.dateEnd) ?: Date()
-
                 val event = EventEntity(
                     id = UUID.randomUUID().toString(),
                     level = "club",
@@ -80,8 +78,8 @@ class CreateEventViewModel @Inject constructor(
                     type = "meeting",
                     title = s.title.trim(),
                     description = s.description.trim(),
-                    dateStart = dateStart,
-                    dateEnd = dateEnd,
+                    dateStart = s.dateStart,
+                    dateEnd = s.dateEnd,
                     timezone = java.util.TimeZone.getDefault().id,
                     location = s.location.trim(),
                     isRecurring = false,
@@ -96,7 +94,7 @@ class CreateEventViewModel @Inject constructor(
                     hiddenReasonCode = null,
                     hiddenReasonNote = null,
                     visibility = "club",
-                    publishedAt = Date()
+                    publishedAt = Date(),
                 )
 
                 eventRepository.upsert(event)

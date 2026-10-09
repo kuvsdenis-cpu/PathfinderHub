@@ -12,6 +12,9 @@ interface ModerationDao {
     fun observeUserComments(userId: String): Flow<List<CommentEntity>>
     @Query("SELECT * FROM comments WHERE status IN ('pending_review', 'draft')")
     fun observePendingComments(): Flow<List<CommentEntity>>
+    @Query("SELECT COUNT(*) FROM comments WHERE authorId = :userId")
+    suspend fun countUserComments(userId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertComment(c: CommentEntity)
     @Query("""UPDATE comments SET status = :status, moderatedBy = :by,

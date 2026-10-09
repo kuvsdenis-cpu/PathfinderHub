@@ -1,5 +1,6 @@
 package com.pathfinder.hub.ui.comments
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
@@ -9,10 +10,14 @@ import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.domain.service.AutoModerationService
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
@@ -43,19 +48,38 @@ class CommentsViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val moderationRepository: ModerationRepository,
-    private val autoModerationService: AutoModerationService
+    private val autoModerationService: AutoModerationService,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "CommentsViewModel"
+        private const val CLUB_CHAT_TARGET = "club_chat"
+        private const val RETRY_DELAY_MS = 3_000L
+    }
 
     private val _state = MutableStateFlow(CommentsUiState())
     val state: StateFlow<CommentsUiState> = _state.asStateFlow()
 
     private var currentTargetType: String? = null
     private var currentTargetId: String? = null
+    private var currentClubId: String? = null
 
-    fun init(targetType: String, targetId: String) {
-        if (currentTargetType == targetType && currentTargetId == targetId) return
+    /**
+     * Инициализация. Вызывается из CommentsSection при первом показе.
+     *
+     * @param targetType "club_chat" | "event" | "task" | ...
+     * @param targetId   id объекта. Для чата = clubId, для события = eventId
+     * @param clubId     клуб. Для чата = targetId, для события — clubId события.
+     */
+    fun init(targetType: String, targetId: String, clubId: String) {
+        if (currentTargetType == targetType
+            && currentTargetId == targetId
+            && currentClubId == clubId
+        ) return
+
         currentTargetType = targetType
         currentTargetId = targetId
+        currentClubId = clubId
 
         val userId = sessionManager.getUserId()
         _state.update { it.copy(currentUserId = userId) }
@@ -65,29 +89,62 @@ class CommentsViewModel @Inject constructor(
             return
         }
 
+        if (clubId.isBlank()) {
+            _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
+            return
+        }
+
         viewModelScope.launch {
-            try {
-                moderationRepository.observeApprovedComments(targetType, targetId).collect { list ->
-                    val uiModels = list.map { c ->
-                        val author = userRepository.getUser(c.authorId)
-                        val initials = author?.let {
-                            "${it.firstName.firstOrNull()?.uppercase() ?: ""}${it.lastName.firstOrNull()?.uppercase() ?: ""}"
-                        } ?: "?"
-                        CommentUiModel(
-                            id = c.id,
-                            authorName = author?.let { "${it.firstName} ${it.lastName}" } ?: "Аноним",
-                            authorInitials = initials,
-                            text = c.text,
-                            createdAt = c.createdAt,
-                            isOwn = c.authorId == userId,
-                            status = c.status,
-                            attachments = c.attachments
-                        )
+            // Цикл переподписки: если listener упал (нет сети, нет индекса) —
+            // ждём и подписываемся заново, пока ViewModel жива.
+            while (isActive) {
+                try {
+                    moderationRepository
+                        .observeApprovedCommentsFromFirestore(clubId, targetType, targetId)
+                        .catch { e ->
+                            Log.e(TAG, "Firestore listener failed, retry in ${RETRY_DELAY_MS}ms", e)
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    errorMessage = "Нет связи, переподключение…"
+                                )
+                            }
+                            emit(emptyList())
+                        }
+                        .collect { list ->
+                            val uiModels = list.map { c ->
+                                val author = userRepository.getUser(c.authorId)
+                                val initials = author?.let {
+                                    "${it.firstName.firstOrNull()?.uppercase() ?: ""}${it.lastName.firstOrNull()?.uppercase() ?: ""}"
+                                } ?: "?"
+                                CommentUiModel(
+                                    id = c.id,
+                                    authorName = author?.let { "${it.firstName} ${it.lastName}" } ?: "Аноним",
+                                    authorInitials = initials,
+                                    text = c.text,
+                                    createdAt = c.createdAt,
+                                    isOwn = c.authorId == userId,
+                                    status = c.status,
+                                    attachments = c.attachments
+                                )
+                            }
+                            _state.update {
+                                it.copy(
+                                    comments = uiModels,
+                                    isLoading = false,
+                                    errorMessage = null
+                                )
+                            }
+                        }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "listener loop error", e)
+                    _state.update {
+                        it.copy(isLoading = false, errorMessage = e.message)
                     }
-                    _state.update { it.copy(comments = uiModels, isLoading = false) }
                 }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, errorMessage = e.message) }
+                delay(RETRY_DELAY_MS)
             }
         }
     }
@@ -101,10 +158,10 @@ class CommentsViewModel @Inject constructor(
         val text = s.inputText.trim()
         if (text.isBlank()) return
 
-        val userId = s.currentUserId
-        val targetType = currentTargetType
-        val targetId = currentTargetId
-        if (userId == null || targetType == null || targetId == null) return
+        val userId = s.currentUserId ?: return
+        val targetType = currentTargetType ?: return
+        val targetId = currentTargetId ?: return
+        val clubId = currentClubId ?: return
 
         _state.update { it.copy(isSending = true) }
 
@@ -112,6 +169,7 @@ class CommentsViewModel @Inject constructor(
             try {
                 publishComment(
                     userId = userId,
+                    clubId = clubId,
                     targetType = targetType,
                     targetId = targetId,
                     text = text,
@@ -119,22 +177,23 @@ class CommentsViewModel @Inject constructor(
                 )
                 _state.update { it.copy(inputText = "", isSending = false) }
             } catch (e: Exception) {
+                Log.e(TAG, "sendComment failed", e)
                 _state.update { it.copy(isSending = false, errorMessage = e.message) }
             }
         }
     }
 
     /**
-     * Вызывается, когда пользователь вернулся с экрана загрузки файла.
+     * Прикрепление файла.
      *
-     * ВАЖНО: вложения не проходят автомодерацию — имя файла содержит timestamp
-     * (13 цифр подряд), из-за чего phoneRegex ложно срабатывает и публикация
-     * уходит в pending_review. Файлы публикуем сразу как published.
+     * Файлы не проходят автомодерацию — timestamp в имени может ложно
+     * срабатывать на phoneRegex. Публикуем сразу.
      */
     fun attachFile(result: FileUploadResult) {
         val userId = _state.value.currentUserId ?: sessionManager.getUserId() ?: return
         val targetType = currentTargetType ?: return
         val targetId = currentTargetId ?: return
+        val clubId = currentClubId ?: return
 
         _state.update { it.copy(isSending = true) }
 
@@ -145,6 +204,7 @@ class CommentsViewModel @Inject constructor(
                     id = UUID.randomUUID().toString(),
                     targetType = targetType,
                     targetId = targetId,
+                    clubId = clubId,
                     authorId = userId,
                     text = result.fileName,
                     attachments = listOf(result.fileUrl),
@@ -157,34 +217,35 @@ class CommentsViewModel @Inject constructor(
                     hiddenReasonCode = null,
                     hiddenReasonNote = null,
                     createdAt = now,
-                    pendingSync = true
+                    pendingSync = false
                 )
-                moderationRepository.upsertComment(comment)
+                moderationRepository.sendComment(comment)
                 _state.update { it.copy(isSending = false) }
             } catch (e: Exception) {
+                Log.e(TAG, "attachFile failed", e)
                 _state.update { it.copy(isSending = false, errorMessage = e.message) }
             }
         }
     }
 
-    /**
-     * Текстовая публикация с автопроверкой (для sendComment).
-     */
     private suspend fun publishComment(
         userId: String,
+        clubId: String,
         targetType: String,
         targetId: String,
         text: String,
-        attachments: List<String>
+        attachments: List<String>,
     ) {
         val autoResult = autoModerationService.check(text)
         val now = Date()
-        val reviewDeadline = if (autoResult == "ok") {
+        val reviewDeadline = if (autoResult == AutoModerationService.RESULT_PASSED) {
             Date(now.time + 6 * 60 * 60 * 1000L)
         } else null
 
         val status = when (autoResult) {
-            "ok" -> "published"
+            AutoModerationService.RESULT_PASSED -> "published"
+            AutoModerationService.RESULT_FLAGGED -> "pending_review"
+            AutoModerationService.RESULT_BLOCKED -> "rejected"
             else -> "pending_review"
         }
 
@@ -192,6 +253,7 @@ class CommentsViewModel @Inject constructor(
             id = UUID.randomUUID().toString(),
             targetType = targetType,
             targetId = targetId,
+            clubId = clubId,
             authorId = userId,
             text = text,
             attachments = attachments,
@@ -204,9 +266,9 @@ class CommentsViewModel @Inject constructor(
             hiddenReasonCode = null,
             hiddenReasonNote = null,
             createdAt = now,
-            pendingSync = true
+            pendingSync = false
         )
 
-        moderationRepository.upsertComment(comment)
+        moderationRepository.sendComment(comment)
     }
 }

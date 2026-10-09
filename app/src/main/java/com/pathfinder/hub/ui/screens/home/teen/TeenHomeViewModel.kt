@@ -1,6 +1,7 @@
 package com.pathfinder.hub.ui.screens.home.teen
 
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 
@@ -36,7 +38,9 @@ data class TeenHomeUiState(
     val nextEvent: EventEntity? = null,
     val tasksToday: List<TaskEntity> = emptyList(),
     val recentAchievements: List<AchievementProgressEntity> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val resendingVerification: Boolean = false,
+    val verificationSentMessage: String? = null
 )
 
 @HiltViewModel
@@ -127,5 +131,47 @@ class TeenHomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Повторно отправляет письмо с подтверждением почты.
+     * Требует, чтобы пользователь был залогинен в FirebaseAuth.
+     */
+    fun resendVerificationEmail() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(resendingVerification = true, verificationSentMessage = null)
+            }
+            try {
+                val authUser = FirebaseAuth.getInstance().currentUser
+                if (authUser == null) {
+                    _state.update {
+                        it.copy(
+                            resendingVerification = false,
+                            verificationSentMessage = "Сессия истекла. Войдите заново."
+                        )
+                    }
+                    return@launch
+                }
+                authUser.sendEmailVerification().await()
+                _state.update {
+                    it.copy(
+                        resendingVerification = false,
+                        verificationSentMessage = "Письмо отправлено на ${authUser.email}"
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        resendingVerification = false,
+                        verificationSentMessage = "Ошибка: ${e.message ?: "не удалось отправить"}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearVerificationMessage() {
+        _state.update { it.copy(verificationSentMessage = null) }
     }
 }

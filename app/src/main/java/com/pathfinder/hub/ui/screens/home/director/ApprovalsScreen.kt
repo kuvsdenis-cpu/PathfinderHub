@@ -29,11 +29,25 @@ fun ApprovalsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var rejectDialogItem by remember { mutableStateOf<ApprovalItem?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val filtered = remember(state.items, selectedTab) {
+        if (selectedTab == 1) state.items.filter { it is ApprovalItem.Answer }
+        else state.items.filter { it !is ApprovalItem.Answer }
+    }
+
+    LaunchedEffect(state.completedMessage) {
+        state.completedMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearCompletedMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Одобрение требований") },
+                title = { Text("Одобрение") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
@@ -45,7 +59,8 @@ fun ApprovalsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         when {
             state.isLoading -> {
@@ -62,43 +77,60 @@ fun ApprovalsScreen(
                     )
                 }
             }
-            state.items.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Approval,
-                            null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text("Нет заявок на одобрение", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
             else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    items(state.items, key = { "${it.userId}_${it.requirementId}" }) { item ->
-                        ApprovalCard(
-                            item = item,
-                            isProcessing = state.processingId == "${item.userId}_${item.requirementId}",
-                            onApprove = { viewModel.approve(item) },
-                            onReject = { rejectDialogItem = item }
+                Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                    TabRow(selectedTabIndex = selectedTab) {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Требования") }
                         )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Открытые ответы") }
+                        )
+                    }
+                    if (filtered.isEmpty()) {
+                        Box(Modifier.fillMaxSize(), Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.Approval,
+                                    null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = if (selectedTab == 0) "Нет заявок на одобрение"
+                                           else "Нет ответов на проверку",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(vertical = 16.dp)
+                        ) {
+                            items(filtered, key = { "${it.userId}_${it.requirementId}" }) { item ->
+                                ApprovalCard(
+                                    item = item,
+                                    isProcessing = state.processingId == "${item.userId}_${item.requirementId}",
+                                    onApprove = { viewModel.approve(item) },
+                                    onReject = { rejectDialogItem = item }
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    // Диалог для ввода комментария при отклонении
     rejectDialogItem?.let { item ->
         RejectDialog(
             userName = item.userName,
@@ -125,6 +157,7 @@ private fun ApprovalCard(
                     imageVector = when (item) {
                         is ApprovalItem.Level -> Icons.Default.School
                         is ApprovalItem.Honor -> Icons.Default.Star
+                        is ApprovalItem.Answer -> Icons.Default.Approval
                     },
                     contentDescription = null,
                     tint = PathfinderBlue,
@@ -141,6 +174,7 @@ private fun ApprovalCard(
                         text = when (item) {
                             is ApprovalItem.Level -> "Ступень: ${item.levelId}"
                             is ApprovalItem.Honor -> "Специализация: ${item.honorId}"
+                            is ApprovalItem.Answer -> "Открытый ответ на задание"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -155,7 +189,31 @@ private fun ApprovalCard(
                 style = MaterialTheme.typography.bodyMedium
             )
 
+            if (item is ApprovalItem.Answer) {
+                Spacer(Modifier.height(8.dp))
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = item.answer.answer.ifBlank { "[файл]" },
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+                if (item.answer.attachments.isNotEmpty()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Вложений: ${item.answer.attachments.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             item.submittedAt?.let { date ->
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = "Подано: ${SimpleDateFormat("d MMM yyyy, HH:mm", Locale("ru")).format(date)}",
                     style = MaterialTheme.typography.bodySmall,

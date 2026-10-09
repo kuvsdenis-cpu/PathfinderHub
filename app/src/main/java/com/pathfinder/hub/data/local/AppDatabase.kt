@@ -37,6 +37,9 @@ import com.pathfinder.hub.data.local.entity.learning.HonorProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorVersionEntity
 import com.pathfinder.hub.data.local.entity.learning.LeaderChecklistEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementMaterialEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelCompletionEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
@@ -65,6 +68,11 @@ import com.pathfinder.hub.data.local.entity.offline.SyncQueueItemEntity
 import com.pathfinder.hub.data.local.entity.offline.SyncSettingsEntity
 import com.pathfinder.hub.data.local.entity.offline.SyncStatusEntity
 import com.pathfinder.hub.data.local.entity.parent.PWAConfigEntity
+import com.pathfinder.hub.data.local.entity.qr.QrQuestEntity
+import com.pathfinder.hub.data.local.entity.qr.QrQuestProgressEntity
+import com.pathfinder.hub.data.local.entity.qr.QrQuestStationEntity
+import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
+import com.pathfinder.hub.data.local.entity.qr.StationVisitEntity
 import com.pathfinder.hub.data.local.entity.parent.PWAInstallEventEntity
 import com.pathfinder.hub.data.local.entity.parent.ParentMeetingEntity
 import com.pathfinder.hub.data.local.entity.parent.ParentMessageEntity
@@ -125,6 +133,9 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         MemoryVerseEntity::class,
         VerseProgressEntity::class,
         LeaderChecklistEntity::class,
+        RequirementMaterialEntity::class,
+        RequirementTaskEntity::class,
+        RequirementTaskAnswerEntity::class,
 
         // Gamification
         AchievementEntity::class,
@@ -196,9 +207,18 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         NewspaperTemplateEntity::class,
         NewspaperModerationEntity::class,
         NewspaperPublicationEntity::class,
-        CachedNewspaperEntity::class
+        CachedNewspaperEntity::class,
+
+        // QR-станции
+        QrStationEntity::class,
+        StationVisitEntity::class,
+
+        // QR-квесты
+        QrQuestEntity::class,
+        QrQuestStationEntity::class,
+        QrQuestProgressEntity::class
     ],
-    version = 4,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -218,6 +238,11 @@ abstract class AppDatabase : RoomDatabase() {
     // Learning
     abstract fun levelDao(): LevelDao
     abstract fun honorDao(): HonorDao
+
+    // Learning — материалы и задания
+    abstract fun requirementMaterialDao(): RequirementMaterialDao
+    abstract fun requirementTaskDao(): RequirementTaskDao
+    abstract fun requirementTaskAnswerDao(): RequirementTaskAnswerDao
 
     // Gamification
     abstract fun achievementDao(): AchievementDao
@@ -245,6 +270,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Newspaper
     abstract fun newspaperDao(): NewspaperDao
+
+    // QR-станции
+    abstract fun qrStationDao(): QrStationDao
+
+    // QR-квесты
+    abstract fun qrQuestDao(): QrQuestDao
 
     companion object {
         @Volatile

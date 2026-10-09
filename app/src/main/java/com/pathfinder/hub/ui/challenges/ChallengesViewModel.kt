@@ -6,6 +6,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.gamification.ChallengeEntity
 import com.pathfinder.hub.data.local.entity.gamification.ChallengeProgressEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
+import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,8 @@ data class ChallengesUiState(
 @HiltViewModel
 class ChallengesViewModel @Inject constructor(
     private val sessionManager: SessionManager,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChallengesUiState())
@@ -49,7 +51,12 @@ class ChallengesViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val clubId = "demo_club"
+            val user = userRepository.getUser(userId)
+            val clubId = user?.clubId
+            if (clubId.isNullOrBlank()) {
+                _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
+                return@launch
+            }
             achievementRepository.observeActiveChallenges(clubId).collect { challenges ->
                 // Для каждого челленджа получаем прогресс текущего пользователя
                 val challengesWithProgress = challenges.map { challenge ->

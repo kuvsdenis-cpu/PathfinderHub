@@ -12,41 +12,43 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
 data class CreateReportUiState(
     val level: String = "club",
-    val periodStart: String = "",
-    val periodEnd: String = "",
+    val periodStart: Date? = null,
+    val periodEnd: Date? = null,
     val format: String = "pdf",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isCreated: Boolean = false
+    val isCreated: Boolean = false,
 )
 
 @HiltViewModel
 class CreateReportViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val reportRepository: ReportRepository
+    private val reportRepository: ReportRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateReportUiState())
     val state: StateFlow<CreateReportUiState> = _state.asStateFlow()
 
-    fun onLevelChange(value: String) = _state.update { it.copy(level = value) }
-    fun onPeriodStartChange(value: String) = _state.update { it.copy(periodStart = value) }
-    fun onPeriodEndChange(value: String) = _state.update { it.copy(periodEnd = value) }
-    fun onFormatChange(value: String) = _state.update { it.copy(format = value) }
+    fun onLevelChange(v: String) = _state.update { it.copy(level = v) }
+    fun onPeriodStartChange(v: Date) = _state.update { it.copy(periodStart = v) }
+    fun onPeriodEndChange(v: Date) = _state.update { it.copy(periodEnd = v) }
+    fun onFormatChange(v: String) = _state.update { it.copy(format = v) }
 
     fun generateReport() {
         val s = _state.value
-        if (s.periodStart.isBlank() || s.periodEnd.isBlank()) {
+        if (s.periodStart == null || s.periodEnd == null) {
             _state.update { it.copy(errorMessage = "Укажите период отчёта") }
+            return
+        }
+        if (s.periodEnd.before(s.periodStart)) {
+            _state.update { it.copy(errorMessage = "Конец периода раньше начала") }
             return
         }
 
@@ -63,17 +65,13 @@ class CreateReportViewModel @Inject constructor(
                 val currentUser = userRepository.getUser(userId)
                 val clubId = currentUser?.clubId
 
-                val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val dateStart = fmt.parse(s.periodStart) ?: Date()
-                val dateEnd = fmt.parse(s.periodEnd) ?: Date()
-
                 val report = ReportEntity(
                     id = UUID.randomUUID().toString(),
-                    templateId = "default_template", // Можно доработать выбор из observeTemplates
+                    templateId = "default_template",
                     level = s.level,
                     clubId = clubId,
-                    periodStart = dateStart,
-                    periodEnd = dateEnd,
+                    periodStart = s.periodStart,
+                    periodEnd = s.periodEnd,
                     format = s.format,
                     status = "draft",
                     fileUrl = null,
@@ -81,13 +79,15 @@ class CreateReportViewModel @Inject constructor(
                     generatedAt = Date(),
                     signed = false,
                     signedAt = null,
-                    errorMessage = null
+                    errorMessage = null,
                 )
 
                 reportRepository.upsertReport(report)
                 _state.update { it.copy(isLoading = false, isCreated = true) }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания") }
+                _state.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания")
+                }
             }
         }
     }

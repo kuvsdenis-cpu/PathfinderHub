@@ -25,6 +25,11 @@ enum class FileUploadContext(
         allowedMimeTypes = "application/pdf,image/*",
         screenTitle = "Отчёт по задаче"
     ),
+    TASK_ANSWER(
+        storagePrefix = "task_answers",
+        allowedMimeTypes = "*/*",
+        screenTitle = "Прикрепить файл к заданию"
+    ),
     AVATAR(
         storagePrefix = "avatars",
         allowedMimeTypes = "image/*",

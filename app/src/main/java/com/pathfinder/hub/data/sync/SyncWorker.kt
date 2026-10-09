@@ -7,7 +7,23 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.gson.Gson
+import com.pathfinder.hub.data.local.dao.ModerationDao
 import com.pathfinder.hub.data.local.entity.offline.SyncQueueItemEntity
+import com.pathfinder.hub.data.local.entity.planning.CommentEntity
+import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
+import com.pathfinder.hub.data.local.dao.RequirementMaterialDao
+import com.pathfinder.hub.data.local.dao.RequirementTaskDao
+import com.pathfinder.hub.data.local.dao.RequirementTaskAnswerDao
+import com.pathfinder.hub.data.local.entity.learning.RequirementMaterialEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
+import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
+import com.pathfinder.hub.data.remote.FirestoreRequirementContentDataSource
+import com.pathfinder.hub.data.remote.FirestoreTaskAnswerDataSource
+import com.pathfinder.hub.data.remote.FirestoreQrDataSource
+import com.pathfinder.hub.data.remote.FirestoreChallengeDataSource
+import com.pathfinder.hub.data.local.dao.QrStationDao
+import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
+import com.pathfinder.hub.data.local.entity.qr.StationVisitEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withTimeoutOrNull
@@ -17,7 +33,17 @@ class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val syncQueue: SyncQueueManager,
-    private val firestore: FirestoreSyncService
+    private val firestore: FirestoreSyncService,
+    private val commentDataSource: FirestoreCommentDataSource,
+    private val moderationDao: ModerationDao,
+    private val materialDao: RequirementMaterialDao,
+    private val taskDao: RequirementTaskDao,
+    private val answerDao: RequirementTaskAnswerDao,
+    private val contentDataSource: FirestoreRequirementContentDataSource,
+    private val answerDataSource: FirestoreTaskAnswerDataSource,
+    private val qrDataSource: FirestoreQrDataSource,
+    private val qrDao: QrStationDao,
+    private val challengeDataSource: FirestoreChallengeDataSource,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -38,7 +64,6 @@ class SyncWorker @AssistedInject constructor(
         var permanentFailures = 0
 
         for (item in batch) {
-            // Ограничиваем время на один item — 30 секунд
             val result = withTimeoutOrNull(30_000L) {
                 processItem(item)
             }
@@ -69,7 +94,6 @@ class SyncWorker @AssistedInject constructor(
                     }
                 }
                 ProcessResult.PERMANENT_FAILURE -> {
-                    // Не retry — например, PERMISSION_DENIED
                     syncQueue.updateStatus(
                         id = item.id,
                         status = "failed",
@@ -79,7 +103,6 @@ class SyncWorker @AssistedInject constructor(
                     permanentFailures++
                 }
                 null -> {
-                    // Timeout
                     Log.w(TAG, "⏱ Timeout on item ${item.id}")
                     syncQueue.updateStatus(
                         id = item.id,
@@ -114,6 +137,33 @@ class SyncWorker @AssistedInject constructor(
 
     private suspend fun processItem(item: SyncQueueItemEntity): ProcessResult {
         return try {
+            // ---------- Особый случай: комментарии ----------
+            // Отправляем через FirestoreCommentDataSource, а не pushDocument:
+            // только он корректно конвертирует Date → Timestamp и совпадает
+            // с кодом sendComment в ModerationRepository.
+            if (item.entityType == "comment") {
+                return processComment(item)
+            }
+            if (item.entityType == "requirement_material") {
+                return processRequirementMaterial(item)
+            }
+            if (item.entityType == "requirement_task") {
+                return processRequirementTask(item)
+            }
+            if (item.entityType == "requirement_task_answer") {
+                return processRequirementTaskAnswer(item)
+            }
+            if (item.entityType == "qr_station") {
+                return processQrStation(item)
+            }
+            if (item.entityType == "station_visit") {
+                return processStationVisit(item)
+            }
+            if (item.entityType == "challenge_progress") {
+                return processChallengeProgress(item)
+            }
+
+            // ---------- Общая ветка для остальных сущностей ----------
             @Suppress("UNCHECKED_CAST")
             val payload = gson.fromJson(item.payload, Map::class.java) as? Map<String, Any?>
                 ?: emptyMap()
@@ -125,7 +175,7 @@ class SyncWorker @AssistedInject constructor(
             }
 
             val result = when (item.operation.lowercase()) {
-                "create", "update" -> firestore.pushDocument(
+                "create", "update", "upsert" -> firestore.pushDocument(
                     collection = collectionPath,
                     documentId = item.entityId,
                     data = payload
@@ -153,12 +203,195 @@ class SyncWorker @AssistedInject constructor(
     }
 
     /**
-     * Классификация ошибки: retry или permanent failure.
+     * Отправка комментария через FirestoreCommentDataSource.
+     *
+     * 1. Десериализуем payload в CommentEntity (не в Map!).
+     * 2. Отправляем через sendComment — единый код с ModerationRepository.
+     * 3. При успехе — снимаем pendingSync в Room.
      */
+    private suspend fun processComment(item: SyncQueueItemEntity): ProcessResult {
+        val comment = try {
+            gson.fromJson(item.payload, CommentEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ comment deserialize failed ${item.id}", e)
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        if (comment == null || comment.clubId.isBlank()) {
+            Log.w(TAG, "❌ comment: clubId пустой ${item.id}")
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val result = commentDataSource.sendComment(comment)
+                if (result.isSuccess) {
+                    // Снимаем pendingSync, чтобы UI больше не показывал «не отправлено»
+                    try {
+                        moderationDao.upsertComment(comment.copy(pendingSync = false))
+                    } catch (e: Exception) {
+                        Log.w(TAG, "comment: не удалось снять pendingSync ${comment.id}", e)
+                    }
+                    ProcessResult.SUCCESS
+                } else {
+                    classifyError(result.exceptionOrNull())
+                }
+            }
+            "delete" -> {
+                val result = commentDataSource.deleteComment(comment.clubId, comment.id)
+                if (result.isSuccess) ProcessResult.SUCCESS
+                else classifyError(result.exceptionOrNull())
+            }
+            else -> {
+                Log.w(TAG, "❌ Unknown comment operation: ${item.operation}")
+                ProcessResult.PERMANENT_FAILURE
+            }
+        }
+    }
+
+    private suspend fun processRequirementMaterial(item: SyncQueueItemEntity): ProcessResult {
+        val material = try {
+            gson.fromJson(item.payload, RequirementMaterialEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "material deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (material.clubId.isBlank() || material.requirementId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = contentDataSource.upsertMaterial(material)
+                if (r.isSuccess) {
+                    try { materialDao.clearPendingSync(material.id) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = contentDataSource.deleteMaterial(material.clubId, material.requirementId, material.id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processRequirementTask(item: SyncQueueItemEntity): ProcessResult {
+        val task = try {
+            gson.fromJson(item.payload, RequirementTaskEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "task deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (task.clubId.isBlank() || task.requirementId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = contentDataSource.upsertTask(task)
+                if (r.isSuccess) {
+                    try { taskDao.clearPendingSync(task.id) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = contentDataSource.deleteTask(task.clubId, task.requirementId, task.id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processRequirementTaskAnswer(item: SyncQueueItemEntity): ProcessResult {
+        val answer = try {
+            gson.fromJson(item.payload, RequirementTaskAnswerEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "answer deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (answer.clubId.isBlank() || answer.userId.isBlank() || answer.taskId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = answerDataSource.upsertAnswer(answer)
+                if (r.isSuccess) {
+                    try { answerDao.clearPendingSync(answer.id) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processChallengeProgress(item: SyncQueueItemEntity): ProcessResult {
+        val p = try {
+            gson.fromJson(item.payload, com.pathfinder.hub.data.local.entity.gamification.ChallengeProgressEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "challenge_progress deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+
+        val payloadMap = try {
+            @Suppress("UNCHECKED_CAST")
+            gson.fromJson(item.payload, Map::class.java) as? Map<String, Any?>
+        } catch (_: Exception) { null }
+        val clubId = payloadMap?.get("clubId") as? String
+            ?: return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = challengeDataSource.upsertProgress(clubId, p)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processQrStation(item: SyncQueueItemEntity): ProcessResult {
+        val station = try {
+            gson.fromJson(item.payload, QrStationEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "station deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (station.clubId.isBlank() || station.id.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = qrDataSource.upsertStation(station)
+                if (r.isSuccess) {
+                    try { qrDao.upsertStation(station.copy(pendingSync = false)) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = qrDataSource.deleteStation(station.clubId, station.id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processStationVisit(item: SyncQueueItemEntity): ProcessResult {
+        val visit = try {
+            gson.fromJson(item.payload, StationVisitEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "visit deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (visit.clubId.isBlank() || visit.id.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = qrDataSource.upsertVisit(visit)
+                if (r.isSuccess) {
+                    try { qrDao.upsertVisit(visit.copy(pendingSync = false)) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
     private fun classifyError(error: Throwable?): ProcessResult {
         return when (error) {
             is FirebaseFirestoreException -> when (error.code) {
-                // Неверные права — не retry
                 FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
                     Log.e(TAG, "🔒 PERMISSION_DENIED — не retry")
                     ProcessResult.PERMANENT_FAILURE
@@ -172,11 +405,9 @@ class SyncWorker @AssistedInject constructor(
                     ProcessResult.PERMANENT_FAILURE
                 }
                 FirebaseFirestoreException.Code.NOT_FOUND -> {
-                    // Документ не найден при delete — уже удалён, считаем success
                     Log.d(TAG, "ℹ️ NOT_FOUND — считаем success")
                     ProcessResult.SUCCESS
                 }
-                // Сетевые — retry
                 FirebaseFirestoreException.Code.UNAVAILABLE,
                 FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
                 FirebaseFirestoreException.Code.ABORTED,
@@ -198,16 +429,15 @@ class SyncWorker @AssistedInject constructor(
 
     /**
      * Маппинг entityType → Firestore collection path.
-     * Возвращает null, если entityType неизвестен.
+     *
+     * Для "comment" сюда не попадаем — обрабатывается в processComment.
+     * clubId из payload для остальных клубных сущностей.
      */
     private fun resolveCollectionPath(
         item: SyncQueueItemEntity,
         payload: Map<String, Any?>
     ): String? {
-        // userId для subcollection'ов
         val userId = item.userId
-
-        // clubId из payload или из userId (для клубных сущностей)
         val clubId = payload["clubId"] as? String
 
         return when (item.entityType) {
@@ -219,12 +449,14 @@ class SyncWorker @AssistedInject constructor(
             "event" -> if (clubId != null) "clubs/$clubId/events" else null
             "task" -> if (clubId != null) "clubs/$clubId/tasks" else null
             "assignment" -> if (clubId != null) "clubs/$clubId/assignments" else null
-            "comment" -> if (clubId != null) "clubs/$clubId/comments" else null
             "moderation_request" -> if (clubId != null) "clubs/$clubId/moderationRequests" else null
             "moderation_history" -> if (clubId != null) "clubs/$clubId/moderationHistory" else null
             "appeal" -> if (clubId != null) "clubs/$clubId/appeals" else null
             "honor_draft" -> if (clubId != null) "clubs/$clubId/honorDrafts" else null
             "report" -> if (clubId != null) "clubs/$clubId/reports" else null
+            "qr_station" -> if (clubId != null) "clubs/$clubId/qrStations" else null
+            "station_visit" -> if (clubId != null) "clubs/$clubId/stationVisits" else null
+            "challenge_progress" -> if (clubId != null) "clubs/$clubId/challengeProgress" else null
 
             // ---------- Прогресс пользователя ----------
             "level_progress" -> "users/$userId/levelProgress"
@@ -238,6 +470,7 @@ class SyncWorker @AssistedInject constructor(
             "leader_checklist" -> "users/$userId/leaderChecklists"
             "notification" -> "users/$userId/notifications"
 
+            // "comment" обрабатывается в processComment, сюда не доходит
             else -> null
         }
     }

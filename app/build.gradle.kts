@@ -188,6 +188,10 @@ dependencies {
     // ============ WorkManager ============
     implementation("androidx.work:work-runtime-ktx:$workManagerVersion")
 
+    // ============ QR-станции (F) ============
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
     // ============ PDF Viewer ============
     implementation("io.github.oothp:android-pdf-viewer:3.2.0-beta06")
 

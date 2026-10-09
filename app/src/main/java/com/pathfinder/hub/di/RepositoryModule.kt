@@ -2,6 +2,9 @@ package com.pathfinder.hub.di
 
 import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.dao.*
+import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
+import com.pathfinder.hub.data.remote.FirestoreRequirementContentDataSource
+import com.pathfinder.hub.data.remote.FirestoreTaskAnswerDataSource
 import com.pathfinder.hub.data.remote.FirestoreInviteDataSource
 import com.pathfinder.hub.data.repository.*
 import com.pathfinder.hub.data.sync.SyncQueueManager
@@ -15,7 +18,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
-    // ⚠️ UserRepository и LevelRepository — НЕ объявляем, у них @Inject constructor
+    // ⚠️ UserRepository, LevelRepository — НЕ объявляем, у них @Inject constructor
     // с новыми зависимостями (firestore, database). Hilt соберёт сам.
 
     @Provides @Singleton
@@ -47,8 +50,19 @@ object RepositoryModule {
     ) = HonorRepository(db, d, syncQueueManager)
 
     // ---------- Репозитории без SyncQueueManager ----------
-    @Provides @Singleton fun provideAchievementRepo(d: AchievementDao) = AchievementRepository(d)
-    @Provides @Singleton fun provideModerationRepo(d: ModerationDao) = ModerationRepository(d)
+    @Provides @Singleton
+    fun provideAchievementRepo(
+        d: AchievementDao,
+        certFirestore: com.pathfinder.hub.data.remote.FirestoreCertificateDataSource,
+    ) = AchievementRepository(d, certFirestore)
+
+    @Provides @Singleton
+    fun provideModerationRepo(
+        d: ModerationDao,
+        firestore: FirestoreCommentDataSource,
+        syncQueue: SyncQueueManager
+    ) = ModerationRepository(d, firestore, syncQueue)
+
     @Provides @Singleton fun provideNotificationRepo(d: NotificationDao) = NotificationRepository(d)
     @Provides @Singleton fun provideSyncRepo(d: SyncDao) = SyncRepository(d)
     @Provides @Singleton fun provideParentRepo(d: ParentDao) = ParentRepository(d)
@@ -56,6 +70,37 @@ object RepositoryModule {
     @Provides @Singleton fun provideAuditRepo(d: AuditDao) = AuditRepository(d)
     @Provides @Singleton fun provideSettingsRepo(d: SettingsDao) = SettingsRepository(d)
     @Provides @Singleton fun provideNewspaperRepo(d: NewspaperDao) = NewspaperRepository(d)
+
+    @Provides @Singleton fun provideQrStationDao(db: AppDatabase): QrStationDao = db.qrStationDao()
+
+    @Provides @Singleton
+    fun provideQrStationRepo(
+        db: AppDatabase,
+        d: QrStationDao,
+        firestore: com.pathfinder.hub.data.remote.FirestoreQrDataSource,
+        syncQueue: SyncQueueManager,
+    ) = QrStationRepository(db, d, firestore, syncQueue)
+
+    @Provides @Singleton
+    fun provideQrQuestDao(db: AppDatabase): QrQuestDao = db.qrQuestDao()
+
+    @Provides @Singleton
+    fun provideQrQuestRepo(db: AppDatabase, d: QrQuestDao) = QrQuestRepository(db, d)
+
+    @Provides @Singleton
+    fun provideRequirementContentRepo(
+        materialDao: com.pathfinder.hub.data.local.dao.RequirementMaterialDao,
+        taskDao: com.pathfinder.hub.data.local.dao.RequirementTaskDao,
+        firestore: FirestoreRequirementContentDataSource,
+        syncQueue: SyncQueueManager,
+    ) = RequirementContentRepository(materialDao, taskDao, firestore, syncQueue)
+
+    @Provides @Singleton
+    fun provideTaskAnswerRepo(
+        dao: com.pathfinder.hub.data.local.dao.RequirementTaskAnswerDao,
+        firestore: FirestoreTaskAnswerDataSource,
+        syncQueue: SyncQueueManager,
+    ) = TaskAnswerRepository(dao, firestore, syncQueue)
 
     @Provides @Singleton
     fun provideInviteRepo(

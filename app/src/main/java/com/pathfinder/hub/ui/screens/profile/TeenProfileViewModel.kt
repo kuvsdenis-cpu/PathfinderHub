@@ -7,6 +7,7 @@ import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
 import com.pathfinder.hub.data.repository.AuthRepository
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.repository.FcmTokenRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +31,8 @@ class TeenProfileViewModel @Inject constructor(
     private val levelRepository: LevelRepository,
     private val achievementRepository: AchievementRepository,
     private val sessionManager: SessionManager,
-    private val authRepository: AuthRepository    // <-- ДОБАВЛЕНО
+    private val authRepository: AuthRepository,
+    private val fcmTokenRepository: FcmTokenRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TeenProfileUiState())
@@ -66,14 +68,17 @@ class TeenProfileViewModel @Inject constructor(
      * После успеха ставим флаг loggedOut — UI отреагирует и навигирует на LOGIN.
      */
     fun logout() {
+        // Сначала — синхронно, без сети:
+        val uid = sessionManager.getUserId()
+        sessionManager.clear()
+        _state.update { it.copy(loggedOut = true) }
+
+        // Потом — в фоне, не блокирует UI:
         viewModelScope.launch {
-            try {
-                authRepository.signOut()
-            } catch (_: Exception) {
-                // Игнорируем ошибку Firebase — всё равно чистим локальную сессию.
+            try { authRepository.signOut() } catch (_: Exception) {}
+            if (uid != null) {
+                try { fcmTokenRepository.removeCurrentToken(uid) } catch (_: Exception) {}
             }
-            sessionManager.clear()
-            _state.update { it.copy(loggedOut = true) }
         }
     }
 }

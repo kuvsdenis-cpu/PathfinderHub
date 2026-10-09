@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Firebase Admin SDK keys
+pathfinder-hub-c495d-firebase-adminsdk-*.json
+

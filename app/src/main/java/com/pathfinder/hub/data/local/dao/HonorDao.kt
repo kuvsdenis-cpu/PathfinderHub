@@ -131,6 +131,18 @@ interface HonorDao {
     @Query("SELECT * FROM content_versions ORDER BY updatedAt DESC LIMIT 1")
     suspend fun getLatestContentVersion(): ContentVersionEntity?
 
+    @Query("SELECT COUNT(*) FROM honor_progress WHERE userId = :userId AND status = 'approved'")
+    suspend fun countApprovedRequirementsByUser(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM test_attempts WHERE userId = :userId AND passed = 1")
+    suspend fun countPassedTestsByUser(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM verse_progress WHERE userId = :userId")
+    suspend fun countVersesByUser(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM book_reports WHERE userId = :userId")
+    suspend fun countBookReportsByUser(userId: String): Int
+
     // вњ… Р”РћР‘РђР’Р›Р•РќРћ: Р”Р»СЏ СЌРєСЂР°РЅР° РѕРґРѕР±СЂРµРЅРёСЏ РґРёСЂРµРєС‚РѕСЂР°
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id

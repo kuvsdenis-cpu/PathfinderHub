@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
@@ -56,7 +57,14 @@ fun HonorDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.honor?.name ?: "Специализация") },
+                title = {
+                    Text(
+                        text = state.honor?.name ?: "Специализация",
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -153,8 +161,10 @@ private fun RequirementCard(model: HonorRequirementUiModel, onClick: () -> Unit)
             .clickable(onClick = onClick)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.Top
         ) {
             Icon(
                 imageVector = if (isApproved) Icons.Default.CheckCircle
@@ -165,13 +175,18 @@ private fun RequirementCard(model: HonorRequirementUiModel, onClick: () -> Unit)
                     isSubmitted -> PathfinderBlue
                     else -> PathfinderGray
                 },
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(24.dp)
             )
             Spacer(Modifier.size(12.dp))
-            Column(Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = model.requirement.text,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    softWrap = true,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 6
                 )
                 if (isSubmitted) {
                     Spacer(Modifier.height(4.dp))

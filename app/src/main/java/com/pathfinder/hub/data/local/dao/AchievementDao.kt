@@ -37,6 +37,9 @@ interface AchievementDao {
     suspend fun upsertTeamProgress(p: TeamChallengeProgressEntity)
     @Query("SELECT * FROM homework WHERE childId = :childId")
     fun observeHomework(childId: String): Flow<List<HomeworkEntity>>
+
+    @Query("SELECT * FROM homework WHERE clubId = :clubId AND status = 'done' ORDER BY createdAt DESC")
+    fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertHomework(h: HomeworkEntity)
     @Query("SELECT * FROM activity_levels WHERE userId = :userId")

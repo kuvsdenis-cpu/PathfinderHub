@@ -6,9 +6,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import com.pathfinder.hub.ui.share.ShareCardGenerator
+import com.pathfinder.hub.ui.share.ShareCardHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -87,12 +94,34 @@ private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
                 style = MaterialTheme.typography.labelLarge, color = PathfinderBlue)
 
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 if (task.status == "assigned") {
                     Button(onClick = { vm.acceptTask(task.id) }) { Text("Принять") }
                 }
                 if (task.status == "accepted" || task.status == "in_progress") {
                     Button(onClick = { vm.completeTask(task.id) }) { Text("Выполнено") }
+                }
+                Spacer(Modifier.weight(1f))
+                val ctx = LocalContext.current
+                val scope = rememberCoroutineScope()
+                IconButton(onClick = {
+                    scope.launch {
+                        val file = withContext(Dispatchers.IO) {
+                            ShareCardGenerator.generate(
+                                context = ctx,
+                                emoji = "\u2705",
+                                title = task.title,
+                                subtitle = "Статус: " + task.status,
+                                userName = null,
+                            )
+                        }
+                        ShareCardHelper.share(ctx, file, "Задача в Pathfinder Hub: " + task.title)
+                    }
+                }) {
+                    Icon(Icons.Default.Share, "Поделиться", tint = PathfinderBlue)
                 }
             }
         }

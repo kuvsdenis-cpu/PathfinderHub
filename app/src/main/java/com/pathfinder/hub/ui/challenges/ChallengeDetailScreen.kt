@@ -4,10 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.pathfinder.hub.ui.share.ShareCardGenerator
+import com.pathfinder.hub.ui.share.ShareCardHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -126,6 +133,79 @@ fun ChallengeDetailScreen(
                             } else {
                                 Text("Обновить прогресс (+1)")
                             }
+                        }
+
+                        // ---------- Завершение челленджа ----------
+                        val isCompleted = progress.completedAt != null
+                        val isRewardClaimed = progress.rewardClaimed
+
+                        if (isCompleted) {
+                            Spacer(Modifier.height(16.dp))
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = PathfinderBlue.copy(alpha = 0.15f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(
+                                        "🏆 Челлендж завершён!",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (challenge.rewards.isNotEmpty()) {
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            "Призы: " + challenge.rewards.joinToString(", "),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (isCompleted && !isRewardClaimed) {
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { viewModel.claimReward() },
+                                enabled = !state.isUpdatingProgress,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Получить приз")
+                            }
+                        } else if (isRewardClaimed) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Приз получен",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = PathfinderBlue
+                            )
+                        }
+
+                        // ---------- Поделиться ----------
+                        val ctx = LocalContext.current
+                        val scope = rememberCoroutineScope()
+                        Spacer(Modifier.height(12.dp))
+                        OutlinedButton(
+                            onClick = {
+                                scope.launch {
+                                    val file = withContext(Dispatchers.IO) {
+                                        ShareCardGenerator.generate(
+                                            context = ctx,
+                                            emoji = "\uD83C\uDFC6",
+                                            title = challenge.title,
+                                            subtitle = progress.progress.toString() + " / " +
+                                                    challenge.goal + " " + challenge.unit,
+                                            userName = null,
+                                        )
+                                    }
+                                    ShareCardHelper.share(ctx, file, "Мой челлендж в Pathfinder Hub")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Поделиться")
                         }
                     }
                 }

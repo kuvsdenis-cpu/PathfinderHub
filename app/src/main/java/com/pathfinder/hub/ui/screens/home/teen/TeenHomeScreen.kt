@@ -14,13 +14,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Card
@@ -46,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.pathfinder.hub.ui.components.EmailVerificationBanner
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -65,6 +69,10 @@ fun TeenHomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToReports: () -> Unit = {},
     onNavigateToClubChat: () -> Unit = {},
+    onNavigateToChats: () -> Unit = {},
+    onNavigateToCertificates: () -> Unit = {},
+    onNavigateToQrScanner: () -> Unit = {},
+    onNavigateToActivity: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
@@ -124,6 +132,16 @@ fun TeenHomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
+
+            // Плашка "Почта не подтверждена"
+            if (state.user?.emailVerified == false) {
+                EmailVerificationBanner(
+                    isSending = state.resendingVerification,
+                    message = state.verificationSentMessage,
+                    onResend = viewModel::resendVerificationEmail
+                )
+            }
+
             // Карточка текущей ступени
             Card(
                 colors = CardDefaults.cardColors(
@@ -212,15 +230,40 @@ fun TeenHomeScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
-            // Кнопки разделов - Ряд 4 (Чат клуба)
+            // Кнопки разделов - Ряд 4 (Чаты + Сертификаты + QR)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ActionTile(
                     icon = Icons.Default.Chat,
-                    label = "Чат клуба",
-                    onClick = onNavigateToClubChat,
+                    label = "Чаты",
+                    onClick = onNavigateToChats,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionTile(
+                    icon = Icons.Default.Description,
+                    label = "Сертификаты",
+                    onClick = onNavigateToCertificates,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionTile(
+                    icon = Icons.Default.QrCodeScanner,
+                    label = "QR",
+                    onClick = onNavigateToQrScanner,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            // Кнопки разделов - Ряд 5 (Активность)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ActionTile(
+                    icon = Icons.Default.Bolt,
+                    label = "Активность",
+                    onClick = onNavigateToActivity,
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.weight(1f))

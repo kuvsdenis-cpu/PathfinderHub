@@ -6,7 +6,10 @@ import java.util.Date
 data class UserEntity(
     @PrimaryKey val id: String, val email: String, val emailVerified: Boolean,
     val firstName: String, val lastName: String, val role: String,
-    val clubId: String?, val conferenceId: String?, val birthDate: Date,
+    val clubId: String?, val clubIds: List<String> = emptyList(),
+    val isOwnerClub: Boolean = true,
+    val directorPermissions: List<String> = emptyList(),
+    val conferenceId: String?, val birthDate: Date,
     val avatar: String?, val parentEmail: String?, val parentalConsentStatus: String,
     val parentalConsentRequestedAt: Date?, val parentalConsentApprovedAt: Date?,
     val accessLevel: String, val status: String, val deletionRequestedBy: String?,

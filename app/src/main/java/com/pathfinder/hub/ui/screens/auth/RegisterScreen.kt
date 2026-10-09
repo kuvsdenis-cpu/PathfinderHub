@@ -22,16 +22,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit,
+    onRegisterSuccess: (role: String, userId: String) -> Unit,
     onBack: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // После успешной регистрации — сообщаем наружу роль и uid.
+    // Навигация на онбординг делается в PathfinderNavHost.
     LaunchedEffect(state.registerSuccess) {
         if (state.registerSuccess) {
-            onRegisterSuccess()
+            val role = state.role ?: "teen"
+            val userId = state.userId ?: ""
+            onRegisterSuccess(role, userId)
         }
     }
 

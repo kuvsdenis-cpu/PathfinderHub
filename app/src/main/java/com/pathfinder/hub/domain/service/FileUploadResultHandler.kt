@@ -48,6 +48,7 @@ class FileUploadResultHandler @Inject constructor(
                     false
                 }
                 FileUploadContext.TASK,
+                FileUploadContext.TASK_ANSWER,
                 FileUploadContext.AVATAR,
                 FileUploadContext.EVENT,
                 FileUploadContext.NEWSPAPER,

@@ -3,14 +3,18 @@ package com.pathfinder.hub.ui.comments
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,21 +31,37 @@ import java.util.Locale
 fun CommentsSection(
     targetType: String,
     targetId: String,
+    clubId: String,
     modifier: Modifier = Modifier,
     pendingAttachment: FileUploadResult? = null,
     onAttachmentConsumed: () -> Unit = {},
     viewModel: CommentsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val listState = rememberLazyListState()
+    var firstScrollDone by remember { mutableStateOf(false) }
 
-    LaunchedEffect(targetType, targetId) {
-        viewModel.init(targetType, targetId)
+    LaunchedEffect(targetType, targetId, clubId) {
+        viewModel.init(targetType, targetId, clubId)
     }
 
     LaunchedEffect(pendingAttachment) {
         pendingAttachment?.let { result ->
             viewModel.attachFile(result)
             onAttachmentConsumed()
+        }
+    }
+
+    // Скролл к последнему сообщению
+    LaunchedEffect(state.comments.size, state.isLoading) {
+        if (!state.isLoading && state.comments.isNotEmpty()) {
+            val target = state.comments.size - 1
+            if (!firstScrollDone) {
+                listState.scrollToItem(target)
+                firstScrollDone = true
+            } else {
+                listState.animateScrollToItem(target)
+            }
         }
     }
 
@@ -66,6 +86,7 @@ fun CommentsSection(
             )
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.heightIn(max = 400.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -100,7 +121,7 @@ fun CommentsSection(
                 if (state.isSending) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                 } else {
-                    Icon(Icons.Default.Send, "Отправить", tint = PathfinderBlue)
+                    Icon(Icons.AutoMirrored.Filled.Send, "Отправить", tint = PathfinderBlue)
                 }
             }
         }

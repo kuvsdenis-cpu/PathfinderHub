@@ -50,6 +50,12 @@ class UserRepository @Inject constructor(
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>> =
         dao.observeClubMembersByRole(clubId, role)
 
+    fun observeConferenceMembers(conferenceId: String): Flow<List<UserEntity>> =
+        dao.observeConferenceUsers(conferenceId)
+
+    fun observeConferenceMembersByRole(conferenceId: String, role: String): Flow<List<UserEntity>> =
+        dao.observeConferenceMembersByRole(conferenceId, role)
+
     // ---------- Запись ----------
     suspend fun upsert(u: UserEntity) {
         dao.upsert(u)
@@ -116,5 +122,57 @@ class UserRepository @Inject constructor(
             firestore.updateUser(it)
             syncQueueManager.enqueue("user", id, "UPDATE", it)
         }
+    }
+
+    // ---------- Мульти-клуб ----------
+
+    /**
+     * Сменить активный клуб.
+     * clubId остаётся клубом по умолчанию для старых мест.
+     */
+    suspend fun setActiveClub(userId: String, clubId: String) {
+        val current = dao.getUser(userId) ?: return
+        if (current.clubId == clubId) return
+        val updated = current.copy(clubId = clubId)
+        dao.update(updated)
+        firestore.updateUser(updated)
+        syncQueueManager.enqueue("user", userId, "UPDATE", updated)
+        Log.d(TAG, "setActiveClub: $userId → $clubId")
+    }
+
+    /**
+     * Добавить клуб пользователю.
+     * Первый добавленный становится активным.
+     */
+    suspend fun addClubToUser(userId: String, clubId: String) {
+        val current = dao.getUser(userId) ?: return
+        val newList = (current.clubIds + clubId).distinct()
+        val updated = current.copy(
+            clubIds = newList,
+            clubId = current.clubId ?: clubId,
+        )
+        dao.update(updated)
+        firestore.updateUser(updated)
+        syncQueueManager.enqueue("user", userId, "UPDATE", updated)
+        Log.d(TAG, "addClubToUser: $userId += $clubId (total=${newList.size})")
+    }
+
+    /**
+     * Убрать клуб у пользователя.
+     * Если удаляем активный — активным становится первый из оставшихся.
+     */
+    suspend fun removeClubFromUser(userId: String, clubId: String) {
+        val current = dao.getUser(userId) ?: return
+        val newList = current.clubIds.filter { it != clubId }
+        val newActive = when {
+            current.clubId != clubId -> current.clubId
+            newList.isNotEmpty() -> newList.first()
+            else -> null
+        }
+        val updated = current.copy(clubIds = newList, clubId = newActive)
+        dao.update(updated)
+        firestore.updateUser(updated)
+        syncQueueManager.enqueue("user", userId, "UPDATE", updated)
+        Log.d(TAG, "removeClubFromUser: $userId -= $clubId (total=${newList.size})")
     }
 }
