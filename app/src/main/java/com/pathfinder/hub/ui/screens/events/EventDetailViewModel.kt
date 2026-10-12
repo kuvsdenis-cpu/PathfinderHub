@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.entity.parent.EventConsentEntity
+import com.pathfinder.hub.data.local.entity.parent.ParentAttendee
+import com.pathfinder.hub.data.local.entity.parent.ParentMeetingEntity
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
 import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.repository.EventRepository
@@ -21,6 +23,29 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
 
+/**
+ * Строка участника с резолвнутым именем и человекочитаемым статусом.
+ */
+data class AttendeeRow(
+    val userId: String,
+    val displayName: String,
+    val status: String,
+    val statusLabel: String,
+    val statusEmoji: String,
+)
+
+/**
+ * Вопрос от родителя по встрече.
+ * Источник: EventParticipantEntity.questions (истина) +
+ *           ParentMeetingEntity.attendees.questions (кэш).
+ * Дедуп по (parentId, text).
+ */
+data class ParentQuestion(
+    val parentId: String,
+    val parentName: String,
+    val text: String,
+)
+
 data class EventDetailUiState(
     val isLoading: Boolean = true,
     val event: EventEntity? = null,
@@ -32,6 +57,12 @@ data class EventDetailUiState(
     val myParticipant: EventParticipantEntity? = null,
     val participants: List<EventParticipantEntity> = emptyList(),
     val canManageAttendance: Boolean = false,
+
+    // A3: встреча с родителями (для staff)
+    val parentMeeting: ParentMeetingEntity? = null,
+    val participantRows: List<AttendeeRow> = emptyList(),
+    val attendeeRows: List<AttendeeRow> = emptyList(),
+    val parentQuestions: List<ParentQuestion> = emptyList(),
 )
 
 @HiltViewModel
@@ -68,8 +99,118 @@ class EventDetailViewModel @Inject constructor(
                         myParticipant = list.find { p -> p.userId == currentUserId },
                     )
                 }
+                refreshDerived()
             }
         }
+        // A3: встреча с родителями — один раз, не Flow.
+        viewModelScope.launch {
+            val meeting = try {
+                parentRepository.getMeetingByEventId(eventId)
+            } catch (_: Exception) { null }
+            _state.update { it.copy(parentMeeting = meeting) }
+            refreshDerived()
+        }
+    }
+
+    /**
+     * Пересобрать participantRows, attendeeRows, parentQuestions.
+     * Вызывается, когда приходят participants или parentMeeting.
+     */
+    private suspend fun refreshDerived() {
+        val s = _state.value
+        val meeting = s.parentMeeting
+
+        // ---- Имена участников события ----
+        val participantIds = s.participants.map { it.userId }.distinct()
+        val participantUsers = if (participantIds.isEmpty()) emptyList()
+            else userRepository.getUsersByIds(participantIds)
+        val nameByUserId = participantUsers.associate { u ->
+            u.id to "${u.firstName} ${u.lastName}".trim().ifBlank { u.id.take(8) + "\u2026" }
+        }
+        val participantRows = s.participants.map { p ->
+            val (label, emoji) = statusLabelEmoji(p.status)
+            AttendeeRow(
+                userId = p.userId,
+                displayName = nameByUserId[p.userId] ?: (p.userId.take(8) + "\u2026"),
+                status = p.status,
+                statusLabel = label,
+                statusEmoji = emoji,
+            )
+        }
+
+        // ---- Имена родителей из meeting.attendees ----
+        val attendeeIds = meeting?.attendees?.map { it.parentId }?.distinct() ?: emptyList()
+        val attendeeUsers = if (attendeeIds.isEmpty()) emptyList()
+            else userRepository.getUsersByIds(attendeeIds)
+        val nameByParentId = attendeeUsers.associate { u ->
+            u.id to "${u.firstName} ${u.lastName}".trim().ifBlank { u.id.take(8) + "\u2026" }
+        }
+
+        // Статус родителя: из EventParticipantEntity (истина), fallback — ParentAttendee.confirmed
+        val participantByUser = s.participants.associateBy { it.userId }
+        val attendeeRows = (meeting?.attendees ?: emptyList()).map { att ->
+            val status = participantByUser[att.parentId]?.status
+                ?: if (att.confirmed) "accepted" else "invited"
+            val (label, emoji) = statusLabelEmoji(status)
+            AttendeeRow(
+                userId = att.parentId,
+                displayName = nameByParentId[att.parentId] ?: (att.parentId.take(8) + "\u2026"),
+                status = status,
+                statusLabel = label,
+                statusEmoji = emoji,
+            )
+        }
+
+        // ---- Вопросы родителей (дедуп) ----
+        val seen = mutableSetOf<String>()
+        val questions = mutableListOf<ParentQuestion>()
+        // источник 1: EventParticipantEntity.questions
+        s.participants.forEach { p ->
+            p.questions.forEach { q ->
+                val key = "${p.userId}|$q"
+                if (seen.add(key)) {
+                    questions.add(
+                        ParentQuestion(
+                            parentId = p.userId,
+                            parentName = nameByUserId[p.userId] ?: (p.userId.take(8) + "\u2026"),
+                            text = q,
+                        )
+                    )
+                }
+            }
+        }
+        // источник 2: ParentMeetingEntity.attendees.questions
+        (meeting?.attendees ?: emptyList()).forEach { att ->
+            att.questions.forEach { q ->
+                val key = "${att.parentId}|$q"
+                if (seen.add(key)) {
+                    questions.add(
+                        ParentQuestion(
+                            parentId = att.parentId,
+                            parentName = nameByParentId[att.parentId] ?: (att.parentId.take(8) + "\u2026"),
+                            text = q,
+                        )
+                    )
+                }
+            }
+        }
+
+        _state.update {
+            it.copy(
+                participantRows = participantRows,
+                attendeeRows = attendeeRows,
+                parentQuestions = questions,
+            )
+        }
+    }
+
+    private fun statusLabelEmoji(status: String): Pair<String, String> = when (status) {
+        "invited"  -> "Не ответил"  to "\u23F3"
+        "accepted" -> "Будет"       to "\u2705"
+        "declined" -> "Не сможет"   to "\u274C"
+        "attended" -> "Посетил"     to "\u2705"
+        "missed"   -> "Пропущено"   to "\u26A0\uFE0F"
+        else       -> status        to "\u2753"
     }
 
     fun acceptInvite() {

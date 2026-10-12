@@ -11,16 +11,48 @@ interface UserDao {
     suspend fun getUser(userId: String): UserEntity?
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
-    @Query("SELECT * FROM users WHERE clubId = :clubId")
+    /**
+     * Участники клуба. Фильтр через user_clubs (мультиклубность),
+     * а не через users.clubId — чтобы юзеры с этим клубом во вторичном
+     * clubIds тоже попадали.
+     */
+    @Transaction
+    @Query("""
+        SELECT u.* FROM users u
+        WHERE EXISTS (
+            SELECT 1 FROM user_clubs uc
+            WHERE uc.userId = u.id AND uc.clubId = :clubId
+        )
+        ORDER BY u.role, u.firstName
+    """)
     fun observeClubMembers(clubId: String): Flow<List<UserEntity>>
-    @Query("SELECT * FROM users WHERE clubId = :clubId AND role = :role")
+    @Transaction
+    @Query("""
+        SELECT u.* FROM users u
+        WHERE EXISTS (
+            SELECT 1 FROM user_clubs uc
+            WHERE uc.userId = u.id AND uc.clubId = :clubId
+        )
+        AND u.role = :role
+        ORDER BY u.role, u.firstName
+    """)
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>>
 
     /**
      * Список участников клуба с одной из указанных ролей.
      * Используется для «Сотрудников»: director + instructor + secretary.
+     * Фильтр через user_clubs (мультиклубность).
      */
-    @Query("SELECT * FROM users WHERE clubId = :clubId AND role IN (:roles) ORDER BY role, firstName")
+    @Transaction
+    @Query("""
+        SELECT u.* FROM users u
+        WHERE EXISTS (
+            SELECT 1 FROM user_clubs uc
+            WHERE uc.userId = u.id AND uc.clubId = :clubId
+        )
+        AND u.role IN (:roles)
+        ORDER BY u.role, u.firstName
+    """)
     fun observeClubMembersByRoles(clubId: String, roles: List<String>): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId")
     fun observeConferenceUsers(conferenceId: String): Flow<List<UserEntity>>
@@ -40,4 +72,12 @@ interface UserDao {
     suspend fun requestDeletion(userId: String, status: String, at: Long)
     @Query("DELETE FROM users WHERE status = 'deleted' AND permanentDeletionAt < :now")
     suspend fun purgeDeleted(now: Long)
+
+    /** Для UserClubSeeder: все юзеры с непустым clubId или clubIds. */
+    @Query("SELECT * FROM users WHERE clubId IS NOT NULL OR clubIds != '[]'")
+    suspend fun getAllWithClubIds(): List<UserEntity>
+
+    /** Пакетный резолв имён: один запрос вместо N. */
+    @Query("SELECT * FROM users WHERE id IN (:ids)")
+    suspend fun getUsersByIds(ids: List<String>): List<UserEntity>
 }

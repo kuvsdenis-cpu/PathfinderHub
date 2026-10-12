@@ -23,6 +23,7 @@ import com.pathfinder.hub.data.local.AppDatabase
 import com.pathfinder.hub.data.local.entity.auth.InviteEntity
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
+import com.pathfinder.hub.data.local.UserClubSeeder
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
 import com.pathfinder.hub.data.archive.PurgeScheduler
 import com.pathfinder.hub.data.sync.SyncScheduler
@@ -49,6 +50,9 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
 
     @Inject
     lateinit var seedAchievementsUseCase: SeedAchievementsUseCase
+
+    @Inject
+    lateinit var userClubSeeder: UserClubSeeder
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -96,6 +100,9 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             if (BuildConfig.DEBUG) {
                 seedDemoData()
             }
+
+            // B1: досид user_clubs из users.clubIds
+            userClubSeeder.seedIfNeeded()
 
             // Загрузка контента и наблюдение за воркером — как было.
             seedAchievements()

@@ -1,6 +1,7 @@
 package com.pathfinder.hub.data.repository
 
 import android.util.Log
+import androidx.room.withTransaction
 import com.pathfinder.hub.data.local.dao.UserDao
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.remote.FirestoreUserDataSource
@@ -11,7 +12,9 @@ import javax.inject.Inject
 class UserRepository @Inject constructor(
     private val dao: UserDao,
     private val syncQueueManager: SyncQueueManager,
-    private val firestore: FirestoreUserDataSource
+    private val firestore: FirestoreUserDataSource,
+    private val db: com.pathfinder.hub.data.local.AppDatabase,
+    private val userClubDao: com.pathfinder.hub.data.local.dao.UserClubDao,
 ) {
 
     companion object {
@@ -44,6 +47,10 @@ class UserRepository @Inject constructor(
 
     suspend fun getUserByEmail(email: String): UserEntity? = dao.getUserByEmail(email)
 
+    /** Пакетный резолв имён: один запрос вместо N. */
+    suspend fun getUsersByIds(ids: List<String>): List<UserEntity> =
+        dao.getUsersByIds(ids)
+
     fun observeClubMembers(clubId: String): Flow<List<UserEntity>> =
         dao.observeClubMembers(clubId)
 
@@ -65,13 +72,19 @@ class UserRepository @Inject constructor(
 
     // ---------- Запись ----------
     suspend fun upsert(u: UserEntity) {
-        dao.upsert(u)
+        db.withTransaction {
+            dao.upsert(u)
+            syncUserClubs(u)
+        }
         firestore.saveUser(u)
         syncQueueManager.enqueue("user", u.id, "CREATE", u)
     }
 
     suspend fun upsertAll(us: List<UserEntity>) {
-        dao.upsertAll(us)
+        db.withTransaction {
+            dao.upsertAll(us)
+            us.forEach { syncUserClubs(it) }
+        }
         us.forEach {
             firestore.saveUser(it)
             syncQueueManager.enqueue("user", it.id, "CREATE", it)
@@ -79,7 +92,10 @@ class UserRepository @Inject constructor(
     }
 
     suspend fun update(u: UserEntity) {
-        dao.update(u)
+        db.withTransaction {
+            dao.update(u)
+            syncUserClubs(u)
+        }
         firestore.updateUser(u)
         syncQueueManager.enqueue("user", u.id, "UPDATE", u)
     }
@@ -158,7 +174,12 @@ class UserRepository @Inject constructor(
             clubIds = newList,
             clubId = current.clubId ?: clubId,
         )
-        dao.update(updated)
+        db.withTransaction {
+            dao.update(updated)
+            userClubDao.insert(
+                com.pathfinder.hub.data.local.entity.core.UserClubEntity(userId, clubId)
+            )
+        }
         firestore.updateUser(updated)
         syncQueueManager.enqueue("user", userId, "UPDATE", updated)
         Log.d(TAG, "addClubToUser: $userId += $clubId (total=${newList.size})")
@@ -177,9 +198,30 @@ class UserRepository @Inject constructor(
             else -> null
         }
         val updated = current.copy(clubIds = newList, clubId = newActive)
-        dao.update(updated)
+        db.withTransaction {
+            dao.update(updated)
+            userClubDao.delete(userId, clubId)
+        }
         firestore.updateUser(updated)
         syncQueueManager.enqueue("user", userId, "UPDATE", updated)
         Log.d(TAG, "removeClubFromUser: $userId -= $clubId (total=${newList.size})")
+    }
+
+    // ---------- user_clubs: синхронизация ----------
+
+    /**
+     * Полная замена связей user_clubs для юзера.
+     * Источник правды — clubId + clubIds.
+     */
+    private suspend fun syncUserClubs(u: UserEntity) {
+        userClubDao.deleteAllForUser(u.id)
+        val ids = buildSet {
+            u.clubId?.takeIf { it.isNotBlank() }?.let { add(it) }
+            addAll(u.clubIds.filter { it.isNotBlank() })
+        }
+        if (ids.isEmpty()) return
+        userClubDao.insertAll(
+            ids.map { com.pathfinder.hub.data.local.entity.core.UserClubEntity(u.id, it) }
+        )
     }
 }

@@ -34,6 +34,8 @@ object DatabaseModule {
 
     @Provides fun provideCustomGroupDao(db: AppDatabase): CustomGroupDao = db.customGroupDao()
 
+    @Provides fun provideUserClubDao(db: AppDatabase): UserClubDao = db.userClubDao()
+
     // ---------- Learning: материалы и задания ----------
     @Provides fun provideRequirementMaterialDao(db: AppDatabase): RequirementMaterialDao = db.requirementMaterialDao()
     @Provides fun provideRequirementTaskDao(db: AppDatabase): RequirementTaskDao = db.requirementTaskDao()

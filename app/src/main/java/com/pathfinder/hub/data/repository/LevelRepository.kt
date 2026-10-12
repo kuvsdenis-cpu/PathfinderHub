@@ -58,6 +58,10 @@ class LevelRepository @Inject constructor(
     suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int =
         dao.countPendingInPeriod(clubId, from, to)
 
+    /** Завершено ступеней за период по клубу. */
+    suspend fun countLevelsCompletedInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countLevelsCompletedInPeriod(clubId, from, to)
+
     // ---------- Сидовый контент ----------
     suspend fun upsertLevels(levels: List<LevelEntity>) = dao.upsertLevels(levels)
     suspend fun upsertLevel(level: LevelEntity) = dao.upsertLevel(level)

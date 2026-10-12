@@ -254,37 +254,114 @@ fun EventDetailScreen(
                 }
             }
 
-            // ---------- A2: Участники (для staff) ----------
-            if (state.canManageAttendance && state.participants.isNotEmpty()) {
+            // ---------- A2/A3: Участники события (для staff) ----------
+            if (state.canManageAttendance && state.participantRows.isNotEmpty()) {
                 Spacer(Modifier.height(16.dp))
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text(
-                            "Участники (${state.participants.size})",
+                            "Участники (${state.participantRows.size})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(8.dp))
-                        state.participants.forEach { p ->
+                        state.participantRows.forEach { row ->
                             Row(
                                 Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    p.userId,
+                                    row.displayName,
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Text(
-                                    p.status,
+                                    "${row.statusEmoji} ${row.statusLabel}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 OutlinedButton(
-                                    onClick = { viewModel.markAttended(p.userId) },
-                                    enabled = p.status != "attended"
+                                    onClick = { viewModel.markAttended(row.userId) },
+                                    enabled = row.status != "attended"
                                 ) { Text("Отметить") }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---------- A3: Встреча с родителями (только staff) ----------
+            val meeting = state.parentMeeting
+            if (state.canManageAttendance && meeting != null) {
+                Spacer(Modifier.height(16.dp))
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "Встреча с родителями",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        )
+                        if (meeting.agenda.isNotBlank()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Повестка: ${meeting.agenda}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        val accepted = state.attendeeRows.count { it.status == "accepted" || it.status == "attended" }
+                        val declined = state.attendeeRows.count { it.status == "declined" }
+                        val invited = state.attendeeRows.count { it.status == "invited" }
+                        Text(
+                            "Придут: $accepted · Не смогут: $declined · Не ответили: $invited",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        state.attendeeRows.forEach { row ->
+                            Row(
+                                Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    row.displayName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    "${row.statusEmoji} ${row.statusLabel}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---------- A3: Вопросы родителей (только staff) ----------
+            if (state.canManageAttendance && state.parentQuestions.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "Вопросы родителей (${state.parentQuestions.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        state.parentQuestions.forEach { q ->
+                            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                Text(
+                                    q.parentName,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    q.text,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         }
                     }

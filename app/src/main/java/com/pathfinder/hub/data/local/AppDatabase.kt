@@ -28,6 +28,7 @@ import com.pathfinder.hub.data.local.entity.gamification.ReputationEntity
 import com.pathfinder.hub.data.local.entity.gamification.ShareCardEntity
 import com.pathfinder.hub.data.local.entity.gamification.TeamChallengeProgressEntity
 import com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity
+import com.pathfinder.hub.data.local.entity.core.UserClubEntity
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.local.entity.learning.BookReportEntity
 import com.pathfinder.hub.data.local.entity.learning.ContentVersionEntity
@@ -173,6 +174,9 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         // Custom Groups (B1)
         CustomGroupEntity::class,
 
+        // User-Clubs (B1)
+        UserClubEntity::class,
+
         // Notifications
         NotificationEntity::class,
         NotificationPreferencesEntity::class,
@@ -238,7 +242,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         // Conference
         ConferenceEventEntity::class
     ],
-    version = 26,
+    version = 27,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -307,6 +311,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Custom Groups (B1)
     abstract fun customGroupDao(): CustomGroupDao
+
+    // User-Clubs (B1)
+    abstract fun userClubDao(): UserClubDao
 
     companion object {
         @Volatile

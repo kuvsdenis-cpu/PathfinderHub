@@ -55,6 +55,10 @@ class HonorRepository @Inject constructor(
     /** Баг #6: submitted за период по клубу. */
     suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int =
         dao.countPendingInPeriod(clubId, from, to)
+
+    /** Завершено специализаций за период по клубу. */
+    suspend fun countSpecializationsCompletedInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countSpecializationsCompletedInPeriod(clubId, from, to)
     suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------

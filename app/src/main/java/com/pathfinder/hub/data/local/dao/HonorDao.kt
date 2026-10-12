@@ -134,25 +134,40 @@ interface HonorDao {
     @Query("SELECT COUNT(*) FROM honor_progress WHERE userId = :userId AND status = 'approved'")
     suspend fun countApprovedRequirementsByUser(userId: String): Int
 
-    /** Баг #6: одобрено за период по клубу. */
+    /** Баг #6: одобрено требований за период по клубу (мультиклубность). */
     @Query("""
         SELECT COUNT(*) FROM honor_progress hp
-        JOIN users u ON hp.userId = u.id
-        WHERE u.clubId = :clubId
-          AND hp.status = 'approved'
+        WHERE hp.status = 'approved'
           AND hp.approvedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = hp.userId AND uc.clubId = :clubId
+          )
     """)
     suspend fun countApprovedInPeriod(clubId: String, from: Long, to: Long): Int
 
-    /** Баг #6: submitted за период по клубу. */
+    /** Баг #6: submitted требований за период по клубу (мультиклубность). */
     @Query("""
         SELECT COUNT(*) FROM honor_progress hp
-        JOIN users u ON hp.userId = u.id
-        WHERE u.clubId = :clubId
-          AND hp.status = 'submitted'
+        WHERE hp.status = 'submitted'
           AND hp.submittedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = hp.userId AND uc.clubId = :clubId
+          )
     """)
     suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int
+
+    /** Завершено специализаций за период по клубу (мультиклубность). */
+    @Query("""
+        SELECT COUNT(*) FROM honor_completions hc
+        WHERE hc.completedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = hc.userId AND uc.clubId = :clubId
+          )
+    """)
+    suspend fun countSpecializationsCompletedInPeriod(clubId: String, from: Long, to: Long): Int
 
     @Query("SELECT COUNT(*) FROM test_attempts WHERE userId = :userId AND passed = 1")
     suspend fun countPassedTestsByUser(userId: String): Int

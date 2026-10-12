@@ -130,25 +130,40 @@ interface LevelDao {
     @Query("SELECT COUNT(*) FROM level_progress WHERE userId = :userId AND status = 'approved'")
     suspend fun countApprovedRequirementsByUser(userId: String): Int
 
-    /** Баг #6: одобрено за период по клубу. */
+    /** Баг #6: одобрено требований ступеней за период (мультиклубность). */
     @Query("""
         SELECT COUNT(*) FROM level_progress lp
-        JOIN users u ON lp.userId = u.id
-        WHERE u.clubId = :clubId
-          AND lp.status = 'approved'
+        WHERE lp.status = 'approved'
           AND lp.approvedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = lp.userId AND uc.clubId = :clubId
+          )
     """)
     suspend fun countApprovedInPeriod(clubId: String, from: Long, to: Long): Int
 
-    /** Баг #6: submitted за период по клубу. */
+    /** Баг #6: submitted требований ступеней за период (мультиклубность). */
     @Query("""
         SELECT COUNT(*) FROM level_progress lp
-        JOIN users u ON lp.userId = u.id
-        WHERE u.clubId = :clubId
-          AND lp.status = 'submitted'
+        WHERE lp.status = 'submitted'
           AND lp.submittedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = lp.userId AND uc.clubId = :clubId
+          )
     """)
     suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int
+
+    /** Завершено ступеней за период по клубу (мультиклубность). */
+    @Query("""
+        SELECT COUNT(*) FROM level_completions lc
+        WHERE lc.completedAt BETWEEN :from AND :to
+          AND EXISTS (
+              SELECT 1 FROM user_clubs uc
+              WHERE uc.userId = lc.userId AND uc.clubId = :clubId
+          )
+    """)
+    suspend fun countLevelsCompletedInPeriod(clubId: String, from: Long, to: Long): Int
 
     // ==================== СЧЁТЧИКИ ====================
 
