@@ -3,6 +3,7 @@ import com.pathfinder.hub.data.local.dao.AchievementDao
 import com.pathfinder.hub.data.remote.FirestoreCertificateDataSource
 import com.pathfinder.hub.data.local.entity.gamification.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class AchievementRepository @Inject constructor(
@@ -24,17 +25,79 @@ class AchievementRepository @Inject constructor(
     fun observeTeamProgress(id: String): Flow<TeamChallengeProgressEntity?> = dao.observeTeamProgress(id)
     suspend fun upsertTeamProgress(p: TeamChallengeProgressEntity) = dao.upsertTeamProgress(p)
     fun observeHomework(c: String): Flow<List<HomeworkEntity>> = dao.observeHomework(c)
+
+    // ---------- Архивация домашек ----------
+    fun observeActiveHomework(childId: String): Flow<List<HomeworkEntity>> =
+        dao.observeActiveHomework(childId)
+
+    fun observeArchivedHomework(childId: String): Flow<List<HomeworkEntity>> =
+        dao.observeArchivedHomework(childId)
+
+    suspend fun archiveHomework(id: String) {
+        val now = java.util.Date()
+        val purgeAfter = java.util.Date(now.time + 90L * 24 * 3600 * 1000)
+        dao.archiveHomework(id, now.time, purgeAfter.time)
+    }
+
+    suspend fun restoreHomework(id: String) {
+        dao.restoreHomework(id)
+    }
+
+    suspend fun purgeExpiredHomework(now: Long = System.currentTimeMillis()): Int {
+        return dao.purgeExpiredHomework(now)
+    }
     suspend fun upsertHomework(h: HomeworkEntity) = dao.upsertHomework(h)
 
     fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>> =
         dao.observePendingHomeworkByClub(clubId)
 
-    suspend fun approveHomework(h: HomeworkEntity) =
-        dao.upsertHomework(h.copy(
-            status = "approved",
-            approvedAt = java.util.Date(),
-            pendingSync = true,
-        ))
+    suspend fun approveHomework(h: HomeworkEntity) {
+        dao.upsertHomework(
+            h.copy(
+                status = "approved",
+                approvedAt = java.util.Date(),
+                pendingSync = true,
+            )
+        )
+
+        // S4: начисление по типу награды.
+        when (h.rewardType) {
+            "points" -> {
+                if (h.rewardPoints > 0) {
+                    val current = dao.observeReputation(h.childId).first()
+                    val updated = current?.copy(
+                        personal = current.personal + h.rewardPoints,
+                        updatedAt = java.util.Date(),
+                    ) ?: ReputationEntity(
+                        userId = h.childId,
+                        clubId = h.clubId,
+                        personal = h.rewardPoints,
+                        team = 0,
+                        updatedAt = java.util.Date(),
+                    )
+                    dao.upsertReputation(updated)
+                }
+            }
+            "achievement" -> {
+                val achId = h.rewardAchievementId
+                if (!achId.isNullOrBlank()) {
+                    dao.upsertProgress(
+                        AchievementProgressEntity(
+                            userId = h.childId,
+                            achievementId = achId,
+                            status = "earned",
+                            earnedAt = java.util.Date(),
+                            revokedAt = null,
+                            revokedBy = null,
+                            revokeReason = null,
+                            pendingSync = false,
+                        )
+                    )
+                }
+            }
+            // "text" — ничего
+        }
+    }
 
     suspend fun rejectHomework(h: HomeworkEntity) =
         dao.upsertHomework(h.copy(

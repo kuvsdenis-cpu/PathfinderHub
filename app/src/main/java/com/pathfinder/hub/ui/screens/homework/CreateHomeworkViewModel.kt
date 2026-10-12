@@ -21,7 +21,10 @@ data class CreateHomeworkUiState(
     val title: String = "",
     val description: String = "",
     val dueDate: Date? = null,
-    val reward: String = "",
+    val rewardType: String = "text",       // "text" | "points" | "achievement"
+    val rewardText: String = "",
+    val rewardPoints: String = "0",
+    val rewardAchievementId: String = "",
     val isLoading: Boolean = false,
     val isCreated: Boolean = false,
     val errorMessage: String? = null,
@@ -57,7 +60,12 @@ class CreateHomeworkViewModel @Inject constructor(
     fun onTitleChange(v: String) = _state.update { it.copy(title = v) }
     fun onDescriptionChange(v: String) = _state.update { it.copy(description = v) }
     fun onDueDateChange(v: Date) = _state.update { it.copy(dueDate = v) }
-    fun onRewardChange(v: String) = _state.update { it.copy(reward = v) }
+    fun onRewardTypeChange(v: String) = _state.update { it.copy(rewardType = v) }
+    fun onRewardTextChange(v: String) = _state.update { it.copy(rewardText = v) }
+    fun onRewardPointsChange(v: String) =
+        _state.update { it.copy(rewardPoints = v.filter { c -> c.isDigit() }) }
+    fun onRewardAchievementIdChange(v: String) =
+        _state.update { it.copy(rewardAchievementId = v) }
 
     fun create() {
         val s = _state.value
@@ -102,7 +110,10 @@ class CreateHomeworkViewModel @Inject constructor(
                             title = s.title.trim(),
                             description = s.description.trim(),
                             dueDate = s.dueDate,
-                            reward = s.reward.trim().ifBlank { null },
+                            rewardType = s.rewardType,
+                            rewardText = s.rewardText.trim().ifBlank { null },
+                            rewardPoints = s.rewardPoints.toIntOrNull() ?: 0,
+                            rewardAchievementId = s.rewardAchievementId.trim().ifBlank { null },
                             status = "assigned",
                             createdAt = Date(),
                             approvedAt = null,

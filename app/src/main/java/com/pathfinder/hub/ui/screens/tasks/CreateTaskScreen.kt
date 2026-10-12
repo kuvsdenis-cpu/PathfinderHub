@@ -1,6 +1,8 @@
 package com.pathfinder.hub.ui.screens.tasks
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,20 +13,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -34,7 +41,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.DateField
@@ -100,45 +109,125 @@ fun CreateTaskScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            // Исполнитель
+            // ---------- Исполнитель / Группа ----------
             var expanded by remember { mutableStateOf(false) }
-            val assignedUserName = state.clubMembers
-                .find { it.id == state.assignedTo }
-                ?.let { "${it.firstName} ${it.lastName}" }
-                ?: "Выберите исполнителя"
+            val assignedDisplay = when {
+                state.selectedGroupLabel != null -> "📋 ${state.selectedGroupLabel}"
+                state.assignedTo.isNotBlank() -> {
+                    val u = state.clubMembers.find { it.id == state.assignedTo }
+                    u?.let { "${it.firstName} ${it.lastName} (${CreateTaskViewModel.roleName(it.role)})" }
+                        ?: "Выберите исполнителя"
+                }
+                else -> "Выберите исполнителя"
+            }
 
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = assignedUserName,
+                    value = assignedDisplay,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Исполнитель") },
-                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Кому назначить") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = !state.isLoading),
                     enabled = !state.isLoading
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    state.clubMembers.forEach { user ->
+                    // Заголовок: Мои группы (B3)
+                    if (state.customGroups.isNotEmpty()) {
                         DropdownMenuItem(
                             text = {
-                                Text("${user.firstName} ${user.lastName} (${getRoleName(user.role)})")
+                                Text(
+                                    "МОИ ГРУППЫ",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             },
+                            onClick = {},
+                            enabled = false,
+                        )
+                        state.customGroups.forEach { g ->
+                            DropdownMenuItem(
+                                text = { Text("📁 ${g.name}") },
+                                onClick = {
+                                    viewModel.onSelectCustomGroup(g)
+                                    expanded = false
+                                }
+                            )
+                        }
+                        HorizontalDivider()
+                    }
+
+                    // Заголовок: Быстрые группы
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "БЫСТРЫЕ ГРУППЫ",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                    )
+                    viewModel.quickGroups.forEach { g ->
+                        DropdownMenuItem(
+                            text = { Text("📋 ${g.label}") },
                             onClick = {
-                                viewModel.onAssignedToChange(user.id)
+                                viewModel.onSelectQuickGroup(g)
                                 expanded = false
                             }
                         )
+                    }
+                    DropdownMenuItem(
+                        text = { Text("⚙ Своя группа (роли)") },
+                        onClick = {
+                            viewModel.showCustomGroupDialog()
+                            expanded = false
+                        }
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "КОНКРЕТНЫЙ ПОЛЬЗОВАТЕЛЬ",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                    )
+                    if (state.clubMembers.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("В клубе пока нет участников") },
+                            onClick = { expanded = false },
+                            enabled = false,
+                        )
+                    } else {
+                        state.clubMembers.forEach { u ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text("${u.firstName} ${u.lastName} (${CreateTaskViewModel.roleName(u.role)})")
+                                },
+                                onClick = {
+                                    viewModel.onAssignedToChange(u.id)
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
             Spacer(Modifier.height(12.dp))
 
-            // Срок — календарь
             DateField(
                 value = state.dueDate,
                 label = "Срок выполнения (необязательно)",
@@ -148,7 +237,7 @@ fun CreateTaskScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            // Приоритет
+            // ---------- Приоритет ----------
             var priorityExpanded by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = priorityExpanded,
@@ -164,7 +253,10 @@ fun CreateTaskScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Приоритет") },
-                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = priorityExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = !state.isLoading),
                     enabled = !state.isLoading
                 )
                 ExposedDropdownMenu(
@@ -205,9 +297,14 @@ fun CreateTaskScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            val canSubmit = !state.isLoading &&
+                    state.title.isNotBlank() &&
+                    (state.assignedTo.isNotBlank() || !state.targetGroup.isNullOrBlank()) &&
+                    state.clubMembers.isNotEmpty()
+
             Button(
                 onClick = viewModel::createTask,
-                enabled = !state.isLoading,
+                enabled = canSubmit,
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
                 if (state.isLoading) {
@@ -222,14 +319,44 @@ fun CreateTaskScreen(
             }
         }
     }
-}
 
-private fun getRoleName(role: String): String = when (role) {
-    "teen" -> "Следопыт"
-    "parent" -> "Родитель"
-    "instructor" -> "Наставник"
-    "director" -> "Директор"
-    "secretary" -> "Секретарь"
-    "conference" -> "Конференция"
-    else -> role
+    // ---------- Диалог кастомной группы ----------
+    if (state.showCustomGroupDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::hideCustomGroupDialog,
+            title = { Text("Своя группа") },
+            text = {
+                Column {
+                    Text("Отметьте роли, которые попадут в группу:")
+                    Spacer(Modifier.height(8.dp))
+                    listOf(
+                        "teen" to "Следопыты",
+                        "parent" to "Родители",
+                        "instructor" to "Наставники",
+                        "secretary" to "Секретари",
+                        "director" to "Директора",
+                    ).forEach { (role, label) ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = role in state.customSelectedRoles,
+                                onCheckedChange = { viewModel.toggleCustomRole(role) }
+                            )
+                            Text(label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = viewModel::confirmCustomGroup,
+                    enabled = state.customSelectedRoles.isNotEmpty()
+                ) { Text("Готово") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::hideCustomGroupDialog) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
 }

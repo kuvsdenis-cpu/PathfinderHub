@@ -16,13 +16,16 @@ import javax.inject.Inject
 data class ReportHistoryUiState(
     val isLoading: Boolean = true,
     val reports: List<ReportEntity> = emptyList(),
-    val errorMessage: String? = null
+    val canArchive: Boolean = false,
+    val errorMessage: String? = null,
+    val infoMessage: String? = null,
 )
 
 @HiltViewModel
 class ReportHistoryViewModel @Inject constructor(
     private val sessionManager: SessionManager,
-    private val reportRepository: ReportRepository
+    private val reportRepository: ReportRepository,
+    private val userRepository: com.pathfinder.hub.data.repository.UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ReportHistoryUiState())
@@ -40,15 +43,41 @@ class ReportHistoryViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            // Используем существующий метод observeAllReports из ReportRepository
-            reportRepository.observeAllReports(100).collect { reports ->
+            val user = userRepository.getUser(userId)
+            val clubId = user?.clubId
+            val canArchive = com.pathfinder.hub.domain.permissions.PermissionChecker
+                .canArchive(user)
+            _state.update { it.copy(canArchive = canArchive) }
+
+            if (clubId.isNullOrBlank()) {
+                _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
+                return@launch
+            }
+
+            // observeClubReports уже фильтрует archivedAt IS NULL
+            reportRepository.observeClubReports(clubId).collect { reports ->
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        reports = reports
+                        reports = reports,
                     )
                 }
             }
         }
+    }
+
+    fun archiveReport(id: String) {
+        viewModelScope.launch {
+            try {
+                reportRepository.archiveReport(id)
+                _state.update { it.copy(infoMessage = "Отчёт в архиве") }
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun clearMessages() = _state.update {
+        it.copy(errorMessage = null, infoMessage = null)
     }
 }

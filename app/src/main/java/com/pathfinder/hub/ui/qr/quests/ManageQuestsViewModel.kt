@@ -22,7 +22,9 @@ data class QuestListItem(
 data class ManageQuestsUiState(
     val isLoading: Boolean = true,
     val items: List<QuestListItem> = emptyList(),
+    val canArchive: Boolean = false,
     val errorMessage: String? = null,
+    val infoMessage: String? = null,
 )
 
 @HiltViewModel
@@ -43,6 +45,9 @@ class ManageQuestsViewModel @Inject constructor(
             viewModelScope.launch {
                 val user = userRepository.getUser(uid)
                 val clubId = user?.clubId
+                val canArchive = com.pathfinder.hub.domain.permissions.PermissionChecker
+                    .canArchive(user)
+                _state.update { it.copy(canArchive = canArchive) }
                 if (clubId.isNullOrBlank()) {
                     _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
                     return@launch
@@ -66,5 +71,17 @@ class ManageQuestsViewModel @Inject constructor(
         }
     }
 
+    fun archiveQuest(id: String) {
+        viewModelScope.launch {
+            try {
+                qrQuestRepository.archiveQuest(id)
+                _state.update { it.copy(infoMessage = "Квест в архиве") }
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message) }
+            }
+        }
+    }
+
     fun clearError() = _state.update { it.copy(errorMessage = null) }
+    fun clearInfo() = _state.update { it.copy(infoMessage = null) }
 }

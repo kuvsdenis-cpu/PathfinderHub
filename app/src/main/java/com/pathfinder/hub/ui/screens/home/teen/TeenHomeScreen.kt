@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WorkspacePremium
@@ -73,7 +74,9 @@ fun TeenHomeScreen(
     onNavigateToCertificates: () -> Unit = {},
     onNavigateToQrScanner: () -> Unit = {},
     onNavigateToActivity: () -> Unit = {},
+    onNavigateToCrossClub: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToClubInfo: (clubId: String) -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -176,6 +179,38 @@ fun TeenHomeScreen(
                     )
                 }
             }
+            // Клуб
+            if (!state.user?.clubId.isNullOrBlank()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Public, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.size(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "О клубе",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Информация, расписание, контакты",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
             // Кнопки разделов - Ряд 1
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -266,7 +301,12 @@ fun TeenHomeScreen(
                     onClick = onNavigateToActivity,
                     modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                ActionTile(
+                    icon = Icons.Default.Public,
+                    label = "Межклубные",
+                    onClick = onNavigateToCrossClub,
+                    modifier = Modifier.weight(1f)
+                )
             }
             // Задачи
             SectionCard(

@@ -70,4 +70,16 @@ class NotificationsViewModel @Inject constructor(
             notificationRepository.markAllRead(userId, System.currentTimeMillis())
         }
     }
+
+    /** Удалить все уведомления пользователя. */
+    fun clearAll() {
+        val userId = sessionManager.getUserId() ?: return
+        viewModelScope.launch {
+            try {
+                notificationRepository.deleteAllByUser(userId)
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message) }
+            }
+        }
+    }
 }

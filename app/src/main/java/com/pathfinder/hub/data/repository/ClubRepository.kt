@@ -16,6 +16,8 @@ class ClubRepository @Inject constructor(
 ) {
     fun observeClub(clubId: String): Flow<ClubEntity?> = dao.observeClub(clubId)
     suspend fun getClub(clubId: String): ClubEntity? = dao.getClub(clubId)
+    suspend fun getClubs(ids: List<String>): List<ClubEntity> =
+        if (ids.isEmpty()) emptyList() else dao.getClubs(ids)
     fun observeClubsByConference(conferenceId: String): Flow<List<ClubEntity>> = dao.observeClubsByConference(conferenceId)
     fun observeAllClubs(): Flow<List<ClubEntity>> = dao.observeAllClubs()
 

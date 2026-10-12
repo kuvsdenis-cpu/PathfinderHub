@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,7 +28,7 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun MyTasksScreen(
     onBack: () -> Unit,
-    onCreateTask: () -> Unit = {}, // <-- ДОБАВЛЕНО
+    onCreateTask: () -> Unit = {},
     viewModel: MyTasksViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -47,7 +49,7 @@ fun MyTasksScreen(
                 )
             )
         },
-        floatingActionButton = { // <-- ДОБАВЛЕНО
+        floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateTask,
                 containerColor = PathfinderBlue,
@@ -63,25 +65,87 @@ fun MyTasksScreen(
             }
             return@Scaffold
         }
-        if (state.tasks.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), Alignment.Center) {
-                Text("Задач пока нет")
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            TabRow(selectedTabIndex = state.activeTab) {
+                Tab(
+                    selected = state.activeTab == 0,
+                    onClick = { viewModel.setTab(0) },
+                    text = { Text("Активные (${state.tasks.size})") }
+                )
+                Tab(
+                    selected = state.activeTab == 1,
+                    onClick = { viewModel.setTab(1) },
+                    text = { Text("Архив (${state.archived.size})") }
+                )
             }
-            return@Scaffold
-        }
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(state.tasks, key = { it.id }) { t ->
-                TaskCard(t, viewModel)
+            val current = if (state.activeTab == 0) state.tasks else state.archived
+            if (current.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                    Text(
+                        if (state.activeTab == 0)
+                            "Задач пока нет"
+                        else
+                            "Архив пуст. Задачи удаляются через 90 дней."
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(current, key = { it.task.id }) { item ->
+                        if (state.activeTab == 1) {
+                            ArchivedTaskCard(item.task, onRestore = { viewModel.restoreTask(item.task.id) })
+                        } else {
+                            TaskCard(item, viewModel)
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
+private fun ArchivedTaskCard(task: TaskEntity, onRestore: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                task.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                task.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (task.archivedAt != null) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "В архиве с: ${java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale("ru")).format(task.archivedAt)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onRestore,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Restore, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Восстановить")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskCard(item: TaskWithAssignment, vm: MyTasksViewModel) {
+    val task = item.task
+    val status = item.assignmentStatus ?: task.status
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Text(task.title, style = MaterialTheme.typography.titleLarge)
@@ -90,7 +154,7 @@ private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
                 Text(task.description, style = MaterialTheme.typography.bodyLarge)
             }
             Spacer(Modifier.height(8.dp))
-            Text("Статус: ${task.status}",
+            Text("Статус: ${statusName(status)}",
                 style = MaterialTheme.typography.labelLarge, color = PathfinderBlue)
 
             Spacer(Modifier.height(12.dp))
@@ -98,10 +162,10 @@ private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (task.status == "assigned") {
+                if (status == "assigned") {
                     Button(onClick = { vm.acceptTask(task.id) }) { Text("Принять") }
                 }
-                if (task.status == "accepted" || task.status == "in_progress") {
+                if (status == "accepted" || status == "in_progress") {
                     Button(onClick = { vm.completeTask(task.id) }) { Text("Выполнено") }
                 }
                 Spacer(Modifier.weight(1f))
@@ -109,12 +173,25 @@ private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
                 val scope = rememberCoroutineScope()
                 IconButton(onClick = {
                     scope.launch {
+                        val payload = com.pathfinder.hub.ui.qr.EntityQrHelper.taskPayload(task.id)
+                        val file = withContext(Dispatchers.IO) {
+                            com.pathfinder.hub.ui.qr.EntityQrHelper.generatePngForPayload(
+                                ctx, payload, "task_${'$'}{task.id}.png"
+                            )
+                        }
+                        com.pathfinder.hub.ui.qr.EntityQrHelper.open(ctx, file)
+                    }
+                }) {
+                    Icon(Icons.Default.QrCode, "Показать QR", tint = PathfinderBlue)
+                }
+                IconButton(onClick = {
+                    scope.launch {
                         val file = withContext(Dispatchers.IO) {
                             ShareCardGenerator.generate(
                                 context = ctx,
                                 emoji = "\u2705",
                                 title = task.title,
-                                subtitle = "Статус: " + task.status,
+                                subtitle = "Статус: " + status,
                                 userName = null,
                             )
                         }
@@ -126,4 +203,15 @@ private fun TaskCard(task: TaskEntity, vm: MyTasksViewModel) {
             }
         }
     }
+}
+
+private fun statusName(status: String): String = when (status) {
+    "assigned" -> "Назначена"
+    "accepted" -> "Принята"
+    "in_progress" -> "В работе"
+    "done" -> "Выполнена"
+    "confirmed" -> "Подтверждена"
+    "rejected" -> "Отклонена"
+    "cancelled" -> "Отменена"
+    else -> status
 }

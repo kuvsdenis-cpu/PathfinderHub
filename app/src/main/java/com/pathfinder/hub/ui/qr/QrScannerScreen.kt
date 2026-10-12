@@ -62,6 +62,7 @@ import com.pathfinder.hub.ui.theme.PathfinderGreen
 @Composable
 fun QrScannerScreen(
     onBack: () -> Unit,
+    onOpenQuest: (questId: String) -> Unit = {},
     viewModel: QrScanViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -187,7 +188,7 @@ fun QrScannerScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                         state.activeQuests.forEach { qp ->
-                            QuestCard(qp)
+                            QuestCard(qp, onClick = { onOpenQuest(qp.quest.id) })
                         }
                     }
                 } else {
@@ -256,11 +257,14 @@ fun QrScannerScreen(
 }
 
 @Composable
-private fun QuestCard(qp: QuestWithProgress) {
+private fun QuestCard(qp: QuestWithProgress, onClick: () -> Unit = {}) {
     val percent = if (qp.totalSteps > 0)
         qp.lastCompletedStepIndex.toFloat() / qp.totalSteps else 0f
 
-    Card(Modifier.fillMaxWidth()) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(

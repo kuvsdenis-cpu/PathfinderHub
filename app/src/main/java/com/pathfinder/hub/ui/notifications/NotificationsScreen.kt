@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -53,6 +54,15 @@ fun NotificationsScreen(
                     if (state.unreadCount > 0) {
                         TextButton(onClick = { viewModel.markAllAsRead() }) {
                             Text("Прочитать все")
+                        }
+                    }
+                    if (state.notifications.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.clearAll() }) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = "Очистить все",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                            )
                         }
                     }
                 },

@@ -15,8 +15,25 @@ interface ReportDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertTemplate(template: ReportTemplateEntity)
 
-    @Query("SELECT * FROM reports WHERE clubId = :clubId ORDER BY generatedAt DESC")
+    @Query("""SELECT * FROM reports WHERE clubId = :clubId
+        AND archivedAt IS NULL
+        ORDER BY generatedAt DESC""")
     fun observeClubReports(clubId: String): Flow<List<ReportEntity>>
+
+    // ---------- A3.3: Архивация ----------
+    @Query("""SELECT * FROM reports WHERE clubId = :clubId
+        AND archivedAt IS NOT NULL
+        ORDER BY archivedAt DESC""")
+    fun observeArchivedReportsByClub(clubId: String): Flow<List<ReportEntity>>
+
+    @Query("UPDATE reports SET archivedAt = :at, purgeAfter = :purgeAfter WHERE id = :id")
+    suspend fun archiveReport(id: String, at: Long, purgeAfter: Long)
+
+    @Query("UPDATE reports SET archivedAt = NULL, purgeAfter = NULL WHERE id = :id")
+    suspend fun restoreReport(id: String)
+
+    @Query("DELETE FROM reports WHERE purgeAfter IS NOT NULL AND purgeAfter < :now")
+    suspend fun purgeExpiredReports(now: Long): Int
 
     @Query("SELECT * FROM reports ORDER BY generatedAt DESC LIMIT :limit")
     fun observeAllReports(limit: Int = 100): Flow<List<ReportEntity>>

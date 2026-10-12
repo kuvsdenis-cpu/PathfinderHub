@@ -38,6 +38,22 @@ interface AchievementDao {
     @Query("SELECT * FROM homework WHERE childId = :childId")
     fun observeHomework(childId: String): Flow<List<HomeworkEntity>>
 
+    // ---------- Архивация домашек ----------
+    @Query("SELECT * FROM homework WHERE childId = :childId AND archivedAt IS NULL")
+    fun observeActiveHomework(childId: String): Flow<List<HomeworkEntity>>
+
+    @Query("SELECT * FROM homework WHERE childId = :childId AND archivedAt IS NOT NULL ORDER BY archivedAt DESC")
+    fun observeArchivedHomework(childId: String): Flow<List<HomeworkEntity>>
+
+    @Query("UPDATE homework SET archivedAt = :at, purgeAfter = :purgeAfter WHERE id = :id")
+    suspend fun archiveHomework(id: String, at: Long, purgeAfter: Long)
+
+    @Query("UPDATE homework SET archivedAt = NULL, purgeAfter = NULL WHERE id = :id")
+    suspend fun restoreHomework(id: String)
+
+    @Query("DELETE FROM homework WHERE purgeAfter IS NOT NULL AND purgeAfter < :now")
+    suspend fun purgeExpiredHomework(now: Long): Int
+
     @Query("SELECT * FROM homework WHERE clubId = :clubId AND status = 'done' ORDER BY createdAt DESC")
     fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)

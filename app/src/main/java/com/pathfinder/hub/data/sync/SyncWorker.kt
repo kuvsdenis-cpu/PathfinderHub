@@ -457,6 +457,7 @@ class SyncWorker @AssistedInject constructor(
             "qr_station" -> if (clubId != null) "clubs/$clubId/qrStations" else null
             "station_visit" -> if (clubId != null) "clubs/$clubId/stationVisits" else null
             "challenge_progress" -> if (clubId != null) "clubs/$clubId/challengeProgress" else null
+            "conference_event" -> if (payload["conferenceId"] != null) "conferences/${payload["conferenceId"]}/events" else null
 
             // ---------- Прогресс пользователя ----------
             "level_progress" -> "users/$userId/levelProgress"

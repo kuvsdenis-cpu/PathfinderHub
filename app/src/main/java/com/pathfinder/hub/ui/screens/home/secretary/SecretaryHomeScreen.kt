@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,6 +61,7 @@ fun SecretaryHomeScreen(
     onNavigateToHomework: () -> Unit,
     onNavigateToReviewHomework: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -133,6 +135,38 @@ fun SecretaryHomeScreen(
                     if (!loc.isNullOrBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(loc, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+
+            // Клуб
+            if (!state.clubId.isNullOrBlank()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigateToClubInfo(state.clubId!!) },
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Public, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.size(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "О клубе",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Информация, расписание, контакты",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }

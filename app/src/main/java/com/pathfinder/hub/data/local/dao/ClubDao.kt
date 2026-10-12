@@ -10,6 +10,9 @@ interface ClubDao {
     fun observeClub(clubId: String): Flow<ClubEntity?>
     @Query("SELECT * FROM clubs WHERE id = :clubId")
     suspend fun getClub(clubId: String): ClubEntity?
+
+    @Query("SELECT * FROM clubs WHERE id IN (:ids)")
+    suspend fun getClubs(ids: List<String>): List<ClubEntity>
     @Query("SELECT * FROM clubs WHERE conferenceId = :conferenceId ORDER BY name")
     fun observeClubsByConference(conferenceId: String): Flow<List<ClubEntity>>
     @Query("SELECT * FROM clubs ORDER BY name")

@@ -25,7 +25,9 @@ import com.pathfinder.hub.ui.qr.QrScannerScreen
 import com.pathfinder.hub.ui.qr.ManageStationsScreen
 import com.pathfinder.hub.ui.qr.CreateStationScreen
 import com.pathfinder.hub.ui.qr.quests.ManageQuestsScreen
+import com.pathfinder.hub.ui.qr.quests.QuestDetailScreen
 import com.pathfinder.hub.ui.qr.quests.QuestEditorScreen
+import com.pathfinder.hub.ui.navigation.Routes
 import com.pathfinder.hub.ui.reports.CreateReportScreen
 import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
@@ -33,6 +35,12 @@ import com.pathfinder.hub.ui.screens.auth.LoginScreen
 import com.pathfinder.hub.ui.screens.auth.RegisterScreen
 import com.pathfinder.hub.ui.screens.events.CreateEventScreen
 import com.pathfinder.hub.ui.screens.events.EventDetailScreen
+import com.pathfinder.hub.ui.screens.events.EventConsentsScreen
+import com.pathfinder.hub.ui.screens.crossclub.CrossClubScreen
+import com.pathfinder.hub.ui.screens.crossclub.CrossClubTeenScreen
+import com.pathfinder.hub.ui.screens.home.conference.events.ConferenceEventsScreen
+import com.pathfinder.hub.ui.screens.home.conference.analytics.ConferenceAnalyticsScreen
+import com.pathfinder.hub.ui.screens.home.conference.events.CreateConferenceEventScreen
 import com.pathfinder.hub.ui.screens.events.EventsScreen
 import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
 import com.pathfinder.hub.ui.screens.home.director.ApprovalsScreen
@@ -49,6 +57,9 @@ import com.pathfinder.hub.ui.screens.home.parent.ParentHomeScreen
 import com.pathfinder.hub.ui.screens.home.parent.ChildProgressScreen
 import com.pathfinder.hub.ui.screens.home.parent.ParentPaymentsScreen
 import com.pathfinder.hub.ui.screens.home.parent.ParentMessagesScreen
+import com.pathfinder.hub.ui.screens.home.parent.ParentMeetingsScreen
+import com.pathfinder.hub.ui.screens.home.parent.ParentConsentsScreen
+import com.pathfinder.hub.ui.screens.parent_meetings.CreateParentMeetingScreen
 import com.pathfinder.hub.ui.screens.home.conference.ConferenceHomeScreen
 import com.pathfinder.hub.ui.screens.home.conference.ConferenceSecretaryHomeScreen
 import com.pathfinder.hub.ui.screens.home.conference.ConferenceClubsScreen
@@ -56,6 +67,10 @@ import com.pathfinder.hub.ui.screens.home.conference.ConferenceMembersScreen
 import com.pathfinder.hub.ui.screens.home.conference.ConferenceInvitesScreen
 import com.pathfinder.hub.ui.screens.homework.CreateHomeworkScreen
 import com.pathfinder.hub.ui.screens.homework.review.ReviewHomeworkScreen
+import com.pathfinder.hub.ui.screens.archive.ArchiveScreen
+import com.pathfinder.hub.ui.screens.groups.ManageCustomGroupsScreen
+import com.pathfinder.hub.ui.screens.groups.CreateCustomGroupScreen
+import com.pathfinder.hub.ui.screens.club_info.ClubInfoScreen
 import com.pathfinder.hub.ui.screens.clubs.CreateClubScreen
 import com.pathfinder.hub.ui.screens.payments.DirectorPaymentsScreen
 import com.pathfinder.hub.ui.screens.payments.CreatePaymentScreen
@@ -190,6 +205,8 @@ fun PathfinderNavHost(
                 onOpenChild = { childId -> navController.navigate(Routes.childProgress(childId)) },
                 onNavigateToPayments = { navController.navigate(Routes.PARENT_PAYMENTS) },
                 onNavigateToMessages = { navController.navigate(Routes.PARENT_MESSAGES) },
+                onNavigateToMeetings = { navController.navigate(Routes.PARENT_MEETINGS) },
+                onNavigateToConsents = { navController.navigate(Routes.PARENT_CONSENTS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -206,12 +223,29 @@ fun PathfinderNavHost(
             ParentMessagesScreen(onBack = { navController.popBackStack() })
         }
 
+        composable(Routes.PARENT_MEETINGS) {
+            ParentMeetingsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.CREATE_PARENT_MEETING) {
+            CreateParentMeetingScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.PARENT_CONSENTS) {
+            ParentConsentsScreen(onBack = { navController.popBackStack() })
+        }
+
         // ===== Conference =====
         composable(Routes.CONFERENCE_HOME) {
             ConferenceHomeScreen(
                 onNavigateToClubs = { navController.navigate(Routes.CONFERENCE_CLUBS) },
                 onNavigateToMembers = { navController.navigate(Routes.CONFERENCE_MEMBERS) },
                 onNavigateToInvites = { navController.navigate(Routes.CONFERENCE_INVITES) },
+                onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
+                onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
@@ -220,6 +254,8 @@ fun PathfinderNavHost(
             ConferenceSecretaryHomeScreen(
                 onNavigateToClubs = { navController.navigate(Routes.CONFERENCE_CLUBS) },
                 onNavigateToMembers = { navController.navigate(Routes.CONFERENCE_MEMBERS) },
+                onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
+                onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
@@ -232,6 +268,24 @@ fun PathfinderNavHost(
         }
         composable(Routes.CONFERENCE_INVITES) {
             ConferenceInvitesScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.CONFERENCE_EVENTS) {
+            ConferenceEventsScreen(
+                onBack = { navController.popBackStack() },
+                onCreate = { navController.navigate(Routes.CREATE_CONFERENCE_EVENT) }
+            )
+        }
+
+        composable(Routes.CREATE_CONFERENCE_EVENT) {
+            CreateConferenceEventScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.CONFERENCE_ANALYTICS) {
+            ConferenceAnalyticsScreen(onBack = { navController.popBackStack() })
         }
 
         // ===== Director =====
@@ -253,8 +307,11 @@ fun PathfinderNavHost(
                 onNavigateToHomework = { navController.navigate(Routes.CREATE_HOMEWORK) },
                 onNavigateToReviewHomework = { navController.navigate(Routes.REVIEW_HOMEWORK) },
                 onNavigateToPayments = { navController.navigate(Routes.DIRECTOR_PAYMENTS) },
+                onNavigateToParentMeetings = { navController.navigate(Routes.CREATE_PARENT_MEETING) },
+                onNavigateToCrossClub = { navController.navigate(Routes.CROSS_CLUB) },
                 onNavigateToStaff = { navController.navigate(Routes.STAFF) },
                 onNavigateToCreateClub = { navController.navigate(Routes.CREATE_CLUB) },
+                onNavigateToCustomGroups = { navController.navigate(Routes.MANAGE_CUSTOM_GROUPS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
@@ -294,11 +351,26 @@ fun PathfinderNavHost(
         composable(Routes.MY_STATIONS) {
             ManageStationsScreen(
                 onBack = { navController.popBackStack() },
-                onCreateStation = { navController.navigate(Routes.CREATE_STATION) }
+                onCreateStation = { navController.navigate(Routes.createStation(null)) },
+                onOpenQuestReadonly = { questId ->
+                    navController.navigate(Routes.questView(questId))
+                },
             )
         }
-        composable(Routes.CREATE_STATION) {
-            CreateStationScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
+        composable(
+            route = Routes.CREATE_STATION,
+            arguments = listOf(
+                navArgument("questId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) {
+            CreateStationScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() }
+            )
         }
         composable(Routes.STAFF) {
             StaffScreen(
@@ -323,7 +395,23 @@ fun PathfinderNavHost(
             route = Routes.QUEST_EDITOR,
             arguments = listOf(navArgument("questId") { type = NavType.StringType })
         ) {
-            QuestEditorScreen(onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })
+            QuestEditorScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
+                onCreateStation = { qid ->
+                    navController.navigate(Routes.createStation(qid))
+                },
+            )
+        }
+        composable(
+            route = Routes.QUEST_VIEW,
+            arguments = listOf(navArgument("questId") { type = NavType.StringType })
+        ) {
+            QuestEditorScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
+                readOnly = true,
+            )
         }
         composable(Routes.CREATE_HOMEWORK) {
             CreateHomeworkScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
@@ -340,6 +428,14 @@ fun PathfinderNavHost(
         }
         composable(Routes.CREATE_PAYMENT) {
             CreatePaymentScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
+        }
+
+        composable(Routes.CROSS_CLUB) {
+            CrossClubScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.CROSS_CLUB_TEEN) {
+            CrossClubTeenScreen(onBack = { navController.popBackStack() })
         }
 
         // ===== Teen Home =====
@@ -360,11 +456,28 @@ fun PathfinderNavHost(
                 onNavigateToCertificates = { navController.navigate(Routes.MY_CERTIFICATES) },
                 onNavigateToQrScanner = { navController.navigate(Routes.QR_SCANNER) },
                 onNavigateToActivity = { navController.navigate(Routes.ACTIVITY) },
+                onNavigateToCrossClub = { navController.navigate(Routes.CROSS_CLUB_TEEN) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.QR_SCANNER) { QrScannerScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.QR_SCANNER) {
+            QrScannerScreen(
+                onBack = { navController.popBackStack() },
+                onOpenQuest = { questId ->
+                    navController.navigate(Routes.questDetail(questId))
+                },
+            )
+        }
+        composable(
+            route = Routes.QUEST_DETAIL,
+            arguments = listOf(navArgument("questId") { type = NavType.StringType })
+        ) {
+            QuestDetailScreen(
+                onBack = { navController.popBackStack() },
+                onScan = { navController.navigate(Routes.QR_SCANNER) },
+            )
+        }
         composable(Routes.ACTIVITY) { ActivityScreen(onBack = { navController.popBackStack() }) }
 
         // ===== Teen Levels =====
@@ -564,7 +677,19 @@ fun PathfinderNavHost(
             route = Routes.EVENT_DETAIL,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
         ) {
-            EventDetailScreen(onBack = { navController.popBackStack() })
+            EventDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenConsents = { eventId ->
+                    navController.navigate(Routes.eventConsents(eventId))
+                }
+            )
+        }
+
+        composable(
+            route = Routes.EVENT_CONSENTS,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) {
+            EventConsentsScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.MY_TASKS) {
             MyTasksScreen(
@@ -651,5 +776,34 @@ fun PathfinderNavHost(
         composable(Routes.MODERATION) { ModerationScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.NOTIFICATIONS) { NotificationsScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.SYNC) { SyncScreen(onBack = { navController.popBackStack() }) }
+
+        composable(
+            route = Routes.CLUB_INFO,
+            arguments = listOf(navArgument("clubId") { type = NavType.StringType })
+        ) {
+            ClubInfoScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.ARCHIVE) {
+            ArchiveScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ===== Пользовательские группы (B) =====
+        composable(Routes.MANAGE_CUSTOM_GROUPS) {
+            ManageCustomGroupsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenGroup = { id -> navController.navigate(Routes.customGroupEditor(id)) },
+                onCreateGroup = { navController.navigate(Routes.customGroupEditor("new")) },
+            )
+        }
+        composable(
+            route = Routes.CUSTOM_GROUP_EDITOR,
+            arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+        ) {
+            CreateCustomGroupScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
+            )
+        }
     }
 }

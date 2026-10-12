@@ -49,6 +49,14 @@ android {
             "YANDEX_BUCKET_NAME",
             "\"${localProperties.getProperty("YANDEX_BUCKET_NAME", "pathfinder-hub-media")}\""
         )
+
+        // URL Yandex Cloud Function, которая шлёт FCM.
+        // Впиши в local.properties: YANDEX_PUSH_URL=https://functions.yandexcloud.net/<id>
+        buildConfigField(
+            "String",
+            "YANDEX_PUSH_URL",
+            "\"${localProperties.getProperty("YANDEX_PUSH_URL", "")}\""
+        )
     }
 
     buildTypes {
@@ -107,6 +115,8 @@ ksp {
 }
 
 dependencies {
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Yandex Object Storage (S3-совместимое API)
     implementation("software.amazon.awssdk:s3:2.29.0")
     implementation("software.amazon.awssdk:url-connection-client:2.29.0")

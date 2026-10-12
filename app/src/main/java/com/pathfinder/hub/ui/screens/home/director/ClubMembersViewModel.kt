@@ -78,7 +78,10 @@ class ClubMembersViewModel @Inject constructor(
                     )
                 }
 
-                userRepository.observeClubMembers(clubId).collect { members ->
+                // «Участники» — только следопыты (teen).
+                // Сотрудники (director co-, instructor, secretary) живут
+                // в отдельном экране StaffScreen.
+                userRepository.observeClubMembersByRole(clubId, "teen").collect { members ->
                     _state.update { it.copy(members = members) }
                 }
             } catch (e: Exception) {

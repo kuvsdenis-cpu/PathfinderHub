@@ -19,6 +19,7 @@ import javax.inject.Inject
 data class HomeHeaderUiState(
     val isLoading: Boolean = true,
     val user: UserEntity? = null,
+    val clubId: String? = null,
     val clubName: String? = null,
     val clubLocation: String? = null,
     val errorMessage: String? = null,
@@ -55,6 +56,7 @@ class HomeHeaderViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             user = u,
+                            clubId = u?.clubId,
                             clubName = club?.name,
                             clubLocation = club?.city,
                         )

@@ -36,6 +36,12 @@ interface ParentDao {
     suspend fun moderateMessage(id: String, status: String, by: String, at: Long)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertMeeting(m: ParentMeetingEntity)
+
+    @Query("SELECT * FROM parent_meetings")
+    fun observeAllMeetings(): Flow<List<ParentMeetingEntity>>
+
+    @Query("SELECT * FROM parent_meetings WHERE eventId = :eventId LIMIT 1")
+    suspend fun getMeetingByEventId(eventId: String): ParentMeetingEntity?
     @Query("SELECT * FROM pwa_config WHERE id = 1")
     fun observePWAConfig(): Flow<PWAConfigEntity?>
     @Insert(onConflict = OnConflictStrategy.REPLACE)

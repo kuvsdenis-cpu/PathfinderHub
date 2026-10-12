@@ -50,6 +50,13 @@ class UserRepository @Inject constructor(
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>> =
         dao.observeClubMembersByRole(clubId, role)
 
+    /**
+     * Список участников клуба с одной из указанных ролей.
+     * Для «Сотрудников»: director + instructor + secretary.
+     */
+    fun observeClubMembersByRoles(clubId: String, roles: List<String>): Flow<List<UserEntity>> =
+        dao.observeClubMembersByRoles(clubId, roles)
+
     fun observeConferenceMembers(conferenceId: String): Flow<List<UserEntity>> =
         dao.observeConferenceUsers(conferenceId)
 

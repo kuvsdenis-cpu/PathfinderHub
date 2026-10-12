@@ -17,11 +17,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,7 +64,9 @@ import javax.inject.Inject
 
 data class HomeworkUiState(
     val isLoading: Boolean = true,
+    val activeTab: Int = 0,
     val items: List<HomeworkEntity> = emptyList(),
+    val archived: List<HomeworkEntity> = emptyList(),
 )
 
 @HiltViewModel
@@ -79,16 +84,33 @@ class HomeworkViewModel @Inject constructor(
             _state.update { it.copy(isLoading = false) }
         } else {
             viewModelScope.launch {
-                repo.observeHomework(uid).collect { list ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            items = list.sortedByDescending { h -> h.dueDate }
-                        )
+                launch {
+                    repo.observeActiveHomework(uid).collect { list ->
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                items = list.sortedByDescending { h -> h.dueDate }
+                            )
+                        }
+                    }
+                }
+                launch {
+                    repo.observeArchivedHomework(uid).collect { list ->
+                        _state.update { it.copy(archived = list) }
                     }
                 }
             }
         }
+    }
+
+    fun setTab(idx: Int) = _state.update { it.copy(activeTab = idx) }
+
+    fun archiveHomework(id: String) {
+        viewModelScope.launch { repo.archiveHomework(id) }
+    }
+
+    fun restoreHomework(id: String) {
+        viewModelScope.launch { repo.restoreHomework(id) }
     }
 
     fun markDone(id: String) {
@@ -119,27 +141,91 @@ class HomeworkViewModel @Inject constructor(
 @Composable
 fun HomeworkTabContent(viewModel: HomeworkViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
-    when {
-        state.isLoading -> {
-            Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+    if (state.isLoading) {
+        Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+        return
+    }
+    Column(Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = state.activeTab) {
+            Tab(
+                selected = state.activeTab == 0,
+                onClick = { viewModel.setTab(0) },
+                text = { Text("Активные (${state.items.size})") }
+            )
+            Tab(
+                selected = state.activeTab == 1,
+                onClick = { viewModel.setTab(1) },
+                text = { Text("Архив (${state.archived.size})") }
+            )
         }
-        state.items.isEmpty() -> {
+        val current = if (state.activeTab == 0) state.items else state.archived
+        if (current.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
-                Text("Домашки пока нет")
+                Text(
+                    if (state.activeTab == 0)
+                        "Домашки пока нет"
+                    else
+                        "Архив пуст"
+                )
             }
-        }
-        else -> {
+        } else {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.items, key = { it.id }) { h ->
-                    HomeworkCard(
-                        h = h,
-                        onDone = { viewModel.markDone(h.id) },
-                        onRedo = { viewModel.redoHomework(h.id) },
-                    )
+                items(current, key = { it.id }) { h ->
+                    if (state.activeTab == 1) {
+                        ArchivedHomeworkCard(h, onRestore = { viewModel.restoreHomework(h.id) })
+                    } else {
+                        HomeworkCard(
+                            h = h,
+                            onDone = { viewModel.markDone(h.id) },
+                            onRedo = { viewModel.redoHomework(h.id) },
+                        )
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchivedHomeworkCard(
+    h: HomeworkEntity,
+    onRestore: () -> Unit,
+) {
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                h.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (h.description.isNotBlank()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    h.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (h.archivedAt != null) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "В архиве с: ${fmt.format(h.archivedAt)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onRestore,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Restore, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Восстановить")
             }
         }
     }
@@ -191,9 +277,9 @@ private fun HomeworkCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (!h.reward.isNullOrBlank()) {
+            if (!h.rewardText.isNullOrBlank()) {
                 Text(
-                    "Приз: ${h.reward}",
+                    "Приз: ${h.rewardText}",
                     style = MaterialTheme.typography.bodySmall,
                     color = PathfinderBlue
                 )
@@ -268,6 +354,9 @@ private fun HomeworkCard(
                     )
                 }
             }
+
+            // Кнопка «В архив» убрана из teen-UI:
+            // архивировать может только директор / co-director с правами.
         }
     }
 }

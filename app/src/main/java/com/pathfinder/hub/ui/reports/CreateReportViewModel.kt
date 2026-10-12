@@ -83,7 +83,23 @@ class CreateReportViewModel @Inject constructor(
                 )
 
                 reportRepository.upsertReport(report)
-                _state.update { it.copy(isLoading = false, isCreated = true) }
+
+                // Генерируем PDF сразу после создания
+                val pdfResult = reportRepository.generateReport(report.id)
+                pdfResult.fold(
+                    onSuccess = {
+                        _state.update { it.copy(isLoading = false, isCreated = true) }
+                    },
+                    onFailure = { e ->
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isCreated = true,
+                                errorMessage = "PDF: ${e.message ?: "ошибка"}",
+                            )
+                        }
+                    },
+                )
             } catch (e: Exception) {
                 _state.update {
                     it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания")

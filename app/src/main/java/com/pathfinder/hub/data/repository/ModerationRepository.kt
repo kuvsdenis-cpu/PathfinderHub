@@ -62,6 +62,41 @@ class ModerationRepository @Inject constructor(
     fun observeApprovedComments(t: String, id: String): Flow<List<CommentEntity>> =
         dao.observeApprovedComments(t, id)
 
+    // ============ A3.1: Архивация ============
+
+    fun observeArchivedComments(t: String, id: String): Flow<List<CommentEntity>> =
+        dao.observeArchivedComments(t, id)
+
+    fun observeArchivedCommentsByClub(clubId: String): Flow<List<CommentEntity>> =
+        dao.observeArchivedCommentsByClub(clubId)
+
+    /** Архивировать сообщение вручную. purgeAfter = archivedAt + 90 дней. */
+    suspend fun archiveComment(id: String) {
+        val now = System.currentTimeMillis()
+        val purgeAfter = now + 90L * 24 * 3600 * 1000
+        dao.archiveComment(id, now, purgeAfter)
+    }
+
+    suspend fun restoreComment(id: String) {
+        dao.restoreComment(id)
+    }
+
+    /**
+     * Авто-архивация комментариев старше [daysOld] дней.
+     * @return сколько сообщений отправлено в архив.
+     */
+    suspend fun autoArchiveOldComments(daysOld: Int = 14): Int {
+        val now = System.currentTimeMillis()
+        val threshold = now - daysOld.toLong() * 24 * 3600 * 1000
+        val purgeAfter = now + 90L * 24 * 3600 * 1000
+        return dao.autoArchiveOld(threshold, now, purgeAfter)
+    }
+
+    /** Удалить всё, у чего purgeAfter < now. */
+    suspend fun purgeExpiredComments(now: Long = System.currentTimeMillis()): Int {
+        return dao.purgeExpiredComments(now)
+    }
+
     fun observeUserComments(u: String): Flow<List<CommentEntity>> =
         dao.observeUserComments(u)
 

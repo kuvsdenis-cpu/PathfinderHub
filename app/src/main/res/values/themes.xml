@@ -20,4 +20,10 @@
         <item name="android:windowActionBar">false</item>
     </style>
 
+    <style name="Theme.Pathfinder.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#1E40AF</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.PathfinderHub</item>
+    </style>
+
 </resources>

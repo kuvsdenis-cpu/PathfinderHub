@@ -1,5 +1,6 @@
 package com.pathfinder.hub.ui.screens.homework
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +16,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.DateField
@@ -109,14 +114,54 @@ fun CreateHomeworkScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = state.reward,
-                onValueChange = viewModel::onRewardChange,
-                label = { Text("Приз (необязательно)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = !state.isLoading
-            )
+            Text("Тип награды", style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip(
+                    selected = state.rewardType == "text",
+                    onClick = { viewModel.onRewardTypeChange("text") },
+                    label = { Text("Текст") },
+                )
+                FilterChip(
+                    selected = state.rewardType == "points",
+                    onClick = { viewModel.onRewardTypeChange("points") },
+                    label = { Text("Баллы") },
+                )
+                FilterChip(
+                    selected = state.rewardType == "achievement",
+                    onClick = { viewModel.onRewardTypeChange("achievement") },
+                    label = { Text("Ачивка") },
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+
+            when (state.rewardType) {
+                "text" -> OutlinedTextField(
+                    value = state.rewardText,
+                    onValueChange = viewModel::onRewardTextChange,
+                    label = { Text("Текст награды (необязательно)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = !state.isLoading,
+                )
+                "points" -> OutlinedTextField(
+                    value = state.rewardPoints,
+                    onValueChange = viewModel::onRewardPointsChange,
+                    label = { Text("Баллы") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = !state.isLoading,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+                "achievement" -> OutlinedTextField(
+                    value = state.rewardAchievementId,
+                    onValueChange = viewModel::onRewardAchievementIdChange,
+                    label = { Text("ID ачивки") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = !state.isLoading,
+                )
+            }
 
             state.errorMessage?.let { msg ->
                 Spacer(Modifier.height(12.dp))

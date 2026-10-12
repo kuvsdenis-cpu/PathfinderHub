@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.entity.parent.PaymentEntity
+import com.pathfinder.hub.data.remote.PushDispatcher
 import com.pathfinder.hub.data.repository.ParentRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,7 @@ class CreatePaymentViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val parentRepository: ParentRepository,
+    private val pushDispatcher: PushDispatcher,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreatePaymentUiState())
@@ -159,6 +161,18 @@ class CreatePaymentViewModel @Inject constructor(
                     createdAt = now,
                 )
                 parentRepository.upsertPayment(entity)
+
+                // Push родителю (fire-and-forget)
+                pushDispatcher.sendToUser(
+                    userId = entity.parentId,
+                    title = if (entity.status == "confirmed") "Взнос закрыт" else "Новый взнос",
+                    body = entity.title + " · " + entity.amount.toInt() + " " + entity.currency,
+                    data = mapOf(
+                        "type" to "payment",
+                        "paymentId" to entity.id,
+                    ),
+                )
+
                 _state.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: Exception) {
                 _state.update { it.copy(isSaving = false, errorMessage = e.message ?: "Ошибка") }

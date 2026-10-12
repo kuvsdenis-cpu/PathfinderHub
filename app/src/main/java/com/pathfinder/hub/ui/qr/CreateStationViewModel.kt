@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
+import com.pathfinder.hub.data.repository.QrQuestRepository
 import com.pathfinder.hub.data.repository.QrStationRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.data.local.entity.qr.QrQuestStationEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,12 +21,13 @@ import javax.inject.Inject
 data class CreateStationUiState(
     val name: String = "",
     val description: String = "",
-    val type: String = "entry",        // entry / quest / custom
+    val type: String = "entry",
     val rewardPoints: String = "10",
     val rewardAchievementId: String = "",
     val latitude: String = "55.7539",
     val longitude: String = "37.6208",
     val radiusMeters: String = "100",
+    val sourceQuestId: String? = null,
     val isLoading: Boolean = false,
     val isCreated: Boolean = false,
     val createdId: String? = null,
@@ -33,12 +36,23 @@ data class CreateStationUiState(
 
 @HiltViewModel
 class CreateStationViewModel @Inject constructor(
+    savedStateHandle: androidx.lifecycle.SavedStateHandle,
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val qrRepository: QrStationRepository,
+    private val qrQuestRepository: QrQuestRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(CreateStationUiState())
+    private val sourceQuestId: String? =
+        savedStateHandle.get<String>("questId")
+            ?.takeIf { it.isNotBlank() && it != "new" }
+
+    private val _state = MutableStateFlow(
+        CreateStationUiState(
+            sourceQuestId = sourceQuestId,
+            type = if (sourceQuestId != null) "quest" else "entry",
+        )
+    )
     val state: StateFlow<CreateStationUiState> = _state.asStateFlow()
 
     fun onName(v: String) = _state.update { it.copy(name = v) }
@@ -99,6 +113,20 @@ class CreateStationViewModel @Inject constructor(
                     pendingSync = true,
                 )
                 qrRepository.upsertStation(entity)
+
+                // Если открыто из квеста — привязать станцию к нему.
+                sourceQuestId?.let { qid ->
+                    val existing = qrQuestRepository.getQuestStations(qid)
+                    val nextStep = (existing.maxOfOrNull { it.stepIndex } ?: 0) + 1
+                    qrQuestRepository.upsertQuestStation(
+                        QrQuestStationEntity(
+                            questId = qid,
+                            stationId = id,
+                            stepIndex = nextStep,
+                        )
+                    )
+                }
+
                 _state.update { it.copy(isLoading = false, isCreated = true, createdId = id) }
             } catch (e: Exception) {
                 _state.update {

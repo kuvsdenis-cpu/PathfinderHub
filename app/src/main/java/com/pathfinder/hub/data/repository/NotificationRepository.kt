@@ -14,6 +14,16 @@ class NotificationRepository @Inject constructor(private val dao: NotificationDa
     suspend fun markAllRead(u: String, at: Long) = dao.markAllRead(u, at)
     suspend fun markHandled(id: String, at: Long) = dao.markHandled(id, at)
     suspend fun purgeOld(before: Long) = dao.purgeOld(before)
+
+    /** Удалить уведомления старше N дней (для всех пользователей). */
+    suspend fun purgeOlderThan(daysOld: Int = 30) {
+        val threshold = System.currentTimeMillis() -
+                daysOld.toLong() * 24 * 3600 * 1000
+        dao.purgeOld(threshold)
+    }
+
+    /** Удалить все уведомления конкретного пользователя. */
+    suspend fun deleteAllByUser(userId: String) = dao.deleteAllByUser(userId)
     fun observePrefs(u: String): Flow<NotificationPreferencesEntity?> = dao.observePrefs(u)
     suspend fun upsertPrefs(p: NotificationPreferencesEntity) = dao.upsertPrefs(p)
     suspend fun upsertToken(t: FCMTokenEntity) = dao.upsertToken(t)

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.ChatRepository
+import com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity
+import com.pathfinder.hub.data.repository.CustomGroupRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +26,7 @@ data class CreateGroupChatUiState(
     val isCreating: Boolean = false,
     val createdGroupId: String? = null,
     val errorMessage: String? = null,
+    val customGroups: List<CustomGroupEntity> = emptyList(),
 ) {
     val canCreate: Boolean
         get() = name.isNotBlank() && selectedIds.isNotEmpty() && !isCreating
@@ -34,6 +37,7 @@ class CreateGroupChatViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val chatRepo: ChatRepository,
+    private val customGroupRepository: CustomGroupRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateGroupChatUiState())
@@ -54,11 +58,18 @@ class CreateGroupChatViewModel @Inject constructor(
             }
             _state.update { it.copy(clubId = clubId, currentUserId = uid) }
 
-            userRepository.observeClubMembers(clubId).collect { list ->
-                val filtered = list
-                    .filter { it.id != uid && it.status != "deleted" && it.role != "parent" }
-                    .sortedBy { "${it.firstName} ${it.lastName}" }
-                _state.update { it.copy(isLoading = false, members = filtered) }
+            launch {
+                userRepository.observeClubMembers(clubId).collect { list ->
+                    val filtered = list
+                        .filter { it.id != uid && it.status != "deleted" && it.role != "parent" }
+                        .sortedBy { "${it.firstName} ${it.lastName}" }
+                    _state.update { it.copy(isLoading = false, members = filtered) }
+                }
+            }
+            launch {
+                customGroupRepository.observeActiveByClub(clubId).collect { groups ->
+                    _state.update { it.copy(customGroups = groups) }
+                }
             }
         }
     }
@@ -72,6 +83,26 @@ class CreateGroupChatViewModel @Inject constructor(
             s.copy(selectedIds = set)
         }
     }
+
+    /**
+     * B5.1: заполнить selectedIds участниками пользовательской группы.
+     * Фильтр: берём только тех, кто уже есть в state.members
+     * (т.е. не родители, не удалённые, не сам создатель).
+     */
+    fun fillFromGroup(groupId: String) {
+        viewModelScope.launch {
+            try {
+                val ids = customGroupRepository.resolveMembers(groupId)
+                val membersSet = _state.value.members.map { it.id }.toSet()
+                val valid = ids.filter { it in membersSet }
+                _state.update { it.copy(selectedIds = valid.toSet()) }
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun clearMembers() = _state.update { it.copy(selectedIds = emptySet()) }
 
     fun create() {
         val s = _state.value

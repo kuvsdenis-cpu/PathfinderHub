@@ -50,6 +50,14 @@ class LevelRepository @Inject constructor(
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
 
+    /** Баг #6: одобрено за период по клубу. */
+    suspend fun countApprovedInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countApprovedInPeriod(clubId, from, to)
+
+    /** Баг #6: submitted за период по клубу. */
+    suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countPendingInPeriod(clubId, from, to)
+
     // ---------- Сидовый контент ----------
     suspend fun upsertLevels(levels: List<LevelEntity>) = dao.upsertLevels(levels)
     suspend fun upsertLevel(level: LevelEntity) = dao.upsertLevel(level)

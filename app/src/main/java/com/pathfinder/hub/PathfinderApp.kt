@@ -24,6 +24,7 @@ import com.pathfinder.hub.data.local.entity.auth.InviteEntity
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
+import com.pathfinder.hub.data.archive.PurgeScheduler
 import com.pathfinder.hub.data.sync.SyncScheduler
 import com.pathfinder.hub.domain.usecase.gamification.SeedAchievementsUseCase
 import dagger.hilt.android.HiltAndroidApp
@@ -42,6 +43,9 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
 
     @Inject
     lateinit var syncScheduler: SyncScheduler
+
+    @Inject
+    lateinit var purgeScheduler: PurgeScheduler
 
     @Inject
     lateinit var seedAchievementsUseCase: SeedAchievementsUseCase
@@ -69,18 +73,35 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
 
     override fun onCreate() {
         super.onCreate()
-        initAppCheck()
-        initFirestore()
 
+        // #7: фоновый старт — ничего тяжёлого на главном потоке.
+        //
+        // Раньше здесь синхронно вызывались:
+        //   - initAppCheck() / initFirestore() — тяжёлые Firebase-биндинги;
+        //   - syncScheduler.schedulePeriodic() / syncNow() / purgeScheduler.schedule() —
+        //     четыре раза поднимали WorkManager.getInstance() на UI-потоке.
+        // Теперь всё это уходит в Dispatchers.IO, а на UI-потоке остаётся
+        // только регистрация Hilt и возврат из onCreate.
         appScope.launch {
-            seedDemoData()
+            // Firebase нужен к первому сетевому запросу, не к первому кадру.
+            initAppCheck()
+            initFirestore()
+
+            // Планировщики WorkManager — тоже фоновая история.
+            syncScheduler.schedulePeriodic()
+            syncScheduler.syncNow()
+            purgeScheduler.schedule()
+
+            // Демо-данные — только в debug (d-1).
+            if (BuildConfig.DEBUG) {
+                seedDemoData()
+            }
+
+            // Загрузка контента и наблюдение за воркером — как было.
             seedAchievements()
             scheduleContentUpdate()
-            observeSeedCompletion()
+            observeSeedCompletion()  // suspend, не возвращается до конца воркера
         }
-
-        syncScheduler.schedulePeriodic()
-        syncScheduler.syncNow()
     }
 
     // ==================== FIREBASE APP CHECK ====================

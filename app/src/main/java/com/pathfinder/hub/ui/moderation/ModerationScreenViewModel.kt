@@ -23,6 +23,7 @@ data class CommentToModerate(
 data class ModerationUiState(
     val pendingComments: List<CommentToModerate> = emptyList(),
     val currentUserId: String? = null,
+    val canArchive: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val isProcessing: Boolean = false,
@@ -53,6 +54,9 @@ class ModerationScreenViewModel @Inject constructor(
             viewModelScope.launch {
                 val user = userRepository.getUser(userId)
                 val clubId = user?.clubId
+                val canArchive = com.pathfinder.hub.domain.permissions.PermissionChecker
+                    .canArchive(user)
+                _state.update { it.copy(canArchive = canArchive) }
                 if (clubId.isNullOrBlank()) {
                     _state.update {
                         it.copy(isLoading = false, errorMessage = "Клуб не найден")
@@ -157,6 +161,20 @@ class ModerationScreenViewModel @Inject constructor(
                 _state.update {
                     it.copy(isProcessing = false, selectedCommentId = null, rejectReason = "")
                 }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(isProcessing = false, errorMessage = e.message)
+                }
+            }
+        }
+    }
+
+    fun archiveComment(commentId: String) {
+        _state.update { it.copy(isProcessing = true) }
+        viewModelScope.launch {
+            try {
+                moderationRepository.archiveComment(commentId)
+                _state.update { it.copy(isProcessing = false) }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(isProcessing = false, errorMessage = e.message)

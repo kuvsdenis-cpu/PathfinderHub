@@ -37,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -53,6 +54,8 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun QuestEditorScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
+    onCreateStation: (questId: String?) -> Unit = {},
+    readOnly: Boolean = false,
     viewModel: QuestEditorViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -64,7 +67,7 @@ fun QuestEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (state.isNew) "Новый квест" else "Квест") },
+                title = { Text(if (readOnly) "Квест (просмотр)" else if (state.isNew) "Новый квест" else "Квест") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
@@ -97,7 +100,7 @@ fun QuestEditorScreen(
                 label = { Text("Название *") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                enabled = !state.isSaving
+                enabled = !state.isSaving && !readOnly,
             )
             Spacer(Modifier.height(12.dp))
 
@@ -107,7 +110,7 @@ fun QuestEditorScreen(
                 label = { Text("Описание") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
-                enabled = !state.isSaving
+                enabled = !state.isSaving && !readOnly,
             )
             Spacer(Modifier.height(12.dp))
 
@@ -117,7 +120,7 @@ fun QuestEditorScreen(
                 label = { Text("Очки за завершение квеста") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                enabled = !state.isSaving
+                enabled = !state.isSaving && !readOnly,
             )
             Spacer(Modifier.height(12.dp))
 
@@ -127,7 +130,7 @@ fun QuestEditorScreen(
                 label = { Text("ID ачивки за квест (опционально)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                enabled = !state.isSaving
+                enabled = !state.isSaving && !readOnly,
             )
             Spacer(Modifier.height(12.dp))
 
@@ -137,7 +140,7 @@ fun QuestEditorScreen(
                 value = state.dateStart,
                 label = "Дата начала (опционально)",
                 onValueChange = viewModel::onDateStart,
-                enabled = !state.isSaving,
+                enabled = !state.isSaving && !readOnly,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
@@ -145,10 +148,10 @@ fun QuestEditorScreen(
                 value = state.dateEnd,
                 label = "Дата окончания (пусто = бессрочный)",
                 onValueChange = viewModel::onDateEnd,
-                enabled = !state.isSaving,
+                enabled = !state.isSaving && !readOnly,
                 modifier = Modifier.fillMaxWidth()
             )
-            if (state.dateStart != null || state.dateEnd != null) {
+            if (!readOnly && (state.dateStart != null || state.dateEnd != null)) {
                 Spacer(Modifier.height(4.dp))
                 TextButton(onClick = viewModel::clearDates) {
                     Text("Сделать бессрочным")
@@ -210,34 +213,51 @@ fun QuestEditorScreen(
                                     )
                                 }
                             }
-                            IconButton(
-                                onClick = { viewModel.moveUp(sid) },
-                                enabled = idx > 0
-                            ) {
-                                Icon(Icons.Default.ArrowUpward, "Выше")
-                            }
-                            IconButton(
-                                onClick = { viewModel.moveDown(sid) },
-                                enabled = idx < state.selectedStationIds.size - 1
-                            ) {
-                                Icon(Icons.Default.ArrowDownward, "Ниже")
-                            }
-                            IconButton(onClick = { viewModel.toggleStation(sid) }) {
-                                Icon(Icons.Default.Close, "Убрать")
+                            if (!readOnly) {
+                                IconButton(
+                                    onClick = { viewModel.moveUp(sid) },
+                                    enabled = idx > 0
+                                ) {
+                                    Icon(Icons.Default.ArrowUpward, "Выше")
+                                }
+                                IconButton(
+                                    onClick = { viewModel.moveDown(sid) },
+                                    enabled = idx < state.selectedStationIds.size - 1
+                                ) {
+                                    Icon(Icons.Default.ArrowDownward, "Ниже")
+                                }
+                                IconButton(onClick = { viewModel.toggleStation(sid) }) {
+                                    Icon(Icons.Default.Close, "Убрать")
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = viewModel::showStationDialog,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Add, null)
-                Spacer(Modifier.width(6.dp))
-                Text("Добавить станции")
+            if (!readOnly) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = viewModel::showStationDialog,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(Icons.Default.Add, null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("Из существующих")
+                    }
+                    Button(
+                        onClick = { onCreateStation(state.questId) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(Icons.Default.Add, null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("Создать станцию")
+                    }
+                }
             }
 
             state.errorMessage?.let { msg ->
@@ -256,20 +276,22 @@ fun QuestEditorScreen(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = viewModel::save,
-                enabled = !state.isSaving,
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-            ) {
-                if (state.isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(if (state.isNew) "Создать квест" else "Сохранить")
+            if (!readOnly) {
+                Spacer(Modifier.height(24.dp))
+                Button(
+                    onClick = viewModel::save,
+                    enabled = !state.isSaving,
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                ) {
+                    if (state.isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(if (state.isNew) "Создать квест" else "Сохранить")
+                    }
                 }
             }
         }

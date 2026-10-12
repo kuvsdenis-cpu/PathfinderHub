@@ -17,10 +17,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,6 +57,8 @@ fun ParentHomeScreen(
     onNavigateToPayments: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
     onNavigateToMeetings: () -> Unit = {},
+    onNavigateToConsents: () -> Unit = {},
+    onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onLogout: () -> Unit,
     viewModel: ParentHomeViewModel = hiltViewModel(),
 ) {
@@ -140,6 +144,38 @@ fun ParentHomeScreen(
                 }
             }
 
+            // Клуб
+            if (!state.user?.clubId.isNullOrBlank()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Public, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.size(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "О клубе",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Информация, расписание, контакты",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
             // ---------- Разделы ----------
             Text(
                 "Разделы",
@@ -153,6 +189,10 @@ fun ParentHomeScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Tile(Icons.Default.Email, "Сообщения", "От клуба", onNavigateToMessages, Modifier.weight(1f))
                 Tile(Icons.Default.Event, "Встречи", "С родителями", onNavigateToMeetings, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Tile(Icons.Default.CheckCircle, "Согласия", "На мероприятия", onNavigateToConsents, Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
             }
 
             state.errorMessage?.let { msg ->

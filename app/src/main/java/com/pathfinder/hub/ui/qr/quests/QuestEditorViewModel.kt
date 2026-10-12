@@ -59,6 +59,21 @@ class QuestEditorViewModel @Inject constructor(
             _state.update { it.copy(isLoading = false, errorMessage = "Не авторизован") }
         } else {
             load(uid)
+            // Авто-подписка на связи квеста: если станция добавлена
+            // из CreateStationScreen — selectedStationIds обновится сам.
+            if (questIdArg != null) {
+                viewModelScope.launch {
+                    qrQuestRepository.observeQuestStations(questIdArg).collect { links ->
+                        _state.update {
+                            it.copy(
+                                selectedStationIds = links
+                                    .sortedBy { l -> l.stepIndex }
+                                    .map { l -> l.stationId },
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -148,6 +163,20 @@ class QuestEditorViewModel @Inject constructor(
                 list[i] = tmp
             }
             it.copy(selectedStationIds = list)
+        }
+    }
+
+    fun reloadSelectedStations() {
+        val qid = questIdArg ?: _state.value.questId ?: return
+        viewModelScope.launch {
+            val links = qrQuestRepository.getQuestStations(qid)
+            _state.update {
+                it.copy(
+                    selectedStationIds = links
+                        .sortedBy { l -> l.stepIndex }
+                        .map { l -> l.stationId },
+                )
+            }
         }
     }
 

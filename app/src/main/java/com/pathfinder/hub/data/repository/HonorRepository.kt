@@ -47,6 +47,14 @@ class HonorRepository @Inject constructor(
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
+
+    /** Баг #6: одобрено за период по клубу. */
+    suspend fun countApprovedInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countApprovedInPeriod(clubId, from, to)
+
+    /** Баг #6: submitted за период по клубу. */
+    suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int =
+        dao.countPendingInPeriod(clubId, from, to)
     suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------

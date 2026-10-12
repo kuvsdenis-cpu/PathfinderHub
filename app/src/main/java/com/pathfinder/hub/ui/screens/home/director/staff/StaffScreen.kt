@@ -129,17 +129,29 @@ private fun DirectorRow(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+                val roleLabel = when (user.role) {
+                    "director" -> "Со-директор · ${user.directorPermissions.size} прав"
+                    "instructor" -> "Наставник"
+                    "secretary" -> "Секретарь"
+                    else -> user.role
+                }
                 Text(
-                    if (user.isOwnerClub) "Владелец клуба" else "Со-директор · ${user.directorPermissions.size} прав",
+                    roleLabel,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            val chipLabel = when (user.role) {
+                "director" -> "Co-dir"
+                "instructor" -> "Instr"
+                "secretary" -> "Secr"
+                else -> user.role
+            }
             AssistChip(
                 onClick = {},
-                label = { Text(if (user.isOwnerClub) "Owner" else "Co-dir") }
+                label = { Text(chipLabel) }
             )
-            if (!user.isOwnerClub) {
+            if (user.role == "director" && !user.isOwnerClub) {
                 Spacer(Modifier.width(4.dp))
                 Icon(Icons.Default.ChevronRight, null)
             }

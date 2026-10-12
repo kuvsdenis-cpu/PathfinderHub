@@ -27,6 +27,12 @@ object PermissionChecker {
     fun isConferenceSecretary(user: UserEntity?): Boolean =
         user?.role == "conference_secretary"
 
+    /**
+     * Может ли пользователь отправлять в архив / восстанавливать.
+     * Только director (owner) или co-director с правом archive.manage.
+     */
+    fun canArchive(user: UserEntity?): Boolean = hasPerm(user, "archive.manage")
+
     /** Администратор конференции. */
     fun isConferenceAdmin(user: UserEntity?): Boolean =
         user?.role == "conference_admin"

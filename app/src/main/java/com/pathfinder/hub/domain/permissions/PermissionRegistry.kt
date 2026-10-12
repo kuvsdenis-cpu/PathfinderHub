@@ -55,6 +55,12 @@ object PermissionRegistry {
             Permission("finance.create", "Создание платежей"),
             Permission("finance.confirm", "Подтверждение оплат"),
         )),
+        Group("Пользовательские группы", listOf(
+            Permission("groups.manage", "Управление группами"),
+        )),
+        Group("Архив", listOf(
+            Permission("archive.manage", "Отправка в архив и восстановление"),
+        )),
     )
 
     /** Все ключи прав. */

@@ -13,6 +13,7 @@ import com.pathfinder.hub.data.local.entity.auth.OnboardingProgressEntity
 import com.pathfinder.hub.data.local.entity.auth.ParentChildLinkEntity
 import com.pathfinder.hub.data.local.entity.auth.TemporaryPasswordEntity
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
+import com.pathfinder.hub.data.local.entity.conference.ConferenceEventEntity
 import com.pathfinder.hub.data.local.entity.core.ConferenceEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.entity.gamification.AchievementEntity
@@ -26,6 +27,7 @@ import com.pathfinder.hub.data.local.entity.gamification.HomeworkEntity
 import com.pathfinder.hub.data.local.entity.gamification.ReputationEntity
 import com.pathfinder.hub.data.local.entity.gamification.ShareCardEntity
 import com.pathfinder.hub.data.local.entity.gamification.TeamChallengeProgressEntity
+import com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.local.entity.learning.BookReportEntity
 import com.pathfinder.hub.data.local.entity.learning.ContentVersionEntity
@@ -74,6 +76,10 @@ import com.pathfinder.hub.data.local.entity.qr.QrQuestStationEntity
 import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
 import com.pathfinder.hub.data.local.entity.qr.StationVisitEntity
 import com.pathfinder.hub.data.local.entity.parent.PWAInstallEventEntity
+import com.pathfinder.hub.data.local.entity.crossclub.CrossClubInviteCodeEntity
+import com.pathfinder.hub.data.local.entity.crossclub.CrossClubInviteEntity
+import com.pathfinder.hub.data.local.entity.crossclub.CrossClubInviteUsageEntity
+import com.pathfinder.hub.data.local.entity.parent.EventConsentEntity
 import com.pathfinder.hub.data.local.entity.parent.ParentMeetingEntity
 import com.pathfinder.hub.data.local.entity.parent.ParentMessageEntity
 import com.pathfinder.hub.data.local.entity.parent.PaymentEntity
@@ -84,6 +90,7 @@ import com.pathfinder.hub.data.local.entity.planning.ConfirmationEntity
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
 import com.pathfinder.hub.data.local.entity.planning.EventHonorEntity
 import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
+import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.local.entity.planning.ModerationHistoryEntity
 import com.pathfinder.hub.data.local.entity.planning.ModerationRequestEntity
 import com.pathfinder.hub.data.local.entity.planning.TaskEntity
@@ -152,6 +159,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
 
         // Planning
         EventEntity::class,
+        EventParticipantEntity::class,
         EventOccurrenceEntity::class,
         EventHonorEntity::class,
         TaskEntity::class,
@@ -161,6 +169,9 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ModerationRequestEntity::class,
         AppealEntity::class,
         ModerationHistoryEntity::class,
+
+        // Custom Groups (B1)
+        CustomGroupEntity::class,
 
         // Notifications
         NotificationEntity::class,
@@ -182,6 +193,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         PaymentEntity::class,
         ParentMessageEntity::class,
         ParentMeetingEntity::class,
+        EventConsentEntity::class,
         PWAConfigEntity::class,
         PWAInstallEventEntity::class,
 
@@ -216,9 +228,17 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         // QR-квесты
         QrQuestEntity::class,
         QrQuestStationEntity::class,
-        QrQuestProgressEntity::class
+        QrQuestProgressEntity::class,
+
+        // Cross-club
+        CrossClubInviteEntity::class,
+        CrossClubInviteCodeEntity::class,
+        CrossClubInviteUsageEntity::class,
+
+        // Conference
+        ConferenceEventEntity::class
     ],
-    version = 11,
+    version = 26,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -233,6 +253,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Planning
     abstract fun eventDao(): EventDao
+    abstract fun eventParticipantDao(): EventParticipantDao
     abstract fun taskDao(): TaskDao
 
     // Learning
@@ -258,6 +279,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Parent
     abstract fun parentDao(): ParentDao
+    abstract fun eventConsentDao(): EventConsentDao
 
     // Reports
     abstract fun reportDao(): ReportDao
@@ -276,6 +298,15 @@ abstract class AppDatabase : RoomDatabase() {
 
     // QR-квесты
     abstract fun qrQuestDao(): QrQuestDao
+
+    // Cross-club
+    abstract fun crossClubDao(): CrossClubDao
+
+    // Conference
+    abstract fun conferenceEventDao(): ConferenceEventDao
+
+    // Custom Groups (B1)
+    abstract fun customGroupDao(): CustomGroupDao
 
     companion object {
         @Volatile

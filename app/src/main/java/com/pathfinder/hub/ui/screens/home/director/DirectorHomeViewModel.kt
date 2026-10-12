@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -57,34 +58,43 @@ class DirectorHomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            userRepository.observeUser(userId).collect { user ->
-                if (user == null) return@collect
-
-                // Список клубов: clubIds, fallback [clubId]
-                val ids = user.clubIds.ifEmpty {
-                    listOfNotNull(user.clubId)
+            userRepository.observeUser(userId)
+                // #7: реагируем только на то, что реально влияет на UI
+                .distinctUntilChanged { old, new ->
+                    old?.clubId == new?.clubId &&
+                    old?.clubIds == new?.clubIds &&
+                    old?.firstName == new?.firstName &&
+                    old?.directorPermissions == new?.directorPermissions &&
+                    old?.isOwnerClub == new?.isOwnerClub
                 }
-                val activeId = user.clubId ?: ids.firstOrNull()
+                .collect { user ->
+                    if (user == null) return@collect
 
-                // Загружаем сущности клубов
-                val clubs = ids.mapNotNull { id ->
-                    try { clubRepository.getClub(id) } catch (_: Exception) { null }
+                    // Список клубов: clubIds, fallback [clubId]
+                    val ids = user.clubIds.ifEmpty {
+                        listOfNotNull(user.clubId)
+                    }
+                    val activeId = user.clubId ?: ids.firstOrNull()
+
+                    // #7: один запрос getClubs(ids) вместо N × getClub(id)
+                    val clubs = try {
+                        clubRepository.getClubs(ids)
+                    } catch (_: Exception) { emptyList() }
+
+                    val active = clubs.find { it.id == activeId }
+
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            directorName = user.firstName,
+                            clubName = active?.name,
+                            clubLocation = active?.city,
+                            clubs = clubs,
+                            selectedClubId = activeId,
+                            currentUser = user,
+                        )
+                    }
                 }
-
-                val active = clubs.find { it.id == activeId }
-
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        directorName = user.firstName,
-                        clubName = active?.name,
-                        clubLocation = active?.city,
-                        clubs = clubs,
-                        selectedClubId = activeId,
-                        currentUser = user,
-                    )
-                }
-            }
         }
     }
 

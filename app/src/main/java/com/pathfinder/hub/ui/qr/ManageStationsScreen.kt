@@ -18,11 +18,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -30,6 +33,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -54,6 +59,7 @@ import kotlinx.coroutines.withContext
 fun ManageStationsScreen(
     onBack: () -> Unit,
     onCreateStation: () -> Unit,
+    onOpenQuestReadonly: (questId: String) -> Unit = {},
     viewModel: ManageStationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -90,62 +96,152 @@ fun ManageStationsScreen(
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
                 CircularProgressIndicator()
             }
-            state.stations.isEmpty() -> Box(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
-                Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.QrCode, null,
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+            else -> Column(Modifier.fillMaxSize().padding(padding)) {
+                TabRow(selectedTabIndex = state.activeTab) {
+                    Tab(
+                        selected = state.activeTab == 0,
+                        onClick = { viewModel.setTab(0) },
+                        text = { Text("Одиночные (${state.standalone.size})") }
                     )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Пока нет станций",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "Нажмите + чтобы создать первую",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Tab(
+                        selected = state.activeTab == 1,
+                        onClick = { viewModel.setTab(1) },
+                        text = { Text("Квесты (${state.inQuests.size})") }
                     )
                 }
-            }
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.stations, key = { it.id }) { s ->
-                    StationCard(
-                        s = s,
-                        onShowQr = {
-                            scope.launch {
-                                val f = withContext(Dispatchers.IO) {
-                                    StationQrHelper.generatePng(ctx, s.id)
-                                }
-                                StationQrHelper.open(ctx, f)
+                if (state.activeTab == 0) {
+                    // Вкладка «Одиночные»
+                    if (state.standalone.isEmpty()) {
+                        Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                            Text(
+                                "Одиночных станций пока нет.\nСоздайте через +",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(state.standalone, key = { it.id }) { s ->
+                                StationCard(
+                                    s = s,
+                                    onShowQr = {
+                                        scope.launch {
+                                            val f = withContext(Dispatchers.IO) {
+                                                StationQrHelper.generatePng(ctx, s.id)
+                                            }
+                                            StationQrHelper.open(ctx, f)
+                                        }
+                                    },
+                                    onShareQr = {
+                                        scope.launch {
+                                            val f = withContext(Dispatchers.IO) {
+                                                StationQrHelper.generatePng(ctx, s.id)
+                                            }
+                                            StationQrHelper.share(ctx, s.name, f)
+                                        }
+                                    },
+                                    onCopyPayload = {
+                                        Toast.makeText(
+                                            ctx,
+                                            StationQrHelper.payload(s.id),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    },
+                                    onDelete = { viewModel.deleteStation(s.id) },
+                                    canArchive = state.canArchive,
+                                    onArchive = { viewModel.archiveStation(s.id) },
+                                )
                             }
-                        },
-                        onShareQr = {
-                            scope.launch {
-                                val f = withContext(Dispatchers.IO) {
-                                    StationQrHelper.generatePng(ctx, s.id)
+                        }
+                    }
+                } else {
+                    // Вкладка «Квесты» — секции по квестам
+                    if (state.questsWithStations.isEmpty()) {
+                        Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                            Text(
+                                "Станций в квестах пока нет.\nДобавьте в редакторе квеста.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            state.questsWithStations.forEach { qws ->
+                                item(key = "quest_${qws.quest.id}") {
+                                    Card(
+                                        onClick = { onOpenQuestReadonly(qws.quest.id) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                        )
+                                    ) {
+                                        Row(
+                                            Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Star, null,
+                                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                            Spacer(Modifier.width(10.dp))
+                                            Column(Modifier.weight(1f)) {
+                                                Text(
+                                                    qws.quest.title,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                                Text(
+                                                    "${qws.stations.size} станций",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
-                                StationQrHelper.share(ctx, s.name, f)
+                                items(qws.stations, key = { s -> "st_${s.id}" }) { s ->
+                                    StationCard(
+                                        s = s,
+                                        onShowQr = {
+                                            scope.launch {
+                                                val f = withContext(Dispatchers.IO) {
+                                                    StationQrHelper.generatePng(ctx, s.id)
+                                                }
+                                                StationQrHelper.open(ctx, f)
+                                            }
+                                        },
+                                        onShareQr = {
+                                            scope.launch {
+                                                val f = withContext(Dispatchers.IO) {
+                                                    StationQrHelper.generatePng(ctx, s.id)
+                                                }
+                                                StationQrHelper.share(ctx, s.name, f)
+                                            }
+                                        },
+                                        onCopyPayload = {
+                                            Toast.makeText(
+                                                ctx,
+                                                StationQrHelper.payload(s.id),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        },
+                                        onDelete = { viewModel.deleteStation(s.id) },
+                                        canArchive = false,
+                                        onArchive = {},
+                                    )
+                                }
                             }
-                        },
-                        onCopyPayload = {
-                            Toast.makeText(
-                                ctx,
-                                StationQrHelper.payload(s.id),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        },
-                        onDelete = { viewModel.deleteStation(s.id) }
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -159,6 +255,8 @@ private fun StationCard(
     onShareQr: () -> Unit,
     onCopyPayload: () -> Unit,
     onDelete: () -> Unit,
+    canArchive: Boolean = false,
+    onArchive: () -> Unit = {},
 ) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
@@ -202,6 +300,11 @@ private fun StationCard(
                     Icon(Icons.Default.QrCode, "Скопировать payload", tint = PathfinderBlue)
                 }
                 Spacer(Modifier.weight(1f))
+                if (canArchive) {
+                    IconButton(onClick = onArchive) {
+                        Icon(Icons.Default.Archive, "В архив", tint = PathfinderBlue)
+                    }
+                }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, "Удалить", tint = MaterialTheme.colorScheme.error)
                 }

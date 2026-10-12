@@ -108,9 +108,11 @@ fun ModerationScreen(
                             item = item,
                             dateFormat = dateFormat,
                             isProcessing = state.isProcessing,
+                            canArchive = state.canArchive,
                             onApprove = { viewModel.approveComment(item.comment.id) },
                             onHide = { viewModel.hideComment(item.comment.id) },
-                            onReject = { viewModel.showRejectDialog(item.comment.id) }
+                            onReject = { viewModel.showRejectDialog(item.comment.id) },
+                            onArchive = { viewModel.archiveComment(item.comment.id) }
                         )
                     }
                 }
@@ -165,9 +167,11 @@ private fun ModerationCard(
     item: CommentToModerate,
     dateFormat: SimpleDateFormat,
     isProcessing: Boolean,
+    canArchive: Boolean,
     onApprove: () -> Unit,
     onHide: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    onArchive: () -> Unit,
 ) {
     val statusColor = when (item.comment.status) {
         "pending_review" -> MaterialTheme.colorScheme.tertiary
@@ -268,6 +272,19 @@ private fun ModerationCard(
                     Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("Отклонить")
+                }
+            }
+
+            if (canArchive) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onArchive,
+                    enabled = !isProcessing,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Default.Restore, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("В архив")
                 }
             }
         }

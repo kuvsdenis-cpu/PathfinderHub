@@ -47,9 +47,23 @@ class StaffViewModel @Inject constructor(
                 _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
                 return@launch
             }
-            userRepository.observeClubMembersByRole(clubId, "director").collect { list ->
-                _state.update { it.copy(isLoading = false, directors = list) }
-            }
+            // «Сотрудники» = co-director + instructor + secretary.
+            // Owner (isOwnerClub == true) НЕ показывается — он сам себя видит на главной.
+            userRepository
+                .observeClubMembersByRoles(
+                    clubId,
+                    listOf("director", "instructor", "secretary"),
+                )
+                .collect { list ->
+                    val staff = list.filter { user ->
+                        when (user.role) {
+                            "director" -> !user.isOwnerClub   // только co-director
+                            "instructor", "secretary" -> true
+                            else -> false
+                        }
+                    }
+                    _state.update { it.copy(isLoading = false, directors = staff) }
+                }
         }
     }
 }

@@ -33,4 +33,8 @@ data class QrQuestEntity(
     val createdAt: Date,
     val updatedAt: Date,
     val pendingSync: Boolean = false,
+
+    // A3.2: Архивация
+    val archivedAt: Date? = null,
+    val purgeAfter: Date? = null,
 )

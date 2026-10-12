@@ -12,5 +12,17 @@ data class EventEntity(
     val parentEventId: String?, val createdBy: String, val status: String,
     val autoModerationResult: String, val moderatedBy: String?, val moderatedAt: Date?,
     val reviewDeadline: Date?, val hiddenReasonCode: String?, val hiddenReasonNote: String?,
-    val visibility: String, val publishedAt: Date?, val pendingSync: Boolean = false
+    val visibility: String, val publishedAt: Date?, val pendingSync: Boolean = false,
+
+    // S4: QR + координаты
+    val qrCode: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+
+    // S7: Архивация
+    val archivedAt: Date? = null,
+    val purgeAfter: Date? = null,
+
+    // A2: групповые приглашения
+    val targetGroup: String? = null,
 )

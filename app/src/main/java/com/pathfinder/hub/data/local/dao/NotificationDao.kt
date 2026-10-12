@@ -23,6 +23,10 @@ interface NotificationDao {
     suspend fun markHandled(id: String, at: Long)
     @Query("DELETE FROM notifications WHERE createdAt < :before")
     suspend fun purgeOld(before: Long)
+
+    /** Удалить все уведомления конкретного пользователя. */
+    @Query("DELETE FROM notifications WHERE userId = :userId")
+    suspend fun deleteAllByUser(userId: String)
     @Query("SELECT * FROM notification_preferences WHERE userId = :userId")
     fun observePrefs(userId: String): Flow<NotificationPreferencesEntity?>
     @Insert(onConflict = OnConflictStrategy.REPLACE)

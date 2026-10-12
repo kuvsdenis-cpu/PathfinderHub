@@ -47,9 +47,14 @@ fun DirectorHomeScreen(
     onNavigateToHomework: () -> Unit = {},
     onNavigateToReviewHomework: () -> Unit = {},
     onNavigateToPayments: () -> Unit = {},
+    onNavigateToParentMeetings: () -> Unit = {},
+    onNavigateToCrossClub: () -> Unit = {},
     onNavigateToStaff: () -> Unit = {},
     onNavigateToCreateClub: () -> Unit = {},
     onNavigateToNotifications: () -> Unit,
+    onNavigateToClubInfo: (clubId: String) -> Unit = {},
+    onNavigateToArchive: () -> Unit = {},
+    onNavigateToCustomGroups: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
@@ -162,6 +167,38 @@ fun DirectorHomeScreen(
                             state.clubLocation ?: "",
                             style = MaterialTheme.typography.bodyMedium
                         )
+                    }
+                }
+
+                // О клубе
+                state.selectedClubId?.let { cid ->
+                    Card(
+                        onClick = { onNavigateToClubInfo(cid) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "О клубе",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Публичная информация о клубе",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -297,6 +334,22 @@ fun DirectorHomeScreen(
                     )
                 }
 
+                // ---------- Ряд 9: Встречи + Межклубные ----------
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    GuardedCard(
+                        Icons.Default.CalendarMonth, "Встречи", "С родителями",
+                        "events.create", u,
+                        { guard("events.create") { onNavigateToParentMeetings() } },
+                        Modifier.weight(1f),
+                    )
+                    GuardedCard(
+                        Icons.Default.Public, "Межклубные", "Приглашения клубов",
+                        "events.create", u,
+                        { guard("events.create") { onNavigateToCrossClub() } },
+                        Modifier.weight(1f),
+                    )
+                }
+
                 // ---------- Сотрудники (только owner) ----------
                 if (u?.isOwnerClub == true) {
                     Card(
@@ -329,6 +382,77 @@ fun DirectorHomeScreen(
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
+                        }
+                    }
+                }
+
+                // ---------- Пользовательские группы (B) ----------
+                val canGroups = PermissionChecker.hasPerm(u, "groups.manage")
+                if (canGroups) {
+                    Card(
+                        onClick = onNavigateToCustomGroups,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Groups, null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Группы",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    "Пользовательские группы с правилами",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Архив ----------
+                Card(
+                    onClick = onNavigateToArchive,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Inventory2, null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Архив",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                "Архивированные события, задания и т.д.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
                         }
                     }
                 }

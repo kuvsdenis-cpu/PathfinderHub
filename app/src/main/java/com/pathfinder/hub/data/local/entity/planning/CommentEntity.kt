@@ -29,5 +29,9 @@ data class CommentEntity(
     val hiddenReasonCode: String?,
     val hiddenReasonNote: String?,
     val createdAt: Date,
-    val pendingSync: Boolean = false
+    val pendingSync: Boolean = false,
+
+    // A3.1: Архивация (14 дней в активном, +90 в архиве, потом удаление)
+    val archivedAt: Date? = null,
+    val purgeAfter: Date? = null,
 )

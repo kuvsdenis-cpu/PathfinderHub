@@ -50,6 +50,8 @@ fun ConferenceHomeScreen(
     onNavigateToClubs: () -> Unit,
     onNavigateToMembers: () -> Unit,
     onNavigateToInvites: () -> Unit,
+    onNavigateToEvents: () -> Unit = {},
+    onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: ConferenceStaffViewModel = hiltViewModel(),
@@ -134,27 +136,14 @@ fun ConferenceHomeScreen(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Tile(Icons.Default.PersonAdd, "Инвайты", "Секретарь конференции", onNavigateToInvites, Modifier.weight(1f))
-                Tile(Icons.Default.Assignment, "Мероприятия", "Скоро", {}, Modifier.weight(1f))
+                Tile(Icons.Default.Assignment, "Мероприятия", "Список и создание", onNavigateToEvents, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Analytics, "Аналитика", "Скоро", {}, Modifier.weight(1f))
+                Tile(Icons.Default.Analytics, "Аналитика", "Клубы и участники", onNavigateToAnalytics, Modifier.weight(1f))
                 Spacer(Modifier.weight(1f))
             }
 
-            Spacer(Modifier.height(12.dp))
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "Мероприятия и аналитика конференции — в разработке.",
-                    Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+
         }
     }
 }

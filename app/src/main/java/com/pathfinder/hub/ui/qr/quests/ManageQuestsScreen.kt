@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Star
@@ -158,6 +159,14 @@ fun ManageQuestsScreen(
                                             }
                                         )
                                     }
+                                }
+                            }
+                            if (state.canArchive) {
+                                IconButton(onClick = { viewModel.archiveQuest(item.quest.id) }) {
+                                    Icon(
+                                        Icons.Default.Archive, "В архив",
+                                        tint = PathfinderBlue
+                                    )
                                 }
                             }
                             IconButton(onClick = { deleteId = item.quest.id }) {

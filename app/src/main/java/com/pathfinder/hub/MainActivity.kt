@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.AlertDialog
@@ -39,6 +40,7 @@ import com.pathfinder.hub.ui.navigation.PathfinderNavHost
 import com.pathfinder.hub.ui.navigation.Routes
 import com.pathfinder.hub.ui.theme.PathfinderTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -53,11 +55,15 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var sessionGuard: SessionGuard
 
+    private val uiReady = androidx.compose.runtime.mutableStateOf(false)
+
     private val requestNotifPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> Log.d(TAG, "POST_NOTIFICATIONS granted=$granted") }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splash = installSplashScreen()
+        splash.setKeepOnScreenCondition { !uiReady.value }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -98,6 +104,10 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(Unit) {
                         startDestination = resolveStartDestination()
+                        // #7: держим сплэш 1200 мс, пока первый кадр
+                        // DirectorHomeScreen не готов.
+                        delay(1200)
+                        uiReady.value = true
                     }
 
                     // Пока Room ещё читается, показываем ROUTE_HOME — RoleRouter
@@ -131,11 +141,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-
-        // Фоновые задачи: FCM, summary. Не блокируют UI.
-        lifecycleScope.launch {
-            registerFcmTokenIfLoggedIn()
         }
     }
 
@@ -196,8 +201,20 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG, "Онбординг не завершён — ведём на ONBOARDING")
             return Routes.onboarding(localUser.role, userId)
         }
-        Log.d(TAG, "Автологин: userId=$userId, role=${localUser.role}")
-        return Routes.ROLE_HOME
+        // #7: роут по роли — сразу целевой экран, без двойного прохода
+        // через RoleHomeScreen. RoleHomeScreen остаётся для logout→login.
+        val dest = when (localUser.role) {
+            "director" -> Routes.DIRECTOR_HOME
+            "instructor" -> Routes.INSTRUCTOR_HOME
+            "secretary" -> Routes.SECRETARY_HOME
+            "parent" -> Routes.PARENT_HOME
+            "conference_admin" -> Routes.CONFERENCE_HOME
+            "conference_secretary" -> Routes.CONFERENCE_SECRETARY_HOME
+            "teen" -> Routes.TEEN_HOME
+            else -> Routes.TEEN_HOME
+        }
+        Log.d(TAG, "Автологин: userId=$userId, role=${localUser.role}, dest=$dest")
+        return dest
     }
 
     data class ChatDeepLink(

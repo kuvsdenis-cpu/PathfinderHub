@@ -35,6 +35,14 @@ object Routes {
     const val CREATE_PAYMENT = "create_payment"
     const val PARENT_PAYMENTS = "parent_payments"
     const val PARENT_MESSAGES = "parent_messages"
+    const val PARENT_MEETINGS = "parent_meetings"
+    const val CREATE_PARENT_MEETING = "create_parent_meeting"
+    const val CROSS_CLUB = "cross_club"
+    const val CROSS_CLUB_TEEN = "cross_club_teen"
+    const val CONFERENCE_EVENTS = "conference_events"
+    const val CREATE_CONFERENCE_EVENT = "create_conference_event"
+    const val CONFERENCE_ANALYTICS = "conference_analytics"
+    const val PARENT_CONSENTS = "parent_consents"
     const val CHILD_PROGRESS = "child_progress/{childId}"
     fun childProgress(childId: String) = "child_progress/$childId"
 
@@ -88,6 +96,8 @@ object Routes {
     // === Teen - Events & Tasks ===
     const val EVENTS = "events"
     const val EVENT_DETAIL = "event_detail/{eventId}"
+    const val EVENT_CONSENTS = "event_consents/{eventId}"
+    fun eventConsents(eventId: String) = "event_consents/$eventId"
     const val MY_TASKS = "my_tasks"
 
     // === Teen - Profile ===
@@ -108,10 +118,16 @@ object Routes {
     // === QR ===
     const val QR_SCANNER = "qr_scanner"
     const val MY_STATIONS = "my_stations"
-    const val CREATE_STATION = "create_station"
+    const val CREATE_STATION = "create_station?questId={questId}"
+
+    fun createStation(questId: String?) = "create_station?questId=${questId ?: ""}"
     const val QUEST_MANAGE = "quests"
     const val QUEST_EDITOR = "quest_editor/{questId}"
     fun questEditor(questId: String) = "quest_editor/$questId"
+    const val QUEST_VIEW = "quest_view/{questId}"
+    fun questView(questId: String) = "quest_view/$questId"
+    const val QUEST_DETAIL = "quest_detail/{questId}"
+    fun questDetail(questId: String) = "quest_detail/$questId"
 
     // === Activity ===
     const val ACTIVITY = "activity"
@@ -119,6 +135,18 @@ object Routes {
     // === Reports ===
     const val REPORT_HISTORY = "report_history"
     const val REPORT_DETAIL = "report_detail/{reportId}"
+
+    // === Club Info ===
+    const val CLUB_INFO = "club_info/{clubId}"
+    fun clubInfo(clubId: String) = "club_info/$clubId"
+
+    // === Archive ===
+    const val ARCHIVE = "archive"
+
+    // === Пользовательские группы (B) ===
+    const val MANAGE_CUSTOM_GROUPS = "manage_custom_groups"
+    const val CUSTOM_GROUP_EDITOR = "custom_group_editor/{groupId}"
+    fun customGroupEditor(groupId: String) = "custom_group_editor/$groupId"
 
     // === Sync ===
     const val SYNC = "sync"

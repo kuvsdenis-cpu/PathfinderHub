@@ -15,6 +15,13 @@ interface UserDao {
     fun observeClubMembers(clubId: String): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE clubId = :clubId AND role = :role")
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>>
+
+    /**
+     * Список участников клуба с одной из указанных ролей.
+     * Используется для «Сотрудников»: director + instructor + secretary.
+     */
+    @Query("SELECT * FROM users WHERE clubId = :clubId AND role IN (:roles) ORDER BY role, firstName")
+    fun observeClubMembersByRoles(clubId: String, roles: List<String>): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId")
     fun observeConferenceUsers(conferenceId: String): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId AND role = :role")

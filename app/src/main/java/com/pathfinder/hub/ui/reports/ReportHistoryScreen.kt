@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Error
@@ -84,8 +85,14 @@ fun ReportHistoryScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(state.reports) { report ->
-                ReportCard(report, dateFormat, onClick = { onReportClick(report.id) })
+            items(state.reports, key = { it.id }) { report ->
+                ReportCard(
+                    report = report,
+                    dateFormat = dateFormat,
+                    canArchive = state.canArchive,
+                    onClick = { onReportClick(report.id) },
+                    onArchive = { viewModel.archiveReport(report.id) },
+                )
             }
         }
     }
@@ -95,11 +102,14 @@ fun ReportHistoryScreen(
 private fun ReportCard(
     report: com.pathfinder.hub.data.local.entity.reports.ReportEntity,
     dateFormat: SimpleDateFormat,
-    onClick: () -> Unit
+    canArchive: Boolean,
+    onClick: () -> Unit,
+    onArchive: () -> Unit,
 ) {
     val statusText = when {
         report.errorMessage != null -> "Ошибка"
         report.signed -> "Подписан"
+        report.fileUrl != null -> "Готов"
         else -> "Черновик"
     }
     val (icon, color) = when {
@@ -126,6 +136,16 @@ private fun ReportCard(
                 Text(text = "Создан: ${dateFormat.format(report.generatedAt)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(text = statusText, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
+            if (canArchive) {
+                Spacer(Modifier.width(8.dp))
+                IconButton(onClick = onArchive) {
+                    Icon(
+                        Icons.Default.Archive, "В архив",
+                        tint = PathfinderBlue,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
         }
     }
 }

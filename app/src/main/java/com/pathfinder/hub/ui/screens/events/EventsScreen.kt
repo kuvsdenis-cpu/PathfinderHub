@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,7 +47,7 @@ fun EventsScreen(
             )
         },
         floatingActionButton = {
-            if (onCreateEvent != null) { // <-- ИЗМЕНЕНО: показываем только если передан колбэк (для директора)
+            if (onCreateEvent != null && state.activeTab == 0) {
                 FloatingActionButton(
                     onClick = onCreateEvent,
                     containerColor = PathfinderBlue,
@@ -63,29 +64,94 @@ fun EventsScreen(
             }
             return@Scaffold
         }
-        if (state.events.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Пока нет запланированных событий")
-                    Spacer(Modifier.height(8.dp))
-                    if (onCreateEvent != null) {
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            TabRow(selectedTabIndex = state.activeTab) {
+                Tab(
+                    selected = state.activeTab == 0,
+                    onClick = { viewModel.setTab(0) },
+                    text = { Text("Активные (${state.events.size})") }
+                )
+                Tab(
+                    selected = state.activeTab == 1,
+                    onClick = { viewModel.setTab(1) },
+                    text = { Text("Архив (${state.archived.size})") }
+                )
+            }
+            val current = if (state.activeTab == 0) state.events else state.archived
+            if (current.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "Нажмите + чтобы создать первое событие",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            if (state.activeTab == 0)
+                                "Пока нет запланированных событий"
+                            else
+                                "Архив пуст.\nАрхивированные события удаляются через 90 дней."
                         )
+                        if (state.activeTab == 0 && onCreateEvent != null) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Нажмите + чтобы создать первое событие",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(current, key = { it.id }) { e ->
+                        if (state.activeTab == 1) {
+                            ArchivedEventCard(e, fmt.format(e.dateStart), onRestore = {
+                                viewModel.restoreEvent(e.id)
+                            })
+                        } else {
+                            EventCard(e, fmt.format(e.dateStart)) { onOpenEvent(e.id) }
+                        }
                     }
                 }
             }
-            return@Scaffold
         }
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(padding)
-        ) {
-            items(state.events, key = { it.id }) { e ->
-                EventCard(e, fmt.format(e.dateStart)) { onOpenEvent(e.id) }
+    }
+}
+
+@Composable
+private fun ArchivedEventCard(
+    event: EventEntity,
+    dateStr: String,
+    onRestore: () -> Unit,
+) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                event.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                dateStr,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (event.archivedAt != null) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "В архиве с: ${java.text.SimpleDateFormat("d MMM yyyy", Locale("ru")).format(event.archivedAt)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onRestore,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Restore, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Восстановить")
             }
         }
     }

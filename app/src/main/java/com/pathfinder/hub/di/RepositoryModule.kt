@@ -32,8 +32,10 @@ object RepositoryModule {
     fun provideEventRepo(
         db: AppDatabase,
         d: EventDao,
+        participantDao: EventParticipantDao,
+        consentDao: EventConsentDao,
         syncQueueManager: SyncQueueManager
-    ) = EventRepository(db, d, syncQueueManager)
+    ) = EventRepository(db, d, participantDao, consentDao, syncQueueManager)
 
     @Provides @Singleton
     fun provideTaskRepo(
@@ -65,13 +67,19 @@ object RepositoryModule {
 
     @Provides @Singleton fun provideNotificationRepo(d: NotificationDao) = NotificationRepository(d)
     @Provides @Singleton fun provideSyncRepo(d: SyncDao) = SyncRepository(d)
-    @Provides @Singleton fun provideParentRepo(d: ParentDao) = ParentRepository(d)
-    @Provides @Singleton fun provideReportRepo(d: ReportDao) = ReportRepository(d)
+    @Provides @Singleton
+    fun provideEventConsentDao(db: AppDatabase): EventConsentDao = db.eventConsentDao()
+
+    @Provides @Singleton
+    fun provideParentRepo(d: ParentDao, c: EventConsentDao) = ParentRepository(d, c)
     @Provides @Singleton fun provideAuditRepo(d: AuditDao) = AuditRepository(d)
     @Provides @Singleton fun provideSettingsRepo(d: SettingsDao) = SettingsRepository(d)
     @Provides @Singleton fun provideNewspaperRepo(d: NewspaperDao) = NewspaperRepository(d)
 
     @Provides @Singleton fun provideQrStationDao(db: AppDatabase): QrStationDao = db.qrStationDao()
+
+    @Provides @Singleton
+    fun provideEventParticipantDao(db: AppDatabase): EventParticipantDao = db.eventParticipantDao()
 
     @Provides @Singleton
     fun provideQrStationRepo(
@@ -86,6 +94,20 @@ object RepositoryModule {
 
     @Provides @Singleton
     fun provideQrQuestRepo(db: AppDatabase, d: QrQuestDao) = QrQuestRepository(db, d)
+
+    @Provides @Singleton
+    fun provideCrossClubDao(db: AppDatabase): CrossClubDao = db.crossClubDao()
+
+    @Provides @Singleton
+    fun provideCrossClubRepo(db: AppDatabase, d: CrossClubDao) = CrossClubRepository(db, d)
+
+    @Provides @Singleton
+    fun provideConferenceEventDao(db: AppDatabase): ConferenceEventDao = db.conferenceEventDao()
+
+    @Provides @Singleton
+    fun provideConferenceEventRepo(
+        db: AppDatabase, d: ConferenceEventDao, syncQueue: SyncQueueManager
+    ) = ConferenceEventRepository(db, d, syncQueue)
 
     @Provides @Singleton
     fun provideRequirementContentRepo(
@@ -107,4 +129,12 @@ object RepositoryModule {
         d: InviteDao,
         remote: FirestoreInviteDataSource
     ) = InviteRepository(d, remote)
+
+
+    @Provides @Singleton
+    fun provideCustomGroupRepo(
+        db: AppDatabase,
+        d: CustomGroupDao,
+        syncQueueManager: SyncQueueManager,
+    ) = CustomGroupRepository(db, d, syncQueueManager)
 }

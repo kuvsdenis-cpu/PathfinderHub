@@ -6,8 +6,38 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ModerationDao {
     @Query("""SELECT * FROM comments WHERE targetType = :type AND targetId = :targetId
-        AND status = 'published' ORDER BY createdAt""")
+        AND status = 'published' AND archivedAt IS NULL ORDER BY createdAt""")
     fun observeApprovedComments(type: String, targetId: String): Flow<List<CommentEntity>>
+
+    // ============ A3.1: Архивация ============
+
+    @Query("""SELECT * FROM comments WHERE targetType = :type AND targetId = :targetId
+        AND status = 'published' AND archivedAt IS NOT NULL ORDER BY archivedAt DESC""")
+    fun observeArchivedComments(type: String, targetId: String): Flow<List<CommentEntity>>
+
+    @Query("""SELECT * FROM comments WHERE clubId = :clubId AND archivedAt IS NOT NULL
+        ORDER BY archivedAt DESC""")
+    fun observeArchivedCommentsByClub(clubId: String): Flow<List<CommentEntity>>
+
+    @Query("UPDATE comments SET archivedAt = :at, purgeAfter = :purgeAfter WHERE id = :id")
+    suspend fun archiveComment(id: String, at: Long, purgeAfter: Long)
+
+    @Query("UPDATE comments SET archivedAt = NULL, purgeAfter = NULL WHERE id = :id")
+    suspend fun restoreComment(id: String)
+
+    /**
+     * Авто-архивация: все опубликованные комментарии старше threshold.
+     * purgeAfter = сейчас + 90 дней.
+     */
+    @Query("""UPDATE comments
+        SET archivedAt = :now, purgeAfter = :purgeAfter
+        WHERE archivedAt IS NULL
+          AND status = 'published'
+          AND createdAt < :threshold""")
+    suspend fun autoArchiveOld(threshold: Long, now: Long, purgeAfter: Long): Int
+
+    @Query("DELETE FROM comments WHERE purgeAfter IS NOT NULL AND purgeAfter < :now")
+    suspend fun purgeExpiredComments(now: Long): Int
     @Query("SELECT * FROM comments WHERE authorId = :userId ORDER BY createdAt DESC")
     fun observeUserComments(userId: String): Flow<List<CommentEntity>>
     @Query("SELECT * FROM comments WHERE status IN ('pending_review', 'draft')")

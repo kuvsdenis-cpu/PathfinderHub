@@ -48,6 +48,8 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun ConferenceSecretaryHomeScreen(
     onNavigateToClubs: () -> Unit,
     onNavigateToMembers: () -> Unit,
+    onNavigateToEvents: () -> Unit = {},
+    onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotifications: () -> Unit,
     onLogout: () -> Unit,
     viewModel: ConferenceStaffViewModel = hiltViewModel(),
@@ -64,16 +66,12 @@ fun ConferenceSecretaryHomeScreen(
                 title = { Text("Секретарь конференции") },
                 actions = {
                     IconButton(onClick = onNavigateToNotifications) {
-                        Icon(
-                            Icons.Default.Notifications, "Уведомления",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.Default.Notifications, "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     IconButton(onClick = { viewModel.logout() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Logout, "Выйти",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.Logout, "Выйти",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -139,24 +137,11 @@ fun ConferenceSecretaryHomeScreen(
                 Tile(Icons.Default.People, "Кадры", "Директора и наставники", onNavigateToMembers, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Assignment, "Мероприятия", "Скоро", {}, Modifier.weight(1f))
-                Tile(Icons.Default.Analytics, "Отчёты", "Скоро", {}, Modifier.weight(1f))
+                Tile(Icons.Default.Assignment, "Мероприятия", "Список и создание", onNavigateToEvents, Modifier.weight(1f))
+                Tile(Icons.Default.Analytics, "Отчёты", "Аналитика", onNavigateToAnalytics, Modifier.weight(1f))
             }
 
             Spacer(Modifier.height(8.dp))
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "Мероприятия и отчёты конференции — в разработке.",
-                    Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
     }
 }

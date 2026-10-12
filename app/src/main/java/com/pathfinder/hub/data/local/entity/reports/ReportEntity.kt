@@ -8,5 +8,9 @@ data class ReportEntity(
     val clubId: String?, val periodStart: Date, val periodEnd: Date,
     val format: String = "pdf", val status: String, val fileUrl: String?,
     val generatedBy: String, val generatedAt: Date, val signed: Boolean,
-    val signedAt: Date?, val errorMessage: String?
+    val signedAt: Date?, val errorMessage: String?,
+
+    // A3.3: Архивация
+    val archivedAt: Date? = null,
+    val purgeAfter: Date? = null,
 )

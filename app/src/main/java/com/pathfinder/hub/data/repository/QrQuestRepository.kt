@@ -40,10 +40,34 @@ class QrQuestRepository @Inject constructor(
         db.withTransaction { dao.deleteQuest(id) }
     }
 
+    // ---------- Архивация ----------
+
+    fun observeArchivedQuests(clubId: String): Flow<List<QrQuestEntity>> =
+        dao.observeArchivedByClub(clubId)
+
+    /** Архивировать квест. Связи со станциями НЕ трогаем (см. правило В). */
+    suspend fun archiveQuest(id: String) {
+        val now = System.currentTimeMillis()
+        val purgeAfter = now + 90L * 24 * 3600 * 1000
+        db.withTransaction { dao.archiveQuest(id, now, purgeAfter) }
+    }
+
+    suspend fun restoreQuest(id: String) {
+        db.withTransaction { dao.restoreQuest(id) }
+    }
+
+    suspend fun purgeExpiredQuests(now: Long = System.currentTimeMillis()): Int {
+        return db.withTransaction { dao.purgeExpiredQuests(now) }
+    }
+
     // ---------- Связи ----------
 
     fun observeQuestStations(questId: String): Flow<List<QrQuestStationEntity>> =
         dao.observeQuestStations(questId)
+
+    /** Все связи квест↔станция для клуба. */
+    fun observeAllLinksForClub(clubId: String): Flow<List<QrQuestStationEntity>> =
+        dao.observeAllLinksForClub(clubId)
 
     suspend fun getQuestStations(questId: String): List<QrQuestStationEntity> =
         dao.getQuestStations(questId)
@@ -94,6 +118,13 @@ class QrQuestRepository @Inject constructor(
 
     fun observeAllProgressByUser(userId: String): Flow<List<QrQuestProgressEntity>> =
         dao.observeAllProgressByUser(userId)
+
+    /**
+     * Прогресс по всем квестам клуба за период.
+     * Используется в отчёте.
+     */
+    suspend fun getProgressInPeriod(clubId: String, from: Long, to: Long): List<QrQuestProgressEntity> =
+        dao.getProgressInPeriod(clubId, from, to)
 
     suspend fun upsertProgress(p: QrQuestProgressEntity) {
         db.withTransaction { dao.upsertProgress(p) }

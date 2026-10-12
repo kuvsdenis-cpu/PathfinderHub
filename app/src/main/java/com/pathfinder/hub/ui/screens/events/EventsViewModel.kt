@@ -16,7 +16,9 @@ import javax.inject.Inject
 
 data class EventsUiState(
     val isLoading: Boolean = true,
-    val events: List<EventEntity> = emptyList()
+    val activeTab: Int = 0,                       // 0 = активные, 1 = архив
+    val events: List<EventEntity> = emptyList(),
+    val archived: List<EventEntity> = emptyList(),
 )
 
 @HiltViewModel
@@ -29,6 +31,9 @@ class EventsViewModel @Inject constructor(
     private val _state = MutableStateFlow(EventsUiState())
     val state: StateFlow<EventsUiState> = _state.asStateFlow()
 
+    private var clubId: String = ""
+    private var currentUserId: String = ""
+
     init {
         val userId = sessionManager.getUserId()
         if (userId == null) {
@@ -36,13 +41,32 @@ class EventsViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 val user = userRepository.getUser(userId)
-                val clubId = user?.clubId ?: ""
+                clubId = user?.clubId ?: ""
+                currentUserId = userId
                 val now = System.currentTimeMillis()
-                val end = now + 90L * 24 * 3600 * 1000
-                eventRepository.observeEventsInRange(clubId, now, end).collect { list ->
-                    _state.update { it.copy(isLoading = false, events = list) }
+                val end = now + 365L * 24 * 3600 * 1000
+
+                launch {
+                    eventRepository.observeEventsForUser(clubId, currentUserId, 0L, end).collect { list ->
+                        _state.update { it.copy(isLoading = false, events = list) }
+                    }
+                }
+                launch {
+                    eventRepository.observeArchivedByClub(clubId).collect { list ->
+                        _state.update { it.copy(archived = list) }
+                    }
                 }
             }
         }
+    }
+
+    fun setTab(idx: Int) = _state.update { it.copy(activeTab = idx) }
+
+    fun archiveEvent(id: String) {
+        viewModelScope.launch { eventRepository.archiveEvent(id) }
+    }
+
+    fun restoreEvent(id: String) {
+        viewModelScope.launch { eventRepository.restoreEvent(id) }
     }
 }

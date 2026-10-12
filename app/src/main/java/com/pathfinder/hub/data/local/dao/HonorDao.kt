@@ -134,6 +134,26 @@ interface HonorDao {
     @Query("SELECT COUNT(*) FROM honor_progress WHERE userId = :userId AND status = 'approved'")
     suspend fun countApprovedRequirementsByUser(userId: String): Int
 
+    /** Баг #6: одобрено за период по клубу. */
+    @Query("""
+        SELECT COUNT(*) FROM honor_progress hp
+        JOIN users u ON hp.userId = u.id
+        WHERE u.clubId = :clubId
+          AND hp.status = 'approved'
+          AND hp.approvedAt BETWEEN :from AND :to
+    """)
+    suspend fun countApprovedInPeriod(clubId: String, from: Long, to: Long): Int
+
+    /** Баг #6: submitted за период по клубу. */
+    @Query("""
+        SELECT COUNT(*) FROM honor_progress hp
+        JOIN users u ON hp.userId = u.id
+        WHERE u.clubId = :clubId
+          AND hp.status = 'submitted'
+          AND hp.submittedAt BETWEEN :from AND :to
+    """)
+    suspend fun countPendingInPeriod(clubId: String, from: Long, to: Long): Int
+
     @Query("SELECT COUNT(*) FROM test_attempts WHERE userId = :userId AND passed = 1")
     suspend fun countPassedTestsByUser(userId: String): Int
 
@@ -143,14 +163,14 @@ interface HonorDao {
     @Query("SELECT COUNT(*) FROM book_reports WHERE userId = :userId")
     suspend fun countBookReportsByUser(userId: String): Int
 
-    // вњ… Р”РћР‘РђР’Р›Р•РќРћ: Р”Р»СЏ СЌРєСЂР°РЅР° РѕРґРѕР±СЂРµРЅРёСЏ РґРёСЂРµРєС‚РѕСЂР°
+    // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id
               WHERE u.clubId = :clubId AND hp.status = 'submitted'
               ORDER BY hp.submittedAt DESC""")
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>>
 
-    // вњ… Р”РћР‘РђР’Р›Р•РќРћ: Р”Р»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃР±СЂРѕСЃР° РІРµСЂСЃРёРё РєРѕРЅС‚РµРЅС‚Р°
+    // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
     @Query("DELETE FROM content_versions")
     suspend fun clearContentVersion()
 }

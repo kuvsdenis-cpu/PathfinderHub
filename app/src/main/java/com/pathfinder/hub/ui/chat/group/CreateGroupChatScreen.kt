@@ -64,6 +64,38 @@ fun CreateGroupChatScreen(
                 enabled = !state.isCreating,
             )
             Spacer(Modifier.height(16.dp))
+
+            // B5.1: Мои группы (если есть)
+            if (state.customGroups.isNotEmpty()) {
+                Text(
+                    "Мои группы",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(8.dp))
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 200.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(state.customGroups, key = { it.id }) { g ->
+                        OutlinedButton(
+                            onClick = { viewModel.fillFromGroup(g.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("\uD83D\uDCC1 ${g.name}")
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = viewModel::clearMembers) { Text("Снять всех") }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+
             Text("Участники (${state.selectedIds.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold)

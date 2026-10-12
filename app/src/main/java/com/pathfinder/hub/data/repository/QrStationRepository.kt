@@ -40,6 +40,14 @@ class QrStationRepository @Inject constructor(
     fun observeAllStations(clubId: String): Flow<List<QrStationEntity>> =
         dao.observeAllByClub(clubId)
 
+    /** Станции, не входящие ни в один квест. */
+    fun observeStandaloneStations(clubId: String): Flow<List<QrStationEntity>> =
+        dao.observeStandaloneByClub(clubId)
+
+    /** Станции, входящие хотя бы в один квест. */
+    fun observeStationsInQuests(clubId: String): Flow<List<QrStationEntity>> =
+        dao.observeInQuestsByClub(clubId)
+
     suspend fun getStation(id: String): QrStationEntity? = dao.getById(id)
 
     fun observeVisits(stationId: String, userId: String): Flow<List<StationVisitEntity>> =
@@ -63,6 +71,10 @@ class QrStationRepository @Inject constructor(
         return dao.countVisitsSince(userId, stationId, cal.timeInMillis)
     }
 
+    /** Баг #5: визиты станций события за период. */
+    suspend fun countVisitsByEvent(eventId: String, from: Long, to: Long): Int =
+        dao.countVisitsByEvent(eventId, from, to)
+
     // ---------- Запись ----------
 
     suspend fun upsertStation(s: QrStationEntity) {
@@ -73,6 +85,41 @@ class QrStationRepository @Inject constructor(
                 syncQueue.enqueue("qr_station", s.id, "CREATE", s)
             }
         }
+    }
+
+    // ---------- Архивация ----------
+
+    fun observeArchivedStations(clubId: String): Flow<List<QrStationEntity>> =
+        dao.observeArchivedByClub(clubId)
+
+    /**
+     * Архивировать станцию.
+     * Правило В: станцию в квестах НЕЛЬЗЯ архивировать —
+     * сначала уберите её из квестов.
+     */
+    suspend fun archiveStation(id: String): Result<Unit> {
+        val count = dao.countQuestsForStation(id)
+        if (count > 0) {
+            return Result.failure(
+                IllegalStateException("Станция в $count квестах. Сначала уберите из квестов.")
+            )
+        }
+        return try {
+            val now = System.currentTimeMillis()
+            val purgeAfter = now + 90L * 24 * 3600 * 1000
+            db.withTransaction { dao.archiveStation(id, now, purgeAfter) }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun restoreStation(id: String) {
+        db.withTransaction { dao.restoreStation(id) }
+    }
+
+    suspend fun purgeExpiredStations(now: Long = System.currentTimeMillis()): Int {
+        return db.withTransaction { dao.purgeExpiredStations(now) }
     }
 
     suspend fun deleteStation(id: String) {
