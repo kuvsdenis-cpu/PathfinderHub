@@ -34,4 +34,11 @@ data class CommentEntity(
     // A3.1: Архивация (14 дней в активном, +90 в архиве, потом удаление)
     val archivedAt: Date? = null,
     val purgeAfter: Date? = null,
+
+    // Tombstone (v39): удаление с 90-дневной задержкой перед физическим удалением.
+    // Директор нажимает «Удалить» → ставится deletedAt, комментарий скрывается из UI.
+    // Через 90 дней PurgeWorker физически удаляет.
+    val deletedAt: Date? = null,
+    val deletedBy: String? = null,
+    val purgeAt: Date? = null,
 )

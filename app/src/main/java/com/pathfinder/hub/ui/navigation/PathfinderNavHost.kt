@@ -49,6 +49,12 @@ import com.pathfinder.hub.ui.screens.home.director.ClubSettingsScreen
 import com.pathfinder.hub.ui.screens.home.director.DirectorHomeScreen
 import com.pathfinder.hub.ui.screens.home.director.DirectorInvitesScreen
 import com.pathfinder.hub.ui.screens.home.director.staff.StaffScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorPeopleScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorLearningScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorPlanningScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorCommunicationsScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorFinanceScreen
+import com.pathfinder.hub.ui.screens.home.director.sections.DirectorManagementScreen
 import com.pathfinder.hub.ui.screens.home.director.staff.ManagePermissionsScreen
 import com.pathfinder.hub.ui.screens.home.teen.TeenHomeScreen
 import com.pathfinder.hub.ui.screens.home.instructor.InstructorHomeScreen
@@ -72,6 +78,7 @@ import com.pathfinder.hub.ui.screens.groups.ManageCustomGroupsScreen
 import com.pathfinder.hub.ui.screens.groups.CreateCustomGroupScreen
 import com.pathfinder.hub.ui.screens.club_info.ClubInfoScreen
 import com.pathfinder.hub.ui.screens.clubs.CreateClubScreen
+import com.pathfinder.hub.ui.screens.home.director.deleted.DeletedClubsScreen
 import com.pathfinder.hub.ui.screens.payments.DirectorPaymentsScreen
 import com.pathfinder.hub.ui.screens.payments.CreatePaymentScreen
 import com.pathfinder.hub.ui.screens.certificates.MyCertificatesScreen
@@ -85,6 +92,7 @@ import com.pathfinder.hub.ui.screens.levels.MyLevelsScreen
 import com.pathfinder.hub.ui.screens.levels.RequirementDetailScreen
 import com.pathfinder.hub.ui.learning.content.ContentManagerScreen
 import com.pathfinder.hub.ui.learning.content.ContentLevelScreen
+import com.pathfinder.hub.ui.learning.content.ContentHonorScreen
 import com.pathfinder.hub.ui.learning.content.ContentSectionScreen
 import com.pathfinder.hub.ui.learning.editor.RequirementEditorScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
@@ -93,8 +101,24 @@ import com.pathfinder.hub.ui.screens.settings.SettingsScreen
 import com.pathfinder.hub.ui.screens.sync.SyncScreen
 import com.pathfinder.hub.ui.screens.tasks.CreateTaskScreen
 import com.pathfinder.hub.ui.screens.tasks.MyTasksScreen
+import com.pathfinder.hub.ui.screens.tests.openanswers.OpenAnswersScreen
+import com.pathfinder.hub.ui.screens.tests.openanswers.OpenAnswerReviewScreen
 import com.pathfinder.hub.ui.storage.FileUploadResult
+import com.pathfinder.hub.ui.bible.BibleBooksScreen
+import com.pathfinder.hub.ui.bible.BibleBookScreen
+import com.pathfinder.hub.ui.bible.BibleChapterScreen
+import com.pathfinder.hub.ui.bible.BibleBookmarksScreen
+import com.pathfinder.hub.ui.bible.BibleSearchScreen
+import com.pathfinder.hub.ui.pearls.PearlsScreen
+import com.pathfinder.hub.ui.pearls.PearlDetailScreen
+import com.pathfinder.hub.ui.pearls.PearlAdminScreen
+import com.pathfinder.hub.ui.readingplan.ReadingPlansScreen
+import com.pathfinder.hub.ui.readingplan.ReadingPlanDetailScreen
+import com.pathfinder.hub.ui.readingplan.ReadingPlanDayScreen
+import com.pathfinder.hub.ui.readingplan.ReadingPlanAdminScreen
 import com.pathfinder.hub.ui.storage.FileUploadScreen
+import com.pathfinder.hub.ui.learning.content.TestEditorScreen
+import com.pathfinder.hub.ui.learning.content.TestQuestionEditorScreen
 
 @Composable
 fun PathfinderNavHost(
@@ -175,6 +199,8 @@ fun PathfinderNavHost(
                 onNavigateToQrStations = { navController.navigate(Routes.MY_STATIONS) },
                 onNavigateToHomework = { navController.navigate(Routes.CREATE_HOMEWORK) },
                 onNavigateToReviewHomework = { navController.navigate(Routes.REVIEW_HOMEWORK) },
+                onNavigateToOpenAnswers = { navController.navigate(Routes.OPEN_ANSWERS) },
+                onNavigateToContentManager = { navController.navigate(Routes.CONTENT_MANAGER) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
@@ -291,36 +317,144 @@ fun PathfinderNavHost(
         // ===== Director =====
         composable(Routes.DIRECTOR_HOME) {
             DirectorHomeScreen(
-                onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
-                onNavigateToMembers = { navController.navigate(Routes.CLUB_MEMBERS) },
-                onNavigateToApprovals = { navController.navigate(Routes.APPROVALS) },
-                onNavigateToReports = { navController.navigate(Routes.DIRECTOR_REPORTS) },
-                onNavigateToEvents = { navController.navigate(Routes.CLUB_EVENTS) },
-                onNavigateToSettings = { navController.navigate(Routes.CLUB_SETTINGS) },
-                onNavigateToTasks = { navController.navigate(Routes.CREATE_TASK) },
-                onNavigateToClubChat = { navController.navigate(Routes.CLUB_CHAT) },
-                onNavigateToModeration = { navController.navigate(Routes.MODERATION) },
-                onNavigateToContentManager = { navController.navigate(Routes.CONTENT_MANAGER) },
-                onNavigateToChats = { navController.navigate(Routes.CHATS_LIST) },
-                onNavigateToQrStations = { navController.navigate(Routes.MY_STATIONS) },
-                onNavigateToQrQuests = { navController.navigate(Routes.QUEST_MANAGE) },
-                onNavigateToHomework = { navController.navigate(Routes.CREATE_HOMEWORK) },
-                onNavigateToReviewHomework = { navController.navigate(Routes.REVIEW_HOMEWORK) },
-                onNavigateToPayments = { navController.navigate(Routes.DIRECTOR_PAYMENTS) },
-                onNavigateToParentMeetings = { navController.navigate(Routes.CREATE_PARENT_MEETING) },
-                onNavigateToCrossClub = { navController.navigate(Routes.CROSS_CLUB) },
-                onNavigateToStaff = { navController.navigate(Routes.STAFF) },
+                onNavigateToPeople = { navController.navigate(Routes.DIRECTOR_PEOPLE) },
+                onNavigateToLearning = { navController.navigate(Routes.DIRECTOR_LEARNING) },
+                onNavigateToPlanning = { navController.navigate(Routes.DIRECTOR_PLANNING) },
+                onNavigateToCommunications = { navController.navigate(Routes.DIRECTOR_COMMUNICATIONS) },
+                onNavigateToFinance = { navController.navigate(Routes.DIRECTOR_FINANCE) },
+                onNavigateToManagement = { navController.navigate(Routes.DIRECTOR_MANAGEMENT) },
                 onNavigateToCreateClub = { navController.navigate(Routes.CREATE_CLUB) },
-                onNavigateToCustomGroups = { navController.navigate(Routes.MANAGE_CUSTOM_GROUPS) },
+                onNavigateToDeletedClubs = { navController.navigate(Routes.DELETED_CLUBS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToBible = { navController.navigate(Routes.BIBLE) },
+                onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
+                onNavigateToPearlsAdmin = { navController.navigate(Routes.PEARLS_ADMIN) },
+                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
+                onNavigateToReadingPlanAdmin = { navController.navigate(Routes.READING_PLANS_ADMIN) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
+        }
+        composable(Routes.DIRECTOR_PEOPLE) {
+            DirectorPeopleScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPermissions = { userId ->
+                    navController.navigate(Routes.managePermissions(userId))
+                },
+                onOpenDM = { dmId, otherUid ->
+                    navController.navigate(Routes.dmChat(dmId, otherUid))
+                },
+                onOpenMember = { userId ->
+                    navController.navigate(Routes.childProgress(userId))
+                },
+                onOpenGroup = { groupId ->
+                    navController.navigate(Routes.customGroupEditor(groupId))
+                },
+                onCreateGroup = {
+                    navController.navigate(Routes.customGroupEditor("new"))
+                },
+            )
+        }
+        composable(Routes.DIRECTOR_LEARNING) {
+            DirectorLearningScreen(
+                onBack = { navController.popBackStack() },
+                onOpenAttempt = { attemptId ->
+                    navController.navigate(Routes.openAnswerReview(attemptId))
+                },
+                onOpenLevel = { levelId ->
+                    navController.navigate(Routes.contentLevel(levelId))
+                },
+                onOpenHonor = { honorId ->
+                    navController.navigate(Routes.contentHonor(honorId))
+                },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.testEditor(testId))
+                },
+                onCreateHomework = {
+                    navController.navigate(Routes.CREATE_HOMEWORK)
+                },
+                onCreateTask = {
+                    navController.navigate(Routes.CREATE_TASK)
+                },
+                onCreateTest = {
+                    navController.navigate(Routes.testEditor("new"))
+                },
+            )
+        }
+        composable(Routes.DIRECTOR_PLANNING) {
+            DirectorPlanningScreen(
+                onBack = { navController.popBackStack() },
+                onOpenEvent = { eventId ->
+                    navController.navigate(Routes.eventDetail(eventId))
+                },
+                onCreateEvent = {
+                    navController.navigate(Routes.CREATE_EVENT)
+                },
+                onCreateParentMeeting = {
+                    navController.popBackStack()
+                },
+                onCreateStation = {
+                    navController.navigate(Routes.createStation(null))
+                },
+                onOpenQuestReadonly = { questId ->
+                    navController.navigate(Routes.questView(questId))
+                },
+                onOpenQuest = { questId ->
+                    navController.navigate(Routes.questEditor(questId))
+                },
+                onCreateQuest = {
+                    navController.navigate(Routes.questEditor("new"))
+                },
+            )
+        }
+        composable(Routes.DIRECTOR_COMMUNICATIONS) { backStackEntry ->
+            DirectorCommunicationsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDM = { dmId, otherUid ->
+                    navController.navigate(Routes.dmChat(dmId, otherUid))
+                },
+                onOpenGroup = { groupId ->
+                    navController.navigate(Routes.customGroupChat(groupId))
+                },
+                onCreateGroup = {
+                    navController.navigate(Routes.CREATE_GROUP_CHAT)
+                },
+                onAttachFile = { clubId ->
+                    navController.navigate(Routes.fileUpload("CHAT", clubId))
+                },
+                savedStateHandle = backStackEntry.savedStateHandle,
+            )
+        }
+        composable(Routes.DIRECTOR_FINANCE) {
+            DirectorFinanceScreen(
+                onBack = { navController.popBackStack() },
+                onCreatePayment = {
+                    navController.navigate(Routes.CREATE_PAYMENT)
+                },
+            )
+        }
+        composable(Routes.DIRECTOR_MANAGEMENT) {
+            DirectorManagementScreen(
+                onBack = { navController.popBackStack() },
+                onOpenClubInfo = { clubId ->
+                    navController.navigate(Routes.clubInfo(clubId))
+                },
+                onCreateReport = {
+                    navController.navigate(Routes.CREATE_REPORT)
+                },
+                onOpenReport = { reportId ->
+                    navController.navigate(Routes.reportDetail(reportId))
+                },
+            )
+        }
+        composable(Routes.DELETED_CLUBS) {
+            DeletedClubsScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.DIRECTOR_INVITES) { DirectorInvitesScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.CLUB_MEMBERS) {
             ClubMembersScreen(
                 onBack = { navController.popBackStack() },
                 onOpenDM = { dmId, otherUid -> navController.navigate(Routes.dmChat(dmId, otherUid)) },
+                onOpenMember = { userId -> navController.navigate(Routes.childProgress(userId)) },
             )
         }
         composable(Routes.APPROVALS) { ApprovalsScreen(onBack = { navController.popBackStack() }) }
@@ -438,9 +572,127 @@ fun PathfinderNavHost(
             CrossClubTeenScreen(onBack = { navController.popBackStack() })
         }
 
+        // ===== Reading Plan (B4.1) =====
+        composable(Routes.READING_PLANS) {
+            ReadingPlansScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPlan = { id -> navController.navigate(Routes.readingPlanDetail(id)) },
+            )
+        }
+        composable(
+            route = Routes.READING_PLAN_DETAIL,
+            arguments = listOf(navArgument("scheduleId") { type = NavType.StringType })
+        ) {
+            ReadingPlanDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDay = { id -> navController.navigate(Routes.readingPlanDay(id)) },
+            )
+        }
+        composable(
+            route = Routes.READING_PLAN_DAY,
+            arguments = listOf(navArgument("dayId") { type = NavType.StringType })
+        ) {
+            ReadingPlanDayScreen(
+                onBack = { navController.popBackStack() },
+                onOpenInBible = { bookId, chapter ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter))
+                },
+            )
+        }
+        composable(Routes.READING_PLANS_ADMIN) {
+            ReadingPlanAdminScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ===== Pearls Admin (B3.2) =====
+        composable(Routes.PEARLS_ADMIN) {
+            PearlAdminScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ===== Pearls (B3.1) =====
+        composable(Routes.PEARLS) {
+            PearlsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPearl = { pearlId ->
+                    navController.navigate(Routes.pearlDetail(pearlId))
+                },
+            )
+        }
+        composable(
+            route = Routes.PEARL_DETAIL,
+            arguments = listOf(navArgument("pearlId") { type = NavType.StringType })
+        ) {
+            PearlDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenInBible = { bookId, chapter, verseId ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter, verseId))
+                },
+            )
+        }
+
+        // ===== Bible (B2) =====
+        composable(Routes.BIBLE) {
+            BibleBooksScreen(
+                onBack = { navController.popBackStack() },
+                onOpenBookmarks = { navController.navigate(Routes.BIBLE_BOOKMARKS) },
+                onOpenBook = { bookId -> navController.navigate(Routes.bibleBook(bookId)) },
+                onOpenSearch = { navController.navigate(Routes.BIBLE_SEARCH) },
+            )
+        }
+        composable(Routes.BIBLE_BOOKMARKS) {
+            BibleBookmarksScreen(
+                onBack = { navController.popBackStack() },
+                onOpenVerse = { bookId, chapter, verseId ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter, verseId))
+                },
+                onOpenBible = { navController.navigate(Routes.BIBLE) },
+            )
+        }
+        composable(
+            route = Routes.BIBLE_BOOK,
+            arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+        ) {
+            BibleBookScreen(
+                onBack = { navController.popBackStack() },
+                onOpenChapter = { bookId, chapter ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter))
+                },
+            )
+        }
+        composable(Routes.BIBLE_SEARCH) {
+            BibleSearchScreen(
+                onBack = { navController.popBackStack() },
+                onOpenVerse = { bookId, chapter, verseId ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter, verseId))
+                },
+            )
+        }
+        composable(
+            route = Routes.BIBLE_CHAPTER,
+            arguments = listOf(
+                navArgument("bookId") { type = NavType.StringType },
+                navArgument("chapter") { type = NavType.IntType },
+                navArgument("verseId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            )
+        ) {
+            BibleChapterScreen(
+                onBack = { navController.popBackStack() },
+                onOpenBookmarks = { navController.navigate(Routes.BIBLE_BOOKMARKS) },
+                onOpenChapter = { bookId, chapter ->
+                    navController.navigate(Routes.bibleChapter(bookId, chapter))
+                },
+            )
+        }
+
         // ===== Teen Home =====
         composable(Routes.TEEN_HOME) {
             TeenHomeScreen(
+                onNavigateToClubInfo = { clubId ->
+                    navController.navigate(Routes.clubInfo(clubId))
+                },
                 onNavigateToLevels = { navController.navigate(Routes.MY_LEVELS) },
                 onNavigateToHonors = { navController.navigate(Routes.HONOR_CATALOG) },
                 onNavigateToMyHonors = { navController.navigate(Routes.MY_HONORS) },
@@ -457,7 +709,10 @@ fun PathfinderNavHost(
                 onNavigateToQrScanner = { navController.navigate(Routes.QR_SCANNER) },
                 onNavigateToActivity = { navController.navigate(Routes.ACTIVITY) },
                 onNavigateToCrossClub = { navController.navigate(Routes.CROSS_CLUB_TEEN) },
-                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
+                onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToBible = { navController.navigate(Routes.BIBLE) },
+                onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
+                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) }
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
@@ -476,6 +731,9 @@ fun PathfinderNavHost(
             QuestDetailScreen(
                 onBack = { navController.popBackStack() },
                 onScan = { navController.navigate(Routes.QR_SCANNER) },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.test(testId))
+                },
             )
         }
         composable(Routes.ACTIVITY) { ActivityScreen(onBack = { navController.popBackStack() }) }
@@ -498,6 +756,9 @@ fun PathfinderNavHost(
                 },
                 onUploadReport = { lvlId, requirementId ->
                     navController.navigate(Routes.fileUpload("LEVEL_REQUIREMENT", requirementId))
+                },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.test(testId))
                 },
                 savedStateHandle = backStackEntry.savedStateHandle
             )
@@ -537,7 +798,55 @@ fun PathfinderNavHost(
         composable(Routes.CONTENT_MANAGER) {
             ContentManagerScreen(
                 onBack = { navController.popBackStack() },
-                onOpenLevel = { levelId -> navController.navigate(Routes.contentLevel(levelId)) }
+                onOpenLevel = { levelId -> navController.navigate(Routes.contentLevel(levelId)) },
+                onOpenHonor = { honorId -> navController.navigate(Routes.contentHonor(honorId)) },
+                onOpenTest = { testId -> navController.navigate(Routes.testEditor(testId)) }
+            )
+        }
+        composable(
+            route = Routes.CONTENT_HONOR,
+            arguments = listOf(navArgument("honorId") { type = NavType.StringType })
+        ) {
+            ContentHonorScreen(
+                onBack = { navController.popBackStack() },
+                onOpenRequirement = { honorId, requirementId ->
+                    navController.navigate(Routes.requirementEditor(honorId, requirementId))
+                },
+            )
+        }
+        composable(
+            route = Routes.TEST_EDITOR,
+            arguments = listOf(navArgument("testId") { type = NavType.StringType })
+        ) {
+            TestEditorScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
+                onOpenQuestions = { id ->
+                    navController.navigate(Routes.testQuestionEditor(id))
+                },
+            )
+        }
+        composable(
+            route = Routes.TEST_QUESTION_EDITOR,
+            arguments = listOf(navArgument("testId") { type = NavType.StringType })
+        ) {
+            TestQuestionEditorScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.TEST_EDITOR_FOR_SCOPE,
+            arguments = listOf(
+                navArgument("scope") { type = NavType.StringType },
+                navArgument("scopeId") { type = NavType.StringType },
+            )
+        ) {
+            TestEditorScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
+                onOpenQuestions = { id ->
+                    navController.navigate(Routes.testQuestionEditor(id))
+                },
             )
         }
         composable(
@@ -615,6 +924,9 @@ fun PathfinderNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenRequirement = { _, requirementId ->
                     navController.navigate(Routes.honorRequirementDetail(honorId, requirementId))
+                },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.test(testId))
                 }
             )
         }
@@ -629,7 +941,6 @@ fun PathfinderNavHost(
             val requirementId = backStackEntry.arguments?.getString("requirementId") ?: ""
             HonorRequirementDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenTest = { navController.navigate(Routes.testScreen(honorId)) },
                 onOpenReport = { navController.navigate(Routes.fileUpload("HONOR_REQUIREMENT", requirementId)) },
                 navBackStackEntry = backStackEntry
             )
@@ -641,10 +952,24 @@ fun PathfinderNavHost(
             )
         }
         composable(
-            route = Routes.TEST_SCREEN,
-            arguments = listOf(navArgument("honorId") { type = NavType.StringType })
+            route = Routes.TEST,
+            arguments = listOf(navArgument("testId") { type = NavType.StringType })
         ) {
             TestScreen(onBack = { navController.popBackStack() }, onFinished = { navController.popBackStack() })
+        }
+        composable(Routes.OPEN_ANSWERS) {
+            OpenAnswersScreen(
+                onBack = { navController.popBackStack() },
+                onOpenAttempt = { attemptId ->
+                    navController.navigate(Routes.openAnswerReview(attemptId))
+                },
+            )
+        }
+        composable(
+            route = Routes.OPEN_ANSWER_REVIEW,
+            arguments = listOf(navArgument("attemptId") { type = NavType.StringType })
+        ) {
+            OpenAnswerReviewScreen(onBack = { navController.popBackStack() })
         }
 
         // ===== File Upload =====
@@ -681,6 +1006,9 @@ fun PathfinderNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenConsents = { eventId ->
                     navController.navigate(Routes.eventConsents(eventId))
+                },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.test(testId))
                 }
             )
         }
@@ -694,7 +1022,11 @@ fun PathfinderNavHost(
         composable(Routes.MY_TASKS) {
             MyTasksScreen(
                 onBack = { navController.popBackStack() },
-                onCreateTask = { navController.navigate(Routes.CREATE_TASK) }
+                onCreateTask = { navController.navigate(Routes.CREATE_TASK) },
+                onOpenTest = { testId -> navController.navigate(Routes.test(testId)) },
+                onCreateTest = { taskId ->
+                    navController.navigate(Routes.testEditorForScope("task", taskId))
+                }
             )
         }
 

@@ -118,10 +118,45 @@ service cloud.firestore {
         (uid() == userId
           && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly([
+                'id', 'email',
                 'firstName', 'lastName', 'avatar', 'birthDate',
                 'parentEmail', 'onboardingCompleted',
-                'lastLoginAt', 'syncedAt'
-              ]))
+                'lastLoginAt', 'syncedAt',
+                'clubId', 'clubIds',
+                'emailVerified', 'accessLevel', 'status',
+                'deletionRequestedBy', 'deletionRequestedAt',
+                'anonymizedAt', 'permanentDeletionAt',
+                'parentalConsentStatus', 'parentalConsentRequestedAt',
+                'parentalConsentApprovedAt',
+                'createdAt',
+                // Поля, которые SyncWorker отправляет целиком через set().
+                // Разрешено ИХ ПРИСУТСТВИЕ в diff, но запрещено МЕНЯТЬ значения.
+                'role', 'isOwnerClub', 'directorPermissions', 'conferenceId'
+              ])
+          // Защита: значения этих полей должны совпадать с серверными.
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.isOwnerClub == resource.data.isOwnerClub
+          && request.resource.data.directorPermissions == resource.data.directorPermissions
+          && request.resource.data.conferenceId == resource.data.conferenceId)
+        // Owner снимает с себя владение (передача клуба): только isOwnerClub/clubIds/clubId.
+        || (uid() == userId
+            && resource.data.isOwnerClub == true
+            && request.resource.data.isOwnerClub == false
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.directorPermissions == resource.data.directorPermissions
+            && request.resource.data.conferenceId == resource.data.conferenceId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['isOwnerClub', 'clubIds', 'clubId',
+                          'syncedAt', 'lastLoginAt']))
+        // Owner назначает нового владельца (передача клуба).
+        || (isOwner()
+            && isOwnClub(resource.data.clubId)
+            && resource.data.isOwnerClub == false
+            && request.resource.data.isOwnerClub == true
+            && request.resource.data.role == 'director'
+            && resource.data.clubId == request.resource.data.clubId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['role', 'isOwnerClub', 'clubIds', 'clubId', 'syncedAt']))
         || isConferenceAdmin()
         // Director со staff-правом: может менять role участника
         // (кроме director) + безопасные поля. НЕ может менять клуб,
@@ -275,6 +310,19 @@ service cloud.firestore {
         );
         allow delete: if isConferenceAdmin();
       }
+
+      // ---------- BIBLE MODULE (B5) ----------
+      // Приватные данные пользователя. Только владелец.
+      // Даже наставник НЕ видит закладки/жемчужины/прогресс чтения.
+      match /bibleBookmarks/{verseId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
+      match /pearlProgress/{pearlId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
+      match /readingPlanProgress/{dayId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
       match /leaderChecklists/{checklistId} {
         allow read: if isSignedIn() && (
           uid() == userId
@@ -313,8 +361,25 @@ service cloud.firestore {
     // ============================================================
     match /clubs/{clubId} {
       allow read: if isSignedIn();
-      allow create: if isConferenceAdmin();
-      allow update: if isConferenceAdmin() || (hasPerm("settings.edit") && isOwnClub(clubId));
+
+      // Клуб может создать:
+      //   - conference_admin (глобально);
+      //   - director (создатель клуба) — с проверкой, что updatedBy == uid().
+      // Проверка updatedBy защищает от создания «от имени» другого.
+      allow create: if isSignedIn()
+        && request.resource.data.id == clubId
+        && request.resource.data.updatedBy == uid()
+        && (isDirector() || isConferenceAdmin());
+
+      allow update: if isConferenceAdmin()
+        || (hasPerm("settings.edit") && isOwnClub(clubId))
+        // Owner может soft-delete / restore клуб: только служебные поля.
+        || (isSignedIn()
+            && isOwner()
+            && isOwnClub(clubId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['deletedAt', 'deletedBy', 'purgeAt',
+                          'updatedAt', 'updatedBy', 'syncedAt']));
       allow delete: if isConferenceAdmin();
 
       match /events/{eventId} {
@@ -349,6 +414,26 @@ service cloud.firestore {
         allow create, update, delete: if isSignedIn() && (
           isConferenceAdmin() || (hasPerm("tasks.create") && isOwnClub(clubId))
         );
+      }
+
+      // ---------- TESTS (клубные тесты) ----------
+      // Глобальные тесты — из tests.json, в Firestore не пишутся.
+      // Здесь — только клубные (clubId != null), созданные редактором.
+      // По брифу: тесты создают director + co-director + instructor.
+      // secretary — НЕ создаёт.
+      match /tests/{testId} {
+        allow read: if isSignedIn() && isOwnClub(clubId);
+        allow create, update, delete: if isSignedIn() && isOwnClub(clubId) && (
+          hasPerm("content.edit") || isInstructor()
+        );
+
+        // ---------- Вопросы теста ----------
+        match /questions/{questionId} {
+          allow read: if isSignedIn() && isOwnClub(clubId);
+          allow create, update, delete: if isSignedIn() && isOwnClub(clubId) && (
+            hasPerm("content.edit") || isInstructor()
+          );
+        }
       }
 
       // ---------- COMMENTS (чат клуба) ----------

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.planning.TaskEntity
 import com.pathfinder.hub.data.repository.TaskRepository
+import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.PermissionChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,12 +26,15 @@ data class MyTasksUiState(
     val activeTab: Int = 0,
     val tasks: List<TaskWithAssignment> = emptyList(),
     val archived: List<TaskWithAssignment> = emptyList(),
+    /** Может ли текущий пользователь создавать тесты к задачам. */
+    val canCreateTest: Boolean = false,
 )
 
 @HiltViewModel
 class MyTasksViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val sessionManager: SessionManager,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MyTasksUiState())
@@ -43,6 +48,14 @@ class MyTasksViewModel @Inject constructor(
         if (uid == null) {
             _state.update { it.copy(isLoading = false) }
         } else {
+            viewModelScope.launch {
+                val user = userRepository.getUser(uid)
+                val canCreate = user != null && (
+                    user.role == "instructor"
+                    || PermissionChecker.hasPerm(user, "content.edit")
+                )
+                _state.update { it.copy(canCreateTest = canCreate) }
+            }
             viewModelScope.launch {
                 launch {
                     taskRepository.observeMyTasks(uid).collect { list ->

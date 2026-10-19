@@ -51,6 +51,14 @@ class AchievementRepository @Inject constructor(
     fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>> =
         dao.observePendingHomeworkByClub(clubId)
 
+    /** Все активные домашки клуба — для редактора тестов. */
+    fun observeActiveHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>> =
+        dao.observeActiveHomeworkByClub(clubId)
+
+    /** Все архивные домашки клуба — для экрана «Архив». */
+    fun observeArchivedHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>> =
+        dao.observeArchivedHomeworkByClub(clubId)
+
     suspend fun approveHomework(h: HomeworkEntity) {
         dao.upsertHomework(
             h.copy(

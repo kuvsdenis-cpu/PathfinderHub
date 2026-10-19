@@ -36,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -120,7 +120,7 @@ fun ConferenceInvitesScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(8.dp))
-                        val fmt = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+                        val fmt = SimpleDateFormat("d MMMM yyyy", Locale.forLanguageTag("ru"))
                         Text("Действует до: " + fmt.format(invite.expiresAt))
 
                         Spacer(Modifier.height(12.dp))

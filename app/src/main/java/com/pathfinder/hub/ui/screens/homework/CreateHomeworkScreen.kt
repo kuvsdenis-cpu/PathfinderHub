@@ -35,8 +35,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.DateField
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,8 +46,10 @@ fun CreateHomeworkScreen(
     onBack: () -> Unit,
     onCreated: () -> Unit,
     viewModel: CreateHomeworkViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
 
     LaunchedEffect(state.isCreated) {
         if (state.isCreated) onCreated()
@@ -73,9 +76,13 @@ fun CreateHomeworkScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
             if (state.teenCount > 0) {
                 Text(
                     "Будет назначено ${state.teenCount} следопытам",
@@ -194,6 +201,7 @@ fun CreateHomeworkScreen(
                 } else {
                     Text("Назначить всем следопытам")
                 }
+            }
             }
         }
     }

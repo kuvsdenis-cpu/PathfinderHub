@@ -9,9 +9,14 @@ import com.pathfinder.hub.data.repository.ChatRepository
 import com.pathfinder.hub.data.repository.ParentRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -27,13 +32,12 @@ data class ClubMembersUiState(
     val pendingOtherUid: String? = null,
     val errorMessage: String? = null,
     val infoMessage: String? = null,
-
-    // ---------- Диалог привязки parent<->child ----------
     val linkDialogMember: UserEntity? = null,
     val linkDialogCandidates: List<UserEntity> = emptyList(),
     val linkDialogSelected: String? = null,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ClubMembersViewModel @Inject constructor(
     private val sessionManager: SessionManager,
@@ -46,10 +50,10 @@ class ClubMembersViewModel @Inject constructor(
     val state: StateFlow<ClubMembersUiState> = _state.asStateFlow()
 
     init {
-        loadMembers()
+        observeMembers()
     }
 
-    private fun loadMembers() {
+    private fun observeMembers() {
         val userId = sessionManager.getUserId()
         if (userId == null) {
             _state.update { it.copy(isLoading = false, errorMessage = "Пользователь не авторизован") }
@@ -57,38 +61,30 @@ class ClubMembersViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            try {
-                val me = userRepository.getUser(userId)
-                if (me == null) {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Пользователь не найден") }
-                    return@launch
-                }
-                val clubId = me.clubId
-                if (clubId.isNullOrBlank()) {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
-                    return@launch
-                }
-
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        currentUserId = userId,
-                        currentUserRole = me.role,
-                        clubId = clubId,
-                    )
-                }
-
-                // «Участники» — только следопыты (teen).
-                // Сотрудники (director co-, instructor, secretary) живут
-                // в отдельном экране StaffScreen.
-                userRepository.observeClubMembersByRole(clubId, "teen").collect { members ->
-                    _state.update { it.copy(members = members) }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки")
+            // Подписка на текущего user (role / clubId)
+            launch {
+                userRepository.observeUser(userId).collect { me ->
+                    if (me == null) return@collect
+                    _state.update {
+                        it.copy(
+                            currentUserId = userId,
+                            currentUserRole = me.role,
+                        )
+                    }
                 }
             }
+
+            // Подписка на members: clubId → перезагрузка
+            userRepository.observeUser(userId)
+                .map { it?.clubId }
+                .distinctUntilChanged()
+                .flatMapLatest { clubId ->
+                    if (clubId.isNullOrBlank()) flowOf(emptyList())
+                    else userRepository.observeClubMembersByRole(clubId, "teen")
+                }
+                .collect { members ->
+                    _state.update { it.copy(members = members, isLoading = false) }
+                }
         }
     }
 
@@ -149,14 +145,6 @@ class ClubMembersViewModel @Inject constructor(
         _state.update { it.copy(pendingDmId = null, pendingOtherUid = null) }
     }
 
-    // ============================================================
-    // Привязка parent<->child
-    // ============================================================
-
-    /**
-     * Открыть диалог привязки. Для parent — показываем teen'ов,
-     * для teen — показываем parent'ов.
-     */
     fun openLinkDialog(member: UserEntity) {
         val targetRole = when (member.role) {
             "parent" -> "teen"

@@ -4,36 +4,37 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.core.UserEntity
-import com.pathfinder.hub.data.local.entity.planning.TaskEntity
 import com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity
+import com.pathfinder.hub.data.local.entity.planning.TaskEntity
 import com.pathfinder.hub.data.repository.CustomGroupRepository
 import com.pathfinder.hub.data.repository.TaskRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 
-/**
- * Опция быстрой группы в dropdown.
- */
 data class QuickGroup(
-    val code: String,          // "all_teens" | "all_parents" | ...
-    val label: String,         // "Все следопыты"
-    val roles: List<String>,   // ["teen"] — какие роли входят (для подсчёта)
+    val code: String,
+    val label: String,
+    val roles: List<String>,
 )
 
 data class CreateTaskUiState(
     val title: String = "",
     val description: String = "",
-    val assignedTo: String = "",              // userId или "" для группы
-    val targetGroup: String? = null,          // null | "all_teens" | "role:teen,instructor"
-    val selectedGroupLabel: String? = null,   // для отображения в dropdown
+    val assignedTo: String = "",
+    val targetGroup: String? = null,
+    val selectedGroupLabel: String? = null,
     val dueDate: Date? = null,
     val priority: String = "normal",
     val isLoading: Boolean = false,
@@ -47,6 +48,7 @@ data class CreateTaskUiState(
     val customGroups: List<CustomGroupEntity> = emptyList(),
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
     private val sessionManager: SessionManager,
@@ -58,7 +60,6 @@ class CreateTaskViewModel @Inject constructor(
     private val _state = MutableStateFlow(CreateTaskUiState())
     val state: StateFlow<CreateTaskUiState> = _state.asStateFlow()
 
-    // Быстрые группы
     val quickGroups: List<QuickGroup> = listOf(
         QuickGroup("all_teens",   "Все следопыты",  listOf("teen")),
         QuickGroup("all_parents", "Все родители",   listOf("parent")),
@@ -69,43 +70,36 @@ class CreateTaskViewModel @Inject constructor(
     init {
         val userId = sessionManager.getUserId()
         _state.update { it.copy(currentUserId = userId) }
-        loadClubMembers()
-        loadCustomGroups()
-    }
-
-    private fun loadClubMembers() {
-        val userId = _state.value.currentUserId ?: return
-        viewModelScope.launch {
-            try {
-                val currentUser = userRepository.getUser(userId)
-                val clubId = currentUser?.clubId
-                if (!clubId.isNullOrBlank()) {
-                    userRepository.observeClubMembers(clubId).collect { members ->
-                        _state.update {
-                            it.copy(clubMembers = members, clubMembersLoaded = true)
-                        }
-                    }
-                } else {
-                    _state.update { it.copy(clubMembersLoaded = true) }
-                }
-            } catch (e: Exception) {
-                _state.update { it.copy(errorMessage = e.message) }
-            }
+        if (userId != null) {
+            observeClub(userId)
         }
     }
 
-    private fun loadCustomGroups() {
-        val userId = _state.value.currentUserId ?: return
+    private fun observeClub(userId: String) {
         viewModelScope.launch {
-            try {
-                val currentUser = userRepository.getUser(userId)
-                val clubId = currentUser?.clubId
-                if (!clubId.isNullOrBlank()) {
-                    customGroupRepository.observeActiveByClub(clubId).collect { groups ->
-                        _state.update { it.copy(customGroups = groups) }
+            userRepository.observeUser(userId)
+                .map { it?.clubId }
+                .distinctUntilChanged()
+                .collectLatest { clubId ->
+                    if (clubId.isNullOrBlank()) {
+                        _state.update {
+                            it.copy(clubMembers = emptyList(), customGroups = emptyList(), clubMembersLoaded = true)
+                        }
+                        return@collectLatest
+                    }
+                    launch {
+                        userRepository.observeClubMembers(clubId).collect { members ->
+                            _state.update {
+                                it.copy(clubMembers = members, clubMembersLoaded = true)
+                            }
+                        }
+                    }
+                    launch {
+                        customGroupRepository.observeActiveByClub(clubId).collect { groups ->
+                            _state.update { it.copy(customGroups = groups) }
+                        }
                     }
                 }
-            } catch (_: Exception) { /* no-op */ }
         }
     }
 
@@ -114,34 +108,18 @@ class CreateTaskViewModel @Inject constructor(
     fun onDueDateChange(v: Date) = _state.update { it.copy(dueDate = v) }
     fun onPriorityChange(v: String) = _state.update { it.copy(priority = v) }
 
-    /** Выбор конкретного пользователя. */
     fun onAssignedToChange(userId: String) = _state.update {
-        it.copy(
-            assignedTo = userId,
-            targetGroup = null,
-            selectedGroupLabel = null,
-        )
+        it.copy(assignedTo = userId, targetGroup = null, selectedGroupLabel = null)
     }
 
-    /** Выбор быстрой группы. */
     fun onSelectQuickGroup(group: QuickGroup) = _state.update {
-        it.copy(
-            assignedTo = "",
-            targetGroup = group.code,
-            selectedGroupLabel = group.label,
-        )
+        it.copy(assignedTo = "", targetGroup = group.code, selectedGroupLabel = group.label)
     }
 
-    /** Выбор пользовательской группы (B3). */
     fun onSelectCustomGroup(group: CustomGroupEntity) = _state.update {
-        it.copy(
-            assignedTo = "",
-            targetGroup = "custom:${group.id}",
-            selectedGroupLabel = group.name,
-        )
+        it.copy(assignedTo = "", targetGroup = "custom:${group.id}", selectedGroupLabel = group.name)
     }
 
-    /** Открыть диалог кастомной группы. */
     fun showCustomGroupDialog() = _state.update {
         it.copy(showCustomGroupDialog = true, customSelectedRoles = emptySet())
     }
@@ -158,7 +136,6 @@ class CreateTaskViewModel @Inject constructor(
         it.copy(customSelectedRoles = next)
     }
 
-    /** Подтвердить кастомную группу. */
     fun confirmCustomGroup() {
         val roles = _state.value.customSelectedRoles
         if (roles.isEmpty()) {
@@ -178,7 +155,6 @@ class CreateTaskViewModel @Inject constructor(
         }
     }
 
-    /** Определить список userId для группы. */
     private suspend fun membersInGroup(targetGroup: String): List<String> {
         if (targetGroup.startsWith("custom:")) {
             val groupId = targetGroup.removePrefix("custom:")
@@ -188,14 +164,10 @@ class CreateTaskViewModel @Inject constructor(
         }
         val members = _state.value.clubMembers
         return when {
-            targetGroup == "all_teens" ->
-                members.filter { it.role == "teen" }.map { it.id }
-            targetGroup == "all_parents" ->
-                members.filter { it.role == "parent" }.map { it.id }
-            targetGroup == "all_staff" ->
-                members.filter { it.role in listOf("director", "instructor", "secretary") }.map { it.id }
-            targetGroup == "all_members" ->
-                members.map { it.id }
+            targetGroup == "all_teens" -> members.filter { it.role == "teen" }.map { it.id }
+            targetGroup == "all_parents" -> members.filter { it.role == "parent" }.map { it.id }
+            targetGroup == "all_staff" -> members.filter { it.role in listOf("director", "instructor", "secretary") }.map { it.id }
+            targetGroup == "all_members" -> members.map { it.id }
             targetGroup.startsWith("role:") -> {
                 val roles = targetGroup.removePrefix("role:").split(",").map { it.trim() }
                 members.filter { it.role in roles }.map { it.id }
@@ -256,13 +228,9 @@ class CreateTaskViewModel @Inject constructor(
                     )
                     val result = taskRepository.createTaskForGroup(task, memberIds)
                     result.fold(
-                        onSuccess = {
-                            _state.update { it.copy(isLoading = false, isCreated = true) }
-                        },
+                        onSuccess = { _state.update { it.copy(isLoading = false, isCreated = true) } },
                         onFailure = { e ->
-                            _state.update {
-                                it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка")
-                            }
+                            _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка") }
                         },
                     )
                 } else {
@@ -288,9 +256,7 @@ class CreateTaskViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false, isCreated = true) }
                 }
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания")
-                }
+                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка создания") }
             }
         }
     }

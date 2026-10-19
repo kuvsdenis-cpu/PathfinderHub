@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -101,7 +101,7 @@ fun ChallengeDetailScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("Тип: ${challenge.type}", style = MaterialTheme.typography.bodyMedium)
                     Text("Цель: ${challenge.goal} ${challenge.unit}", style = MaterialTheme.typography.bodyMedium)
-                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("ru"))
                     Text("Период: ${dateFormat.format(challenge.dateStart)} - ${dateFormat.format(challenge.dateEnd)}", style = MaterialTheme.typography.bodyMedium)
                 }
             }

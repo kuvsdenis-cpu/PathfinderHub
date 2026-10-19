@@ -3,6 +3,8 @@ package com.pathfinder.hub.ui.screens.home.director
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,8 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -44,8 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.domain.permissions.PermissionRegistry
+import com.pathfinder.hub.ui.components.CollapsibleSection
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -55,11 +56,10 @@ import java.util.Locale
 @Composable
 fun DirectorInvitesScreen(
     onBack: () -> Unit,
-    viewModel: DirectorInvitesViewModel = hiltViewModel()
+    viewModel: DirectorInvitesViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-
+    val clubState by clubContextViewModel.state.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,10 +77,32 @@ fun DirectorInvitesScreen(
             )
         }
     ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            DirectorInvitesContent(
+                modifier = Modifier.weight(1f),
+                viewModel = viewModel,
+                clubContextViewModel = clubContextViewModel,
+            )
+        }
+    }
+}
+
+@Composable
+fun DirectorInvitesContent(
+    modifier: Modifier = Modifier,
+    viewModel: DirectorInvitesViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
@@ -91,12 +113,14 @@ fun DirectorInvitesScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 listOf(
                     "teen" to "Следопыт",
                     "parent" to "Родитель",
-                    "instructor" to "Наставник",
-                    "director" to "Со-директор",
                 ).forEach { (value, label) ->
                     FilterChip(
                         selected = state.selectedRole == value,
@@ -106,66 +130,50 @@ fun DirectorInvitesScreen(
                 }
             }
 
-            // ---------- Выбор клуба (только для director и если >1) ----------
-            if (state.selectedRole == "director" && state.clubs.size > 1) {
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "Клуб",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    state.clubs.forEach { club ->
-                        FilterChip(
-                            selected = state.selectedClubId == club.id,
-                            onClick = { viewModel.onClubSelected(club.id) },
-                            label = { Text(club.name) }
-                        )
-                    }
+            if (state.selectedRole in listOf("director", "instructor", "secretary")) {
+                val permsTitle = when (state.selectedRole) {
+                    "director" -> "Права со-директора"
+                    "instructor" -> "Права наставника"
+                    "secretary" -> "Права секретаря"
+                    else -> "Права"
                 }
-            }
-
-            // ---------- Чекбоксы прав (только для director) ----------
-            if (state.selectedRole == "director") {
+                val permsHint = when (state.selectedRole) {
+                    "director" -> "Не отмечено — со-директор без доступа к этим функциям"
+                    "instructor" -> "Не отмечено — наставник без доступа к этим функциям"
+                    "secretary" -> "Не отмечено — секретарь без доступа к этим функциям"
+                    else -> "Не отмечено — сотрудник без доступа к этим функциям"
+                }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "Права со-директора",
+                    permsTitle,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Не отмечено — со-директор без доступа к этим функциям",
+                    permsHint,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
 
                 PermissionRegistry.GROUPS.forEach { group ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                    val selectedCount = group.permissions.count { it.key in state.selectedPermissions }
+                    CollapsibleSection(
+                        title = group.title,
+                        badge = if (selectedCount > 0) "$selectedCount из ${group.permissions.size}" else null,
+                        initiallyExpanded = false,
                     ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(
-                                group.title,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            group.permissions.forEach { perm ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Checkbox(
-                                        checked = perm.key in state.selectedPermissions,
-                                        onCheckedChange = { viewModel.onPermissionToggle(perm.key) }
-                                    )
-                                    Text(perm.label, style = MaterialTheme.typography.bodyMedium)
-                                }
+                        group.permissions.forEach { perm ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Checkbox(
+                                    checked = perm.key in state.selectedPermissions,
+                                    onCheckedChange = { viewModel.onPermissionToggle(perm.key) }
+                                )
+                                Text(perm.label, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
@@ -199,25 +207,15 @@ fun DirectorInvitesScreen(
                     )
                 ) {
                     Column(Modifier.padding(16.dp)) {
-                        Text(
-                            "Новый код создан",
-                            style = MaterialTheme.typography.labelLarge
-                        )
+                        Text("Новый код создан", style = MaterialTheme.typography.labelLarge)
                         Spacer(Modifier.height(8.dp))
-                        Text(
-                            invite.code,
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(invite.code, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(8.dp))
-                        val fmt = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+                        val fmt = SimpleDateFormat("d MMMM yyyy", Locale.forLanguageTag("ru"))
                         Text("Действует до: ${fmt.format(invite.expiresAt)}")
-                        if (invite.role == "director") {
+                        if (invite.role in listOf("director", "instructor", "secretary")) {
                             Spacer(Modifier.height(4.dp))
-                            Text(
-                                "Права: ${invite.permissions.size}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            Text("Права: ${invite.permissions.size}", style = MaterialTheme.typography.bodySmall)
                         }
 
                         Spacer(Modifier.height(12.dp))
@@ -259,15 +257,8 @@ fun DirectorInvitesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(Modifier.weight(1f)) {
-                            Text(
-                                invite.code,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Роль: ${roleLabel(invite.role)}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Text(invite.code, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                            Text("Роль: ${roleLabel(invite.role)}", style = MaterialTheme.typography.bodyLarge)
                         }
                         AssistChip(
                             onClick = {},

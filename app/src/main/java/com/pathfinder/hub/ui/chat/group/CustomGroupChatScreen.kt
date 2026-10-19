@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
@@ -117,7 +117,7 @@ fun CustomGroupChatScreen(
 
 @Composable
 private fun GroupMessageBubble(msg: GroupMessageUi) {
-    val fmt = SimpleDateFormat("HH:mm, d MMM", Locale("ru"))
+    val fmt = SimpleDateFormat("HH:mm, d MMM", Locale.forLanguageTag("ru"))
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (msg.isOwn) Arrangement.End else Arrangement.Start,

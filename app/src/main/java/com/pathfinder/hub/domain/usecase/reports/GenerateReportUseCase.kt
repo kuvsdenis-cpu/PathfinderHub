@@ -51,7 +51,7 @@ class GenerateReportUseCase @Inject constructor(
             color = Color.DKGRAY
         }
 
-        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("ru"))
         var yPosition = 60f
 
         // Заголовок

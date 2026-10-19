@@ -12,7 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
@@ -23,26 +24,13 @@ import java.util.Locale
 @Composable
 fun ModerationScreen(
     onBack: () -> Unit,
-    viewModel: ModerationScreenViewModel = hiltViewModel()
+    viewModel: ModerationScreenViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale("ru"))
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("Модерация", fontWeight = FontWeight.Bold)
-                        if (state.pendingComments.isNotEmpty()) {
-                            Text(
-                                text = "Требуют проверки: ${state.pendingComments.size}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                            )
-                        }
-                    }
-                },
+                title = { Text("Модерация") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
@@ -56,14 +44,33 @@ fun ModerationScreen(
             )
         }
     ) { padding ->
+        ModerationContent(
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+            clubContextViewModel = clubContextViewModel,
+        )
+    }
+}
+
+@Composable
+fun ModerationContent(
+    modifier: Modifier = Modifier,
+    viewModel: ModerationScreenViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
+    val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale.forLanguageTag("ru"))
+
+    Column(modifier.fillMaxSize()) {
         when {
             state.isLoading -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
             state.errorMessage != null && state.pendingComments.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     Text(
                         text = state.errorMessage!!,
                         color = MaterialTheme.colorScheme.error,
@@ -72,7 +79,7 @@ fun ModerationScreen(
                 }
             }
             state.pendingComments.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             Icons.Default.CheckCircle,
@@ -97,9 +104,7 @@ fun ModerationScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -112,7 +117,8 @@ fun ModerationScreen(
                             onApprove = { viewModel.approveComment(item.comment.id) },
                             onHide = { viewModel.hideComment(item.comment.id) },
                             onReject = { viewModel.showRejectDialog(item.comment.id) },
-                            onArchive = { viewModel.archiveComment(item.comment.id) }
+                            onArchive = { viewModel.archiveComment(item.comment.id) },
+                            onDelete = { viewModel.showDeleteDialog(item.comment.id) }
                         )
                     }
                 }
@@ -120,7 +126,32 @@ fun ModerationScreen(
         }
     }
 
-    // Диалог отклонения с причиной
+    if (state.showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideDeleteDialog() },
+            title = { Text("Удалить комментарий?") },
+            text = {
+                Text(
+                    "Комментарий будет скрыт из чата и физически удалён через 90 дней. " +
+                    "До этого момента его можно восстановить."
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmDelete() },
+                    colors = ButtonDefaults.buttonColors(containerColor = PathfinderRed)
+                ) {
+                    Text("Удалить")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.hideDeleteDialog() }) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+
     if (state.showRejectDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.hideRejectDialog() },
@@ -153,13 +184,6 @@ fun ModerationScreen(
             }
         )
     }
-
-    // Сообщение об ошибке (SnackBar)
-    state.errorMessage?.let { error ->
-        LaunchedEffect(error) {
-            kotlinx.coroutines.delay(3000)
-        }
-    }
 }
 
 @Composable
@@ -172,6 +196,7 @@ private fun ModerationCard(
     onHide: () -> Unit,
     onReject: () -> Unit,
     onArchive: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val statusColor = when (item.comment.status) {
         "pending_review" -> MaterialTheme.colorScheme.tertiary
@@ -186,7 +211,6 @@ private fun ModerationCard(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Заголовок
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Report,
@@ -211,7 +235,6 @@ private fun ModerationCard(
 
             Spacer(Modifier.height(8.dp))
 
-            // Автор
             Text(
                 text = item.authorName,
                 style = MaterialTheme.typography.titleSmall,
@@ -220,7 +243,6 @@ private fun ModerationCard(
 
             Spacer(Modifier.height(8.dp))
 
-            // Текст комментария
             Surface(
                 shape = MaterialTheme.shapes.small,
                 color = MaterialTheme.colorScheme.surface
@@ -234,12 +256,10 @@ private fun ModerationCard(
 
             Spacer(Modifier.height(12.dp))
 
-            // Кнопки действий
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Одобрить
                 Button(
                     onClick = onApprove,
                     enabled = !isProcessing,
@@ -251,7 +271,6 @@ private fun ModerationCard(
                     Text("Одобрить")
                 }
 
-                // Скрыть
                 OutlinedButton(
                     onClick = onHide,
                     enabled = !isProcessing,
@@ -262,7 +281,6 @@ private fun ModerationCard(
                     Text("Скрыть")
                 }
 
-                // Отклонить
                 OutlinedButton(
                     onClick = onReject,
                     enabled = !isProcessing,
@@ -273,6 +291,19 @@ private fun ModerationCard(
                     Spacer(Modifier.width(4.dp))
                     Text("Отклонить")
                 }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onDelete,
+                enabled = !isProcessing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PathfinderRed)
+            ) {
+                Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Удалить (90 дней)")
             }
 
             if (canArchive) {

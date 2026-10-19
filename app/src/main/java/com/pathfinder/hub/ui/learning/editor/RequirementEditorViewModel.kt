@@ -17,6 +17,7 @@ import com.pathfinder.hub.data.local.entity.learning.RequirementMaterialEntity
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
 import com.pathfinder.hub.data.repository.RequirementContentRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.PermissionChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,7 +76,12 @@ class RequirementEditorViewModel @Inject constructor(
             }
             clubId = cid
             val role = user.role
-            val canEdit = role == "director" || role == "conference_admin"
+            // #14: как в ContentManagerViewModel и TestEditorViewModel —
+            // director (owner / co-director с content.edit) или instructor.
+            val canEdit = PermissionChecker.hasPerm(user, "content.edit")
+                    || role == "instructor"
+                    || user.isOwnerClub
+            // Флаг «надо поправить» — только для тех, кто не может редактировать.
             val canFlag = !canEdit && role in listOf("instructor", "secretary")
 
             _state.update { it.copy(userRole = role, canEdit = canEdit, canFlag = canFlag) }

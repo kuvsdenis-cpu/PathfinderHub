@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.reports.ReportEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.io.File
@@ -87,7 +87,7 @@ fun ReportDetailScreen(
                     }
                     Spacer(Modifier.height(16.dp))
 
-                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("ru"))
                     InfoRow("Период", "${dateFormat.format(report.periodStart)} – ${dateFormat.format(report.periodEnd)}")
                     InfoRow("Статус", getStatusText(report.status, report.signed))
                     InfoRow("Дата создания", dateFormat.format(report.generatedAt))

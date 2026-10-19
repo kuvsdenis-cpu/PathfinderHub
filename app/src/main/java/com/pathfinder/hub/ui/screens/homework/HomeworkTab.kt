@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
@@ -194,7 +194,7 @@ private fun ArchivedHomeworkCard(
     h: HomeworkEntity,
     onRestore: () -> Unit,
 ) {
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Text(
@@ -237,7 +237,7 @@ private fun HomeworkCard(
     onDone: () -> Unit,
     onRedo: () -> Unit,
 ) {
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

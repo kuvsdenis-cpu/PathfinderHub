@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalance
@@ -44,7 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @Suppress("DEPRECATION")
@@ -74,16 +73,12 @@ fun ParentHomeScreen(
                 title = { Text("Родительская панель") },
                 actions = {
                     IconButton(onClick = onNavigateToNotifications) {
-                        Icon(
-                            Icons.Default.Notifications, "Уведомления",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.Default.Notifications, "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     IconButton(onClick = { viewModel.logout() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Logout, "Выйти",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.Logout, "Выйти",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -100,113 +95,120 @@ fun ParentHomeScreen(
             }
             return@Scaffold
         }
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "Здравствуйте, ${state.user?.firstName ?: "Родитель"}!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            // ---------- Дети ----------
-            Text(
-                "Мои дети",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            if (state.children.isEmpty()) {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(
-                            "Пока нет привязанных детей",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Попросите директора клуба отправить вам запрос на привязку",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
-                state.children.forEach { cs ->
-                    ChildCard(
-                        cs = cs,
-                        onClick = { onOpenChild(cs.link.childId) }
-                    )
-                }
+            item {
+                Text(
+                    "Здравствуйте, ${state.user?.firstName ?: "Родитель"}!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-            // Клуб
-            if (!state.user?.clubId.isNullOrBlank()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Public, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(Modifier.size(12.dp))
-                        Column(Modifier.weight(1f)) {
+            item {
+                Text(
+                    "Мои дети",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            if (state.children.isEmpty()) {
+                item {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("Пока нет привязанных детей", style = MaterialTheme.typography.bodyLarge)
+                            Spacer(Modifier.height(4.dp))
                             Text(
-                                "О клубе",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Информация, расписание, контакты",
+                                "Попросите директора клуба отправить вам запрос на привязку",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
+            } else {
+                state.children.forEach { cs ->
+                    item {
+                        ChildCard(cs = cs, onClick = { onOpenChild(cs.link.childId) })
+                    }
+                }
             }
 
-            // ---------- Разделы ----------
-            Text(
-                "Разделы",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.CalendarMonth, "Расписание", "События клуба", onNavigateToEvents, Modifier.weight(1f))
-                Tile(Icons.Default.AccountBalance, "Оплата", "Взносы", onNavigateToPayments, Modifier.weight(1f))
+            if (!state.user?.clubId.isNullOrBlank()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Public, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "О клубе",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Информация, расписание, контакты",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Email, "Сообщения", "От клуба", onNavigateToMessages, Modifier.weight(1f))
-                Tile(Icons.Default.Event, "Встречи", "С родителями", onNavigateToMeetings, Modifier.weight(1f))
+
+            item {
+                Text(
+                    "Разделы",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.CheckCircle, "Согласия", "На мероприятия", onNavigateToConsents, Modifier.weight(1f))
-                Spacer(Modifier.weight(1f))
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.CalendarMonth, "Расписание", "События клуба", onNavigateToEvents, Modifier.weight(1f))
+                    Tile(Icons.Default.AccountBalance, "Оплата", "Взносы", onNavigateToPayments, Modifier.weight(1f))
+                }
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.Email, "Сообщения", "От клуба", onNavigateToMessages, Modifier.weight(1f))
+                    Tile(Icons.Default.Event, "Встречи", "С родителями", onNavigateToMeetings, Modifier.weight(1f))
+                }
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.CheckCircle, "Согласия", "На мероприятия", onNavigateToConsents, Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
+                }
             }
 
             state.errorMessage?.let { msg ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        msg,
-                        Modifier.padding(12.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(msg, Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
                 }
             }
         }
@@ -216,23 +218,12 @@ fun ParentHomeScreen(
 @Composable
 private fun ChildCard(cs: ChildSummary, onClick: () -> Unit) {
     val name = cs.child?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Ребёнок"
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
+    Card(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Default.Person, null,
-                tint = PathfinderBlue,
-                modifier = Modifier.size(32.dp)
-            )
+            Icon(Icons.Default.Person, null, tint = PathfinderBlue, modifier = Modifier.size(32.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(
-                    name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(2.dp))
                 Text(
                     "Ступеней: ${cs.completedLevels} · Достижений: ${cs.earnedAchievements}",

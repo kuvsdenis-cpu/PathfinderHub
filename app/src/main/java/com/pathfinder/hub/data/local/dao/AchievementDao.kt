@@ -56,6 +56,14 @@ interface AchievementDao {
 
     @Query("SELECT * FROM homework WHERE clubId = :clubId AND status = 'done' ORDER BY createdAt DESC")
     fun observePendingHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>>
+
+    /** Все активные (неархивные) домашки клуба — для dropdown scopeId в редакторе тестов. */
+    @Query("SELECT * FROM homework WHERE clubId = :clubId AND archivedAt IS NULL ORDER BY createdAt DESC")
+    fun observeActiveHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>>
+
+    /** Все архивные домашки клуба — для экрана «Архив» (директор). */
+    @Query("SELECT * FROM homework WHERE clubId = :clubId AND archivedAt IS NOT NULL ORDER BY archivedAt DESC")
+    fun observeArchivedHomeworkByClub(clubId: String): Flow<List<HomeworkEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertHomework(h: HomeworkEntity)
     @Query("SELECT * FROM activity_levels WHERE userId = :userId")

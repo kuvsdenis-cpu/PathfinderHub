@@ -19,6 +19,12 @@ class UserRepository @Inject constructor(
 
     companion object {
         private const val TAG = "UserRepository"
+
+        /**
+         * Единая нормализация email.
+         * Email — регистронезависимый. Всегда храним и сравниваем в lowercase.
+         */
+        fun normalizeEmail(email: String): String = email.trim().lowercase()
     }
 
     // ---------- Чтение ----------
@@ -45,7 +51,8 @@ class UserRepository @Inject constructor(
      */
     suspend fun getUserLocalOnly(id: String): UserEntity? = dao.getUser(id)
 
-    suspend fun getUserByEmail(email: String): UserEntity? = dao.getUserByEmail(email)
+    suspend fun getUserByEmail(email: String): UserEntity? =
+        dao.getUserByEmail(normalizeEmail(email))
 
     /** Пакетный резолв имён: один запрос вместо N. */
     suspend fun getUsersByIds(ids: List<String>): List<UserEntity> =
@@ -72,32 +79,35 @@ class UserRepository @Inject constructor(
 
     // ---------- Запись ----------
     suspend fun upsert(u: UserEntity) {
+        val normalized = u.copy(email = normalizeEmail(u.email))
         db.withTransaction {
-            dao.upsert(u)
-            syncUserClubs(u)
+            dao.upsert(normalized)
+            syncUserClubs(normalized)
         }
-        firestore.saveUser(u)
-        syncQueueManager.enqueue("user", u.id, "CREATE", u)
+        firestore.saveUser(normalized)
+        syncQueueManager.enqueue("user", normalized.id, "CREATE", normalized)
     }
 
     suspend fun upsertAll(us: List<UserEntity>) {
+        val normalized = us.map { it.copy(email = normalizeEmail(it.email)) }
         db.withTransaction {
-            dao.upsertAll(us)
-            us.forEach { syncUserClubs(it) }
+            dao.upsertAll(normalized)
+            normalized.forEach { syncUserClubs(it) }
         }
-        us.forEach {
+        normalized.forEach {
             firestore.saveUser(it)
             syncQueueManager.enqueue("user", it.id, "CREATE", it)
         }
     }
 
     suspend fun update(u: UserEntity) {
+        val normalized = u.copy(email = normalizeEmail(u.email))
         db.withTransaction {
-            dao.update(u)
-            syncUserClubs(u)
+            dao.update(normalized)
+            syncUserClubs(normalized)
         }
-        firestore.updateUser(u)
-        syncQueueManager.enqueue("user", u.id, "UPDATE", u)
+        firestore.updateUser(normalized)
+        syncQueueManager.enqueue("user", normalized.id, "UPDATE", normalized)
     }
 
     suspend fun delete(u: UserEntity) {
@@ -169,7 +179,11 @@ class UserRepository @Inject constructor(
      */
     suspend fun addClubToUser(userId: String, clubId: String) {
         val current = dao.getUser(userId) ?: return
-        val newList = (current.clubIds + clubId).distinct()
+        val newList = buildSet {
+            current.clubId?.takeIf { it.isNotBlank() }?.let { add(it) }
+            addAll(current.clubIds.filter { it.isNotBlank() })
+            add(clubId)
+        }.toList()
         val updated = current.copy(
             clubIds = newList,
             clubId = current.clubId ?: clubId,
@@ -205,6 +219,106 @@ class UserRepository @Inject constructor(
         firestore.updateUser(updated)
         syncQueueManager.enqueue("user", userId, "UPDATE", updated)
         Log.d(TAG, "removeClubFromUser: $userId -= $clubId (total=${newList.size})")
+    }
+
+    // ---------- Передача клуба ----------
+
+    /**
+     * Передача владения клубом от старого owner'а новому.
+     * Порядок: сначала новый получает owner, потом старый теряет.
+     * Старый ПОЛНОСТЬЮ выпадает из клуба (clubIds -= clubId).
+     */
+    suspend fun transferClubOwnership(
+        oldOwnerId: String,
+        newOwnerId: String,
+        clubId: String,
+    ): Result<Unit> {
+        return try {
+        if (oldOwnerId == newOwnerId) {
+            return Result.failure(IllegalArgumentException("Нельзя передать клуб самому себе"))
+        }
+        val oldOwner = dao.getUser(oldOwnerId)
+            ?: return Result.failure(IllegalStateException("Старый владелец не найден"))
+        val newOwner = dao.getUser(newOwnerId)
+            ?: return Result.failure(IllegalStateException("Новый владелец не найден"))
+
+        if (!oldOwner.isOwnerClub) {
+            return Result.failure(IllegalStateException("Вы не являетесь владельцем клуба"))
+        }
+        if (clubId !in oldOwner.clubIds) {
+            return Result.failure(IllegalStateException("Клуб не принадлежит вам"))
+        }
+        if (clubId !in newOwner.clubIds) {
+            return Result.failure(IllegalStateException("Получатель не является сотрудником этого клуба"))
+        }
+
+        // Шаг 1: новый становится owner'ом
+        val newList = (newOwner.clubIds + clubId).distinct()
+        val newUpdated = newOwner.copy(
+            role = "director",
+            isOwnerClub = true,
+            clubIds = newList,
+            clubId = clubId,
+        )
+        update(newUpdated)
+
+        // Шаг 2: старый теряет owner и выпадает из клуба
+        val oldList = oldOwner.clubIds.filter { it != clubId }
+        val oldActive = if (oldOwner.clubId == clubId) oldList.firstOrNull() else oldOwner.clubId
+        val oldUpdated = oldOwner.copy(
+            isOwnerClub = false,
+            clubIds = oldList,
+            clubId = oldActive,
+        )
+        update(oldUpdated)
+
+        Log.d(TAG, "transferClubOwnership: $clubId: $oldOwnerId -> $newOwnerId (old clubs left=${oldList.size})")
+        Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "transferClubOwnership FAILED", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Передача клуба по email существующего пользователя.
+     * Если user уже в клубе — transfer сразу.
+     * Если не в клубе — добавляем в clubIds, потом transfer.
+     */
+    suspend fun transferClubOwnershipByEmail(
+        oldOwnerId: String,
+        email: String,
+        clubId: String,
+    ): Result<Unit> {
+        return try {
+            val normalized = normalizeEmail(email)
+            if (normalized.isBlank() || !normalized.contains("@")) {
+                return Result.failure(IllegalArgumentException("Некорректный email"))
+            }
+            val target = dao.getUserByEmail(normalized)
+                ?: return Result.failure(IllegalStateException("Пользователь с таким email не найден. Используйте приглашение."))
+            if (target.id == oldOwnerId) {
+                return Result.failure(IllegalArgumentException("Нельзя передать клуб самому себе"))
+            }
+
+            // Если не в клубе — сначала добавляем как сотрудника
+            if (clubId !in target.clubIds) {
+                val nowList = buildSet {
+                    target.clubId?.takeIf { it.isNotBlank() }?.let { add(it) }
+                    addAll(target.clubIds.filter { it.isNotBlank() })
+                    add(clubId)
+                }.toList()
+                val prepared = target.copy(clubIds = nowList)
+                dao.update(prepared)
+                firestore.updateUser(prepared)
+                syncQueueManager.enqueue("user", prepared.id, "UPDATE", prepared)
+            }
+
+            transferClubOwnership(oldOwnerId, target.id, clubId)
+        } catch (e: Exception) {
+            Log.e(TAG, "transferClubOwnershipByEmail FAILED", e)
+            Result.failure(e)
+        }
     }
 
     // ---------- user_clubs: синхронизация ----------

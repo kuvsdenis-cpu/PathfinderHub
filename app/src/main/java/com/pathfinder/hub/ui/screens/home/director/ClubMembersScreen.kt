@@ -1,5 +1,6 @@
 package com.pathfinder.hub.ui.screens.home.director
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -25,9 +26,50 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun ClubMembersScreen(
     onBack: () -> Unit,
     onOpenDM: (dmId: String, otherUid: String) -> Unit = { _, _ -> },
-    viewModel: ClubMembersViewModel = hiltViewModel()
+    onOpenMember: (userId: String) -> Unit = {},
+    viewModel: ClubMembersViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val clubState by clubContextViewModel.state.collectAsState()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Участники клуба") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PathfinderBlue,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            ClubMembersContent(
+                onOpenDM = onOpenDM,
+                onOpenMember = onOpenMember,
+                modifier = Modifier.weight(1f),
+                viewModel = viewModel,
+                clubContextViewModel = clubContextViewModel,
+            )
+        }
+    }
+}
+
+@Composable
+fun ClubMembersContent(
+    onOpenDM: (dmId: String, otherUid: String) -> Unit = { _, _ -> },
+    onOpenMember: (userId: String) -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: ClubMembersViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
     var removeDialogUser by remember { mutableStateOf<UserEntity?>(null) }
     val snackbar = remember { SnackbarHostState() }
 
@@ -47,77 +89,70 @@ fun ClubMembersScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbar) },
-        topBar = {
-            TopAppBar(
-                title = { Text("Участники клуба") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PathfinderBlue,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
-    ) { padding ->
-        when {
-            state.isLoading -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            state.errorMessage != null -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    Text(
-                        text = state.errorMessage!!,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-            state.members.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Person,
-                            null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text("В клубе пока нет участников", style = MaterialTheme.typography.bodyLarge)
+    Box(modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            when {
+                state.isLoading -> {
+                    Box(Modifier.fillMaxSize(), Alignment.Center) {
+                        CircularProgressIndicator()
                     }
                 }
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    items(state.members, key = { it.id }) { member ->
-                        MemberCard(
-                            member = member,
-                            isCurrentUser = member.id == state.currentUserId,
-                            currentUserRole = state.currentUserRole,
-                            onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
-                            onSuspend = { viewModel.suspendUser(member.id) },
-                            onRemove = { removeDialogUser = member },
-                            onWrite = { viewModel.openDM(member.id) },
-                            onLinkParent = { viewModel.openLinkDialog(member) },
+                state.errorMessage != null -> {
+                    Box(Modifier.fillMaxSize(), Alignment.Center) {
+                        Text(
+                            text = state.errorMessage!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
                         )
+                    }
+                }
+                state.members.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Default.Person,
+                                null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text("В клубе пока нет участников", style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
+                        items(state.members, key = { it.id }) { member ->
+                            MemberCard(
+                                member = member,
+                                isCurrentUser = member.id == state.currentUserId,
+                                currentUserRole = state.currentUserRole,
+                                onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
+                                onSuspend = { viewModel.suspendUser(member.id) },
+                                onRemove = { removeDialogUser = member },
+                                onWrite = { viewModel.openDM(member.id) },
+                                onLinkParent = { viewModel.openLinkDialog(member) },
+                                onOpenProgress = if (member.role == "teen" && member.id != state.currentUserId)
+                                    { { onOpenMember(member.id) } } else null,
+                            )
+                        }
                     }
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 
     // ---------- Диалог удаления ----------
@@ -215,12 +250,21 @@ private fun MemberCard(
     onRemove: () -> Unit,
     onWrite: () -> Unit = {},
     onLinkParent: () -> Unit = {},
+    onOpenProgress: (() -> Unit)? = null,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var roleMenuExpanded by remember { mutableStateOf(false) }
 
+    val cardModifier = if (onOpenProgress != null) {
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenProgress)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(
             containerColor = if (isCurrentUser)
                 MaterialTheme.colorScheme.primaryContainer
@@ -229,7 +273,6 @@ private fun MemberCard(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // ---------- Верхняя строка ----------
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
                     modifier = Modifier.size(48.dp),
@@ -289,7 +332,6 @@ private fun MemberCard(
                 )
             }
 
-            // ---------- Нижняя строка ----------
             if (!isCurrentUser) {
                 Spacer(Modifier.height(8.dp))
                 Row(

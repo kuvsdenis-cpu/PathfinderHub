@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
@@ -135,7 +135,7 @@ private fun MessageBubble(
     msg: com.pathfinder.hub.domain.model.ChatMessage,
     isOwn: Boolean,
 ) {
-    val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale("ru"))
+    val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale.forLanguageTag("ru"))
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isOwn) Arrangement.End else Arrangement.Start,

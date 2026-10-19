@@ -19,7 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
@@ -32,11 +33,10 @@ fun ReportHistoryScreen(
     onNavigateBack: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
     onCreateReport: () -> Unit = {},
-    viewModel: ReportHistoryViewModel = hiltViewModel()
+    viewModel: ReportHistoryViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
-
+    val clubState by clubContextViewModel.state.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,48 +52,71 @@ fun ReportHistoryScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateReport,
-                containerColor = PathfinderBlue,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, "Создать отчёт")
-            }
         }
     ) { padding ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            return@Scaffold
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            ReportHistoryContent(
+                onReportClick = onReportClick,
+                onCreateReport = onCreateReport,
+                modifier = Modifier.weight(1f),
+                viewModel = viewModel,
+                clubContextViewModel = clubContextViewModel,
+            )
         }
-        if (state.reports.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Description, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Отчёты ещё не генерировались", style = MaterialTheme.typography.bodyLarge)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Нажмите + чтобы создать первый отчёт", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+fun ReportHistoryContent(
+    onReportClick: (String) -> Unit = {},
+    onCreateReport: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: ReportHistoryViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
+    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("ru"))
+
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            if (state.isLoading) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+            } else if (state.reports.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Description, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Отчёты ещё не генерировались", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Нажмите + чтобы создать первый отчёт", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.reports, key = { it.id }) { report ->
+                        ReportCard(
+                            report = report,
+                            dateFormat = dateFormat,
+                            canArchive = state.canArchive,
+                            onClick = { onReportClick(report.id) },
+                            onArchive = { viewModel.archiveReport(report.id) },
+                        )
+                    }
                 }
             }
-            return@Scaffold
         }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+
+        FloatingActionButton(
+            onClick = onCreateReport,
+            containerColor = PathfinderBlue,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
         ) {
-            items(state.reports, key = { it.id }) { report ->
-                ReportCard(
-                    report = report,
-                    dateFormat = dateFormat,
-                    canArchive = state.canArchive,
-                    onClick = { onReportClick(report.id) },
-                    onArchive = { viewModel.archiveReport(report.id) },
-                )
-            }
+            Icon(Icons.Default.Add, "Создать отчёт")
         }
     }
 }
@@ -139,11 +162,7 @@ private fun ReportCard(
             if (canArchive) {
                 Spacer(Modifier.width(8.dp))
                 IconButton(onClick = onArchive) {
-                    Icon(
-                        Icons.Default.Archive, "В архив",
-                        tint = PathfinderBlue,
-                        modifier = Modifier.size(20.dp),
-                    )
+                    Icon(Icons.Default.Archive, "В архив", tint = PathfinderBlue, modifier = Modifier.size(20.dp))
                 }
             }
         }

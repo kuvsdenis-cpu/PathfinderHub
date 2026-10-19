@@ -10,6 +10,8 @@ import com.pathfinder.hub.data.local.entity.learning.LevelCompletionEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.local.entity.learning.TestAttemptEntity
+import com.pathfinder.hub.data.repository.TestRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,9 @@ data class ChildProgressUiState(
     val levelCompletions: List<LevelCompletionEntity> = emptyList(),
     val honorCompletions: List<HonorCompletionEntity> = emptyList(),
     val achievements: List<AchievementProgressEntity> = emptyList(),
+    val testAttempts: List<TestAttemptEntity> = emptyList(),
+    val testTitles: Map<String, String> = emptyMap(),
+    val pendingAttemptIds: Set<String> = emptySet(),
     val errorMessage: String? = null,
 )
 
@@ -35,6 +40,7 @@ class ChildProgressViewModel @Inject constructor(
     private val levelRepository: LevelRepository,
     private val honorRepository: HonorRepository,
     private val achievementRepository: AchievementRepository,
+    private val testRepository: TestRepository,
 ) : ViewModel() {
 
     private val childId: String = savedStateHandle.get<String>("childId") ?: ""
@@ -70,5 +76,44 @@ class ChildProgressViewModel @Inject constructor(
                 _state.update { it.copy(achievements = list) }
             }
         }
+        viewModelScope.launch {
+            testRepository.observeAttemptsByUser(childId).collect { list ->
+                _state.update { it.copy(testAttempts = list) }
+                resolveTestTitles(list)
+                resolvePending(list)
+            }
+        }
+        viewModelScope.launch {
+            // lifecycle pull: подписка живёт пока живёт ViewModel
+            testRepository.pullTestAttempts(childId)
+        }
+    }
+
+    /**
+     * Резолв названий тестов одним batch-запросом.
+     * Fallback в UI: "Тест #xxxxxxxx" (первые 8 символов id).
+     */
+    private suspend fun resolveTestTitles(attempts: List<TestAttemptEntity>) {
+        val ids = attempts.mapNotNull { it.testId }.filter { it.isNotBlank() }.distinct()
+        if (ids.isEmpty()) {
+            _state.update { it.copy(testTitles = emptyMap()) }
+            return
+        }
+        val map = mutableMapOf<String, String>()
+        ids.forEach { id ->
+            val title = testRepository.getTest(id)?.title
+            if (!title.isNullOrBlank()) map[id] = title
+        }
+        _state.update { it.copy(testTitles = map) }
+    }
+
+    /** Попытки, у которых есть непроверенные long_text. */
+    private suspend fun resolvePending(attempts: List<TestAttemptEntity>) {
+        val pending = attempts
+            .filter { !it.passed }
+            .filter { testRepository.countUnreviewedForAttempt(it.id) > 0 }
+            .map { it.id }
+            .toSet()
+        _state.update { it.copy(pendingAttemptIds = pending) }
     }
 }

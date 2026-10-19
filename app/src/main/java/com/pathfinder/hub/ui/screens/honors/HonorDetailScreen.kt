@@ -2,11 +2,13 @@ package com.pathfinder.hub.ui.screens.honors
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,8 +40,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.pathfinder.hub.ui.theme.PathfinderBlue
+import com.pathfinder.hub.ui.screens.tests.TestsForScopeSection
 import com.pathfinder.hub.ui.theme.PathfinderGray
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
@@ -50,6 +57,7 @@ import com.pathfinder.hub.ui.theme.PathfinderRed
 fun HonorDetailScreen(
     onBack: () -> Unit,
     onOpenRequirement: (honorId: String, requirementId: String) -> Unit,
+    onOpenTest: (testId: String) -> Unit,
     viewModel: HonorDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -105,6 +113,25 @@ fun HonorDetailScreen(
                         )
                     ) {
                         Column(Modifier.padding(16.dp)) {
+                            // Большая картинка (если есть)
+                            if (!state.honor!!.imageUrl.isNullOrBlank()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(2.2f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(PathfinderBlue.copy(alpha = 0.05f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    AsyncImage(
+                                        model = state.honor!!.imageUrl,
+                                        contentDescription = state.honor!!.name,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                Spacer(Modifier.height(12.dp))
+                            }
                             Text(
                                 text = "Уровень ${state.honor!!.level} • ${state.honor!!.source}",
                                 style = MaterialTheme.typography.labelLarge,
@@ -130,6 +157,14 @@ fun HonorDetailScreen(
                             )
                         }
                     }
+                }
+
+                item {
+                    TestsForScopeSection(
+                        scope = "honor",
+                        scopeId = state.honor!!.id,
+                        onOpenTest = onOpenTest,
+                    )
                 }
 
                 item {

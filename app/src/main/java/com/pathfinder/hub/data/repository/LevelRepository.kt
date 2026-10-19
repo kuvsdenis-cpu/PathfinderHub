@@ -47,6 +47,9 @@ class LevelRepository @Inject constructor(
     fun observeChecklist(leaderId: String, childId: String): Flow<LeaderChecklistEntity?> =
         dao.observeChecklist(leaderId, childId)
 
+    fun observeMyChecklists(leaderId: String): Flow<List<LeaderChecklistEntity>> =
+        dao.observeMyChecklists(leaderId)
+
     fun observePendingApprovalsByClub(clubId: String): Flow<List<LevelProgressEntity>> =
         dao.observePendingApprovalsByClub(clubId)
 

@@ -22,6 +22,12 @@ import com.pathfinder.hub.data.remote.FirestoreTaskAnswerDataSource
 import com.pathfinder.hub.data.remote.FirestoreQrDataSource
 import com.pathfinder.hub.data.remote.FirestoreChallengeDataSource
 import com.pathfinder.hub.data.local.dao.QrStationDao
+import com.pathfinder.hub.data.local.dao.BibleDao
+import com.pathfinder.hub.data.local.dao.PearlDao
+import com.pathfinder.hub.data.local.dao.ReadingPlanDao
+import com.pathfinder.hub.data.local.entity.bible.BibleBookmarkEntity
+import com.pathfinder.hub.data.local.entity.bible.PearlProgressEntity
+import com.pathfinder.hub.data.local.entity.bible.ReadingPlanProgressEntity
 import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
 import com.pathfinder.hub.data.local.entity.qr.StationVisitEntity
 import dagger.assisted.Assisted
@@ -44,6 +50,9 @@ class SyncWorker @AssistedInject constructor(
     private val qrDataSource: FirestoreQrDataSource,
     private val qrDao: QrStationDao,
     private val challengeDataSource: FirestoreChallengeDataSource,
+    private val bibleDao: BibleDao,
+    private val pearlDao: PearlDao,
+    private val readingPlanDao: ReadingPlanDao,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -126,7 +135,102 @@ class SyncWorker @AssistedInject constructor(
         )
 
         Log.d(TAG, "✓ Sync done: success=$success, errors=$errors, permanent=$permanentFailures")
+
+        // Pull user data from Firestore
+        try {
+            pullUserData()
+        } catch (e: Exception) {
+            Log.w(TAG, "Pull failed: ${e.message}")
+        }
+
         return Result.success()
+    }
+
+    private suspend fun pullUserData() {
+        val uid = syncQueue.getCurrentUserId() ?: return
+        pullBibleBookmarks(uid)
+        pullPearlProgress(uid)
+        pullReadingPlanProgress(uid)
+    }
+
+    private suspend fun pullBibleBookmarks(uid: String) {
+        val r = firestore.pullCollection("users/$uid/bibleBookmarks")
+        val docs = r.getOrNull() ?: return
+        for (doc in docs) {
+            try {
+                val verseId = doc["verseId"] as? String ?: continue
+                val existing = bibleDao.getBookmark(uid, verseId)
+                val remoteCreated = (doc["createdAt"] as? Number)?.toLong() ?: 0L
+                if (existing != null && existing.createdAt >= remoteCreated) continue
+                bibleDao.upsertBookmark(
+                    BibleBookmarkEntity(
+                        id = "$uid:$verseId",
+                        userId = uid,
+                        verseId = verseId,
+                        versionId = doc["versionId"] as? String ?: "rst",
+                        bookId = doc["bookId"] as? String ?: "",
+                        chapter = (doc["chapter"] as? Number)?.toInt() ?: 0,
+                        verse = (doc["verse"] as? Number)?.toInt() ?: 0,
+                        textPreview = doc["textPreview"] as? String ?: "",
+                        createdAt = remoteCreated,
+                        pendingSync = false,
+                    )
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "pull bookmark skip: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun pullPearlProgress(uid: String) {
+        val r = firestore.pullCollection("users/$uid/pearlProgress")
+        val docs = r.getOrNull() ?: return
+        for (doc in docs) {
+            try {
+                val pearlId = doc["pearlId"] as? String ?: continue
+                val existing = pearlDao.getProgress(uid, pearlId)
+                val remoteReviewed = (doc["lastReviewedAt"] as? Number)?.toLong() ?: 0L
+                if (existing != null && (existing.lastReviewedAt ?: 0L) >= remoteReviewed) continue
+                pearlDao.upsertProgress(
+                    PearlProgressEntity(
+                        id = "$uid:$pearlId",
+                        userId = uid,
+                        pearlId = pearlId,
+                        memorized = doc["memorized"] as? Boolean ?: false,
+                        memorizedAt = (doc["memorizedAt"] as? Number)?.toLong(),
+                        lastReviewedAt = remoteReviewed,
+                        reviewCount = (doc["reviewCount"] as? Number)?.toInt() ?: 0,
+                        pendingSync = false,
+                    )
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "pull pearl skip: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun pullReadingPlanProgress(uid: String) {
+        val r = firestore.pullCollection("users/$uid/readingPlanProgress")
+        val docs = r.getOrNull() ?: return
+        for (doc in docs) {
+            try {
+                val dayId = doc["dayId"] as? String ?: continue
+                val existing = readingPlanDao.getProgress(uid, dayId)
+                val remoteCompleted = (doc["completedAt"] as? Number)?.toLong() ?: 0L
+                if (existing != null && existing.completedAt >= remoteCompleted) continue
+                readingPlanDao.upsertProgress(
+                    ReadingPlanProgressEntity(
+                        id = "$uid:$dayId",
+                        userId = uid,
+                        dayId = dayId,
+                        completedAt = remoteCompleted,
+                        pendingSync = false,
+                    )
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "pull reading plan skip: ${e.message}")
+            }
+        }
     }
 
     private enum class ProcessResult {
@@ -161,6 +265,15 @@ class SyncWorker @AssistedInject constructor(
             }
             if (item.entityType == "challenge_progress") {
                 return processChallengeProgress(item)
+            }
+            if (item.entityType == "bible_bookmark") {
+                return processBibleBookmark(item)
+            }
+            if (item.entityType == "pearl_progress") {
+                return processPearlProgress(item)
+            }
+            if (item.entityType == "reading_plan_progress") {
+                return processReadingPlanProgress(item)
             }
 
             // ---------- Общая ветка для остальных сущностей ----------
@@ -389,6 +502,112 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun processBibleBookmark(item: SyncQueueItemEntity): ProcessResult {
+        val bm = try {
+            gson.fromJson(item.payload, BibleBookmarkEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "bookmark deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (bm.userId.isBlank() || bm.verseId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "users/${bm.userId}/bibleBookmarks"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "verseId" to bm.verseId,
+                    "versionId" to bm.versionId,
+                    "bookId" to bm.bookId,
+                    "bookName" to bm.bookName,
+                    "chapter" to bm.chapter,
+                    "verse" to bm.verse,
+                    "textPreview" to bm.textPreview,
+                    "note" to bm.note,
+                    "createdAt" to bm.createdAt,
+                )
+                val r = firestore.pushDocument(collection, bm.verseId, payload)
+                if (r.isSuccess) {
+                    try {
+                        bibleDao.upsertBookmark(bm.copy(pendingSync = false))
+                    } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, bm.verseId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processPearlProgress(item: SyncQueueItemEntity): ProcessResult {
+        val p = try {
+            gson.fromJson(item.payload, PearlProgressEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "pearl progress deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (p.userId.isBlank() || p.pearlId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "users/${p.userId}/pearlProgress"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "pearlId" to p.pearlId,
+                    "memorized" to p.memorized,
+                    "memorizedAt" to p.memorizedAt,
+                    "lastReviewedAt" to p.lastReviewedAt,
+                    "reviewCount" to p.reviewCount,
+                )
+                val r = firestore.pushDocument(collection, p.pearlId, payload)
+                if (r.isSuccess) {
+                    try {
+                        pearlDao.upsertProgress(p.copy(pendingSync = false))
+                    } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, p.pearlId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun processReadingPlanProgress(item: SyncQueueItemEntity): ProcessResult {
+        val p = try {
+            gson.fromJson(item.payload, ReadingPlanProgressEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "reading plan progress deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (p.userId.isBlank() || p.dayId.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "users/${p.userId}/readingPlanProgress"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "dayId" to p.dayId,
+                    "completedAt" to p.completedAt,
+                )
+                val r = firestore.pushDocument(collection, p.dayId, payload)
+                if (r.isSuccess) {
+                    try {
+                        readingPlanDao.upsertProgress(p.copy(pendingSync = false))
+                    } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, p.dayId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
     private fun classifyError(error: Throwable?): ProcessResult {
         return when (error) {
             is FirebaseFirestoreException -> when (error.code) {
@@ -458,6 +677,11 @@ class SyncWorker @AssistedInject constructor(
             "station_visit" -> if (clubId != null) "clubs/$clubId/stationVisits" else null
             "challenge_progress" -> if (clubId != null) "clubs/$clubId/challengeProgress" else null
             "conference_event" -> if (payload["conferenceId"] != null) "conferences/${payload["conferenceId"]}/events" else null
+            "test" -> if (clubId != null) "clubs/$clubId/tests" else null
+            "test_question" -> {
+                val testId = payload["testId"] as? String
+                if (clubId != null && testId != null) "clubs/$clubId/tests/$testId/questions" else null
+            }
 
             // ---------- Прогресс пользователя ----------
             "level_progress" -> "users/$userId/levelProgress"
@@ -468,6 +692,9 @@ class SyncWorker @AssistedInject constructor(
             "open_answer_review" -> "users/$userId/openAnswerReviews"
             "book_report" -> "users/$userId/bookReports"
             "verse_progress" -> "users/$userId/verseProgress"
+            "bible_bookmark" -> "users/$userId/bibleBookmarks"
+            "pearl_progress" -> "users/$userId/pearlProgress"
+            "reading_plan_progress" -> "users/$userId/readingPlanProgress"
             "leader_checklist" -> "users/$userId/leaderChecklists"
             "notification" -> "users/$userId/notifications"
 

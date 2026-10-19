@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import com.pathfinder.hub.ui.comments.CommentsSection
 import com.pathfinder.hub.ui.storage.FileUploadResult
@@ -26,10 +26,6 @@ fun ClubChatScreen(
     viewModel: ClubChatViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-
-    val pendingAttachment by savedStateHandle
-        .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
-        .collectAsState()
 
     Scaffold(
         topBar = {
@@ -67,14 +63,35 @@ fun ClubChatScreen(
             )
         }
     ) { padding ->
+        ClubChatContent(
+            savedStateHandle = savedStateHandle,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+fun ClubChatContent(
+    savedStateHandle: SavedStateHandle,
+    modifier: Modifier = Modifier,
+    viewModel: ClubChatViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+
+    val pendingAttachment by savedStateHandle
+        .getStateFlow<FileUploadResult?>(FileUploadResult.SAVED_STATE_KEY, null)
+        .collectAsState()
+
+    Box(modifier.fillMaxSize()) {
         when {
             state.isLoading -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
             state.errorMessage != null -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     Text(
                         text = state.errorMessage!!,
                         color = MaterialTheme.colorScheme.error,
@@ -83,11 +100,7 @@ fun ClubChatScreen(
                 }
             }
             state.clubId != null -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                ) {
+                Column(Modifier.fillMaxSize()) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()

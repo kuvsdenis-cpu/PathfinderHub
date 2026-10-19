@@ -14,9 +14,6 @@ import com.pathfinder.hub.data.local.entity.learning.HonorProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorVersionEntity
 import com.pathfinder.hub.data.local.entity.learning.MemoryVerseEntity
-import com.pathfinder.hub.data.local.entity.learning.OpenAnswerReviewEntity
-import com.pathfinder.hub.data.local.entity.learning.TestAttemptEntity
-import com.pathfinder.hub.data.local.entity.learning.TestQuestionEntity
 import com.pathfinder.hub.data.local.entity.learning.VerseProgressEntity
 import com.pathfinder.hub.data.local.relation.HonorWithRequirements
 import com.pathfinder.hub.data.sync.SyncQueueManager
@@ -41,8 +38,6 @@ class HonorRepository @Inject constructor(
     fun observeProgress(userId: String, honorId: String): Flow<List<HonorProgressEntity>> = dao.observeProgress(userId, honorId)
     suspend fun getProgressSnapshot(userId: String, honorId: String): List<HonorProgressEntity> = dao.getProgressSnapshot(userId, honorId)
     fun observeCompletions(userId: String): Flow<List<HonorCompletionEntity>> = dao.observeCompletions(userId)
-    suspend fun getRandomQuestions(honorId: String, limit: Int): List<TestQuestionEntity> = dao.getRandomQuestions(honorId, limit)
-    suspend fun getLastAttemptNumber(userId: String, honorId: String): Int? = dao.getLastAttemptNumber(userId, honorId)
     fun observePendingDrafts(): Flow<List<HonorDraftEntity>> = dao.observePendingDrafts()
     suspend fun getLatestContentVersion(): ContentVersionEntity? = dao.getLatestContentVersion()
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>> =
@@ -65,8 +60,9 @@ class HonorRepository @Inject constructor(
     suspend fun upsertCategory(c: HonorCategoryEntity) = dao.upsertCategory(c)
     suspend fun upsertCategories(cs: List<HonorCategoryEntity>) = dao.upsertCategories(cs)
     suspend fun upsertHonors(hs: List<HonorEntity>) = dao.upsertHonors(hs)
+    suspend fun clearAllHonors() = dao.clearAllHonors()
+    suspend fun clearAllHonorRequirements() = dao.clearAllRequirements()
     suspend fun upsertRequirements(rs: List<HonorRequirementEntity>) = dao.upsertRequirements(rs)
-    suspend fun upsertQuestions(qs: List<TestQuestionEntity>) = dao.upsertQuestions(qs)
     suspend fun upsertBooks(bs: List<BookEntity>) = dao.upsertBooks(bs)
     suspend fun upsertVerses(vs: List<MemoryVerseEntity>) = dao.upsertVerses(vs)
     suspend fun upsertContentVersion(v: ContentVersionEntity) = dao.upsertContentVersion(v)
@@ -150,30 +146,6 @@ class HonorRepository @Inject constructor(
                 entityId = "${c.userId}_${c.honorId}",
                 operation = "CREATE",
                 payload = c
-            )
-        }
-    }
-
-    suspend fun upsertAttempt(a: TestAttemptEntity) {
-        db.withTransaction {
-            dao.upsertAttempt(a)
-            syncQueueManager.enqueue(
-                entityType = "test_attempt",
-                entityId = a.id,
-                operation = "CREATE",
-                payload = a
-            )
-        }
-    }
-
-    suspend fun upsertOpenAnswer(r: OpenAnswerReviewEntity) {
-        db.withTransaction {
-            dao.upsertOpenAnswer(r)
-            syncQueueManager.enqueue(
-                entityType = "open_answer_review",
-                entityId = "${r.attemptId}_${r.questionId}",
-                operation = "CREATE",
-                payload = r
             )
         }
     }

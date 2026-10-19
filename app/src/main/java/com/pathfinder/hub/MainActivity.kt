@@ -34,6 +34,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.session.SessionGuard
 import com.pathfinder.hub.data.repository.FcmTokenRepository
 import com.pathfinder.hub.data.repository.SettingsRepository
+import com.pathfinder.hub.data.repository.TestRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.notifications.ChatNotificationHelper
 import com.pathfinder.hub.ui.navigation.PathfinderNavHost
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var userRepository: UserRepository
+    @Inject lateinit var testRepository: TestRepository
     @Inject lateinit var fcmTokenRepository: FcmTokenRepository
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var sessionGuard: SessionGuard
@@ -75,14 +77,30 @@ class MainActivity : ComponentActivity() {
             val uid = sessionManager.getUserId()
             var evicted by remember { mutableStateOf(false) }
 
-            // Single-session guard — только когда залогинен
+            // Single-session guard — только когда залогинен.
+            // Плюс: pull клубных тестов (Firestore → Room).
             DisposableEffect(uid) {
+                var pullJob: kotlinx.coroutines.Job? = null
                 if (uid != null) {
                     sessionGuard.start(uid) { evicted = true }
+                    pullJob = lifecycleScope.launch {
+                        try {
+                            val local = userRepository.getUserLocalOnly(uid)
+                            val clubId = local?.clubId
+                            if (!clubId.isNullOrBlank()) {
+                                testRepository.pullClubTests(clubId)
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "pullClubTests failed: ${e.message}")
+                        }
+                    }
                 } else {
                     sessionGuard.stop()
                 }
-                onDispose { sessionGuard.stop() }
+                onDispose {
+                    sessionGuard.stop()
+                    pullJob?.cancel()
+                }
             }
             var themePref by remember { mutableStateOf("system") }
             LaunchedEffect(uid) {
@@ -104,9 +122,7 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(Unit) {
                         startDestination = resolveStartDestination()
-                        // #7: держим сплэш 1200 мс, пока первый кадр
-                        // DirectorHomeScreen не готов.
-                        delay(1200)
+                        // #7: сплэш снимается сразу, как только определён dest.
                         uiReady.value = true
                     }
 
@@ -203,15 +219,12 @@ class MainActivity : ComponentActivity() {
         }
         // #7: роут по роли — сразу целевой экран, без двойного прохода
         // через RoleHomeScreen. RoleHomeScreen остаётся для logout→login.
-        val dest = when (localUser.role) {
-            "director" -> Routes.DIRECTOR_HOME
-            "instructor" -> Routes.INSTRUCTOR_HOME
-            "secretary" -> Routes.SECRETARY_HOME
-            "parent" -> Routes.PARENT_HOME
-            "conference_admin" -> Routes.CONFERENCE_HOME
-            "conference_secretary" -> Routes.CONFERENCE_SECRETARY_HOME
-            "teen" -> Routes.TEEN_HOME
-            else -> Routes.TEEN_HOME
+        //
+        // #12: при неизвестной роли — на LOGIN, НЕ на TEEN_HOME.
+        val dest = Routes.homeForRole(localUser.role)
+        if (dest == null) {
+            Log.e(TAG, "Автологин: неизвестная роль '${localUser.role}' у userId=$userId — стартуем с LOGIN")
+            return Routes.LOGIN
         }
         Log.d(TAG, "Автологин: userId=$userId, role=${localUser.role}, dest=$dest")
         return dest

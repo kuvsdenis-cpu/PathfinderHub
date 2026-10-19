@@ -12,11 +12,19 @@ import com.pathfinder.hub.data.local.entity.core.UserEntity
  */
 object PermissionChecker {
 
+    /**
+     * Роли staff, чьи права хранятся в user.directorPermissions.
+     * Имя поля историческое; семантически — «индивидуальные права staff».
+     */
+    private val STAFF_ROLES = setOf("director", "instructor", "secretary")
+
     fun hasPerm(user: UserEntity?, perm: String): Boolean {
         if (user == null) return false
-        if (user.role != "director") return false
-        if (user.isOwnerClub) return true
-        return perm in user.directorPermissions
+        // Owner — все права.
+        if (user.role == "director" && user.isOwnerClub) return true
+        // Staff-роли читают индивидуальный набор.
+        if (user.role in STAFF_ROLES) return perm in user.directorPermissions
+        return false
     }
 
     /** Публичный сахар: hasAny("a", "b", "c"). */

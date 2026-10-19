@@ -8,6 +8,16 @@ import androidx.room.TypeConverters
 import com.pathfinder.hub.data.local.dao.*
 import com.pathfinder.hub.data.local.entity.audit.AuditLogEntity
 import com.pathfinder.hub.data.local.entity.audit.SecurityLogEntity
+import com.pathfinder.hub.data.local.entity.bible.BibleBookEntity
+import com.pathfinder.hub.data.local.entity.bible.BibleVerseEntity
+import com.pathfinder.hub.data.local.entity.bible.BibleVersionEntity
+import com.pathfinder.hub.data.local.entity.bible.BibleBookmarkEntity
+import com.pathfinder.hub.data.local.entity.bible.PearlScheduleEntity
+import com.pathfinder.hub.data.local.entity.bible.PearlEntity
+import com.pathfinder.hub.data.local.entity.bible.PearlProgressEntity
+import com.pathfinder.hub.data.local.entity.bible.ReadingPlanScheduleEntity
+import com.pathfinder.hub.data.local.entity.bible.ReadingPlanDayEntity
+import com.pathfinder.hub.data.local.entity.bible.ReadingPlanProgressEntity
 import com.pathfinder.hub.data.local.entity.auth.InviteEntity
 import com.pathfinder.hub.data.local.entity.auth.OnboardingProgressEntity
 import com.pathfinder.hub.data.local.entity.auth.ParentChildLinkEntity
@@ -51,6 +61,7 @@ import com.pathfinder.hub.data.local.entity.learning.LevelSectionEntity
 import com.pathfinder.hub.data.local.entity.learning.MemoryVerseEntity
 import com.pathfinder.hub.data.local.entity.learning.OpenAnswerReviewEntity
 import com.pathfinder.hub.data.local.entity.learning.TestAttemptEntity
+import com.pathfinder.hub.data.local.entity.learning.TestEntity
 import com.pathfinder.hub.data.local.entity.learning.TestQuestionEntity
 import com.pathfinder.hub.data.local.entity.learning.VerseProgressEntity
 import com.pathfinder.hub.data.local.entity.newspaper.CachedNewspaperEntity
@@ -133,6 +144,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         TestQuestionEntity::class,
         TestAttemptEntity::class,
         OpenAnswerReviewEntity::class,
+        TestEntity::class,
         HonorVersionEntity::class,
         ContentVersionEntity::class,
         HonorDraftEntity::class,
@@ -240,9 +252,21 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         CrossClubInviteUsageEntity::class,
 
         // Conference
-        ConferenceEventEntity::class
+        ConferenceEventEntity::class,
+
+        // Bible
+        BibleVersionEntity::class,
+        BibleBookEntity::class,
+        BibleVerseEntity::class,
+        BibleBookmarkEntity::class,
+        PearlScheduleEntity::class,
+        PearlEntity::class,
+        PearlProgressEntity::class,
+        ReadingPlanScheduleEntity::class,
+        ReadingPlanDayEntity::class,
+        ReadingPlanProgressEntity::class
     ],
-    version = 27,
+    version = 41,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -263,6 +287,9 @@ abstract class AppDatabase : RoomDatabase() {
     // Learning
     abstract fun levelDao(): LevelDao
     abstract fun honorDao(): HonorDao
+    abstract fun testDao(): TestDao
+    abstract fun bookReportDao(): BookReportDao
+    abstract fun verseProgressDao(): VerseProgressDao
 
     // Learning — материалы и задания
     abstract fun requirementMaterialDao(): RequirementMaterialDao
@@ -314,6 +341,13 @@ abstract class AppDatabase : RoomDatabase() {
 
     // User-Clubs (B1)
     abstract fun userClubDao(): UserClubDao
+
+    // Bible
+    abstract fun bibleDao(): BibleDao
+    abstract fun pearlDao(): PearlDao
+    abstract fun pearlScheduleDao(): PearlScheduleDao
+    abstract fun readingPlanScheduleDao(): ReadingPlanScheduleDao
+    abstract fun readingPlanDao(): ReadingPlanDao
 
     companion object {
         @Volatile

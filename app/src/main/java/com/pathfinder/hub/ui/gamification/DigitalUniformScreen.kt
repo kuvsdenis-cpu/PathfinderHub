@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.gamification.DigitalUniformEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
@@ -267,7 +267,7 @@ private fun UniformItem(title: String, subtitle: String, earnedDate: java.util.D
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Text(
-            text = SimpleDateFormat("dd.MM.yyyy", Locale("ru")).format(earnedDate),
+            text = SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("ru")).format(earnedDate),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

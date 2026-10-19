@@ -1,8 +1,7 @@
 package com.pathfinder.hub.ui.screens.home.director
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
@@ -13,86 +12,60 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
-import com.pathfinder.hub.domain.permissions.PermissionChecker
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.ui.components.ClubTabsRow
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DirectorHomeScreen(
-    onNavigateToInvites: () -> Unit,
-    onNavigateToMembers: () -> Unit,
-    onNavigateToApprovals: () -> Unit,
-    onNavigateToReports: () -> Unit,
-    onNavigateToEvents: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onNavigateToTasks: () -> Unit,
-    onNavigateToClubChat: () -> Unit,
-    onNavigateToModeration: () -> Unit,
-    onNavigateToContentManager: () -> Unit = {},
-    onNavigateToChats: () -> Unit = {},
-    onNavigateToQrStations: () -> Unit = {},
-    onNavigateToQrQuests: () -> Unit = {},
-    onNavigateToHomework: () -> Unit = {},
-    onNavigateToReviewHomework: () -> Unit = {},
-    onNavigateToPayments: () -> Unit = {},
-    onNavigateToParentMeetings: () -> Unit = {},
-    onNavigateToCrossClub: () -> Unit = {},
-    onNavigateToStaff: () -> Unit = {},
+    onNavigateToPeople: () -> Unit = {},
+    onNavigateToLearning: () -> Unit = {},
+    onNavigateToPlanning: () -> Unit = {},
+    onNavigateToCommunications: () -> Unit = {},
+    onNavigateToFinance: () -> Unit = {},
+    onNavigateToManagement: () -> Unit = {},
     onNavigateToCreateClub: () -> Unit = {},
-    onNavigateToNotifications: () -> Unit,
-    onNavigateToClubInfo: (clubId: String) -> Unit = {},
-    onNavigateToArchive: () -> Unit = {},
-    onNavigateToCustomGroups: () -> Unit = {},
+    onNavigateToDeletedClubs: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
+    onNavigateToBible: () -> Unit = {},
+    onNavigateToPearls: () -> Unit = {},
+    onNavigateToPearlsAdmin: () -> Unit = {},
+    onNavigateToReadingPlan: () -> Unit = {},
+    onNavigateToReadingPlanAdmin: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLogout()
     }
 
-    val scope = rememberCoroutineScope()
-    fun guard(perm: String, onAllow: () -> Unit) {
-        if (PermissionChecker.hasPerm(state.currentUser, perm)) {
-            onAllow()
-        } else {
-            scope.launch {
-                snackbarHostState.showSnackbar("Нет доступа. Обратитесь к владельцу клуба.")
-            }
-        }
-    }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Панель директора") },
                 actions = {
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(
-                            imageVector = Icons.Default.Notifications,
+                            Icons.Default.Notifications,
                             contentDescription = "Уведомления",
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            Icons.AutoMirrored.Filled.Logout,
                             contentDescription = "Выйти",
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
@@ -106,94 +79,250 @@ fun DirectorHomeScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding)
-        ) {
-            if (state.clubs.size > 1) {
-                val selectedIndex = state.clubs
-                    .indexOfFirst { it.id == state.selectedClubId }
-                    .coerceAtLeast(0)
-
-                ScrollableTabRow(
-                    selectedTabIndex = selectedIndex,
-                    edgePadding = 8.dp,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    state.clubs.forEach { club ->
-                        Tab(
-                            selected = club.id == state.selectedClubId,
-                            onClick = { viewModel.switchClub(club.id) },
-                            text = {
-                                Text(
-                                    club.name,
-                                    maxLines = 1,
-                                    fontWeight = if (club.id == state.selectedClubId)
-                                        FontWeight.SemiBold else FontWeight.Normal
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
+        // Заглушка: нет клубов
+        if (state.noClubs && !state.isLoading) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(padding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.Info, null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Вы больше не директор клуба",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Клуб передан другому директору. " +
+                            "Вы можете создать новый клуб или выйти.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(24.dp))
+                Button(
+                    onClick = onNavigateToCreateClub,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Создать клуб") }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { showLogoutDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Выйти") }
+            }
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding)
+        ) {
+            ClubTabsRow(
+                clubs = state.clubs,
+                selectedClubId = state.selectedClubId,
+                onSelect = viewModel::switchClub,
+            )
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Добро пожаловать, ${state.directorName ?: "Директор"}!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                item {
+                    Text(
+                        text = "Добро пожаловать, ${state.directorName ?: "Директор"}!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(
-                            "Активный клуб",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(
+                                "Активный клуб",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                state.clubName ?: "Загрузка...",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                state.clubLocation ?: "",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+
+                // ---------- 6 плиток разделов ----------
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        SectionTile(
+                            Icons.Default.Groups, "Люди",
+                            "Сотрудники, участники, инвайты",
+                            onNavigateToPeople, Modifier.weight(1f)
                         )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            state.clubName ?: "Загрузка...",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            state.clubLocation ?: "",
-                            style = MaterialTheme.typography.bodyMedium
+                        SectionTile(
+                            Icons.Default.School, "Обучение",
+                            "Ступени, тесты, задания, домашка",
+                            onNavigateToLearning, Modifier.weight(1f)
                         )
                     }
                 }
 
-                // О клубе
-                state.selectedClubId?.let { cid ->
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        SectionTile(
+                            Icons.Default.Event, "Планирование",
+                            "События, встречи, QR",
+                            onNavigateToPlanning, Modifier.weight(1f)
+                        )
+                        SectionTile(
+                            Icons.Default.Chat, "Коммуникации",
+                            "Чат, чаты, модерация",
+                            onNavigateToCommunications, Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        SectionTile(
+                            Icons.Default.AccountBalance, "Финансы",
+                            "Взносы",
+                            onNavigateToFinance, Modifier.weight(1f)
+                        )
+                        SectionTile(
+                            Icons.Default.Settings, "Управление",
+                            "О клубе, настройки, отчёты",
+                            onNavigateToManagement, Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                // ---------- Библия (B2) ----------
+                item {
                     Card(
-                        onClick = { onNavigateToClubInfo(cid) },
+                        onClick = onNavigateToBible,
                         modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     ) {
                         Row(
                             Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Info, null,
+                                Icons.Default.Book, null,
                                 tint = PathfinderBlue,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(32.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    "О клубе",
+                                    "Библия",
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
-                                    "Публичная информация о клубе",
+                                    "Чтение и закладки",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Жемчужины (B3.1) ----------
+                item {
+                    Card(
+                        onClick = onNavigateToPearls,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.AutoStories, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Жемчужины",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                                Text(
+                                    "Стихи недели на 2026 год",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- План чтения (B4.1) ----------
+                item {
+                    Card(
+                        onClick = onNavigateToReadingPlan,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.CalendarMonth, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "План чтения",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Библия и EGW на 2026",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -202,161 +331,13 @@ fun DirectorHomeScreen(
                     }
                 }
 
-                Text(
-                    "Управление клубом",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                val u = state.currentUser
-
-                // ---------- Ряд 1: Инвайты + Участники ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.PersonAdd, "Инвайты", "Создать и управлять кодами",
-                        "invites.create", u,
-                        { guard("invites.create") { onNavigateToInvites() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.Group, "Участники", "Список членов клуба",
-                        "members.view", u,
-                        { guard("members.view") { onNavigateToMembers() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 2: Одобрение + Отчёты ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.CheckCircle, "Одобрение", "Проверка требований",
-                        "learning.approve", u,
-                        { guard("learning.approve") { onNavigateToApprovals() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.Assessment, "Отчёты", "Генерация и история",
-                        "reports.view", u,
-                        { guard("reports.view") { onNavigateToReports() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 3: События + Настройки ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.Event, "События", "Расписание клуба",
-                        "events.create", u,
-                        { guard("events.create") { onNavigateToEvents() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.Settings, "Настройки", "Параметры клуба",
-                        "settings.view", u,
-                        { guard("settings.view") { onNavigateToSettings() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 4: Задания + Чат клуба ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.TaskAlt, "Задания", "Назначить следопытам",
-                        "tasks.create", u,
-                        { guard("tasks.create") { onNavigateToTasks() } },
-                        Modifier.weight(1f),
-                    )
-                    DirectorActionCard(
-                        Icons.Default.Chat, "Чат клуба", "Общее обсуждение",
-                        onNavigateToClubChat, Modifier.weight(1f)
-                    )
-                }
-
-                // ---------- Ряд 5: Модерация + Контент ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.Shield, "Модерация", "Проверка сообщений",
-                        "moderation.review", u,
-                        { guard("moderation.review") { onNavigateToModeration() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.Edit, "Контент", "Ступени и требования",
-                        "content.edit", u,
-                        { guard("content.edit") { onNavigateToContentManager() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 6: Чаты + QR-станции ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    DirectorActionCard(
-                        Icons.Default.Email, "Чаты", "Личные и группы",
-                        onNavigateToChats, Modifier.weight(1f)
-                    )
-                    GuardedCard(
-                        Icons.Default.QrCode, "QR-станции", "Точки для сканирования",
-                        "qr.create", u,
-                        { guard("qr.create") { onNavigateToQrStations() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 7: Домашка + Проверка ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.Assignment, "Домашка", "Назначить следопытам",
-                        "learning.homework", u,
-                        { guard("learning.homework") { onNavigateToHomework() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.FactCheck, "Проверка", "Сданные домашки",
-                        "learning.homework", u,
-                        { guard("learning.homework") { onNavigateToReviewHomework() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 8: QR-квесты + Взносы ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.Route, "QR-квесты", "Серии станций",
-                        "qr.create", u,
-                        { guard("qr.create") { onNavigateToQrQuests() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.AccountBalance, "Взносы", "Оплата от родителей",
-                        "finance.view", u,
-                        { guard("finance.view") { onNavigateToPayments() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Ряд 9: Встречи + Межклубные ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    GuardedCard(
-                        Icons.Default.CalendarMonth, "Встречи", "С родителями",
-                        "events.create", u,
-                        { guard("events.create") { onNavigateToParentMeetings() } },
-                        Modifier.weight(1f),
-                    )
-                    GuardedCard(
-                        Icons.Default.Public, "Межклубные", "Приглашения клубов",
-                        "events.create", u,
-                        { guard("events.create") { onNavigateToCrossClub() } },
-                        Modifier.weight(1f),
-                    )
-                }
-
-                // ---------- Сотрудники (только owner) ----------
-                if (u?.isOwnerClub == true) {
+                // ---------- Графики жемчужин (админ) ----------
+                item {
                     Card(
-                        onClick = onNavigateToStaff,
+                        onClick = onNavigateToPearlsAdmin,
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            containerColor = MaterialTheme.colorScheme.errorContainer
                         )
                     ) {
                         Row(
@@ -364,36 +345,35 @@ fun DirectorHomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.ManageAccounts, null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(32.dp)
+                                Icons.Default.Settings, null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(28.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    "Сотрудники",
+                                    "Графики жемчужин",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 Text(
-                                    "Управление правами со-директоров",
+                                    "Импорт / экспорт JSON",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
                         }
                     }
                 }
 
-                // ---------- Пользовательские группы (B) ----------
-                val canGroups = PermissionChecker.hasPerm(u, "groups.manage")
-                if (canGroups) {
+                // ---------- Графики чтения (админ) ----------
+                item {
                     Card(
-                        onClick = onNavigateToCustomGroups,
+                        onClick = onNavigateToReadingPlanAdmin,
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            containerColor = MaterialTheme.colorScheme.errorContainer
                         )
                     ) {
                         Row(
@@ -401,108 +381,116 @@ fun DirectorHomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Groups, null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(32.dp)
+                                Icons.Default.Settings, null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(28.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    "Группы",
+                                    "Графики чтения",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 Text(
-                                    "Пользовательские группы с правилами",
+                                    "Импорт / экспорт JSON",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
-                        }
-                    }
-                }
-
-                // ---------- Архив ----------
-                Card(
-                    onClick = onNavigateToArchive,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Inventory2, null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "Архив",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Text(
-                                "Архивированные события, задания и т.д.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
                         }
                     }
                 }
 
                 // ---------- Создать ещё один клуб ----------
-                Card(
-                    onClick = onNavigateToCreateClub,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.AddBusiness, null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(32.dp)
+                item {
+                    Card(
+                        onClick = onNavigateToCreateClub,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
                         )
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "Создать ещё один клуб",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.AddBusiness, null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(28.dp)
                             )
-                            Text(
-                                "Станете директором нового клуба",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Создать ещё один клуб",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    "Станете директором нового клуба",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Удалённые клубы ----------
+                if (state.currentUser?.isOwnerClub == true && state.hasDeletedClubs) {
+                    item {
+                        Card(
+                            onClick = onNavigateToDeletedClubs,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
                             )
+                        ) {
+                            Row(
+                                Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete, null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        "Удалённые клубы",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        "Восстановить в течение 90 дней",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
                 state.errorMessage?.let { msg ->
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            msg,
-                            Modifier.padding(12.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                msg,
+                                Modifier.padding(12.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
                     }
                 }
             }
@@ -532,43 +520,13 @@ fun DirectorHomeScreen(
 }
 
 @Composable
-private fun DirectorActionCard(
+private fun SectionTile(
     icon: ImageVector,
     title: String,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier, onClick = onClick) {
-        Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(32.dp))
-            Spacer(Modifier.height(8.dp))
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun GuardedCard(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    perm: String,
-    user: com.pathfinder.hub.data.local.entity.core.UserEntity?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val allowed = PermissionChecker.hasPerm(user, perm)
     Card(
         modifier = modifier,
         onClick = onClick,
@@ -577,24 +535,16 @@ private fun GuardedCard(
         )
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .then(if (allowed) Modifier else Modifier.alpha(0.45f)),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                icon, contentDescription = null,
-                tint = if (allowed) PathfinderBlue else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
-            )
+            Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(36.dp))
             Spacer(Modifier.height(8.dp))
             Text(
                 title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (allowed) MaterialTheme.colorScheme.onSurface
-                       else MaterialTheme.colorScheme.onSurfaceVariant
+                textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(4.dp))
             Text(

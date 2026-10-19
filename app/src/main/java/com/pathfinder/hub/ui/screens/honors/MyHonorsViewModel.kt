@@ -18,7 +18,8 @@ data class MyHonorsUiState(
     val isLoading: Boolean = true,
     val inProgress: List<HonorEntity> = emptyList(),
     val completed: List<HonorEntity> = emptyList(),
-    val available: List<HonorEntity> = emptyList()
+    val available: List<HonorEntity> = emptyList(),
+    val categories: List<com.pathfinder.hub.data.local.entity.learning.HonorCategoryEntity> = emptyList(),
 )
 
 @HiltViewModel
@@ -35,6 +36,11 @@ class MyHonorsViewModel @Inject constructor(
         if (userId == null) {
             _state.update { it.copy(isLoading = false) }
         } else {
+            viewModelScope.launch {
+                honorRepository.observeCategories().collect { cats ->
+                    _state.update { it.copy(categories = cats) }
+                }
+            }
             viewModelScope.launch {
                 combine(
                     honorRepository.observeAllHonors(),

@@ -28,6 +28,8 @@ data class DirectorHomeUiState(
     val clubs: List<ClubEntity> = emptyList(),
     val selectedClubId: String? = null,
     val currentUser: UserEntity? = null,
+    val hasDeletedClubs: Boolean = false,
+    val noClubs: Boolean = false,
 )
 
 @HiltViewModel
@@ -58,6 +60,13 @@ class DirectorHomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            // Подписка на корзину (только для owner)
+            launch {
+                clubRepository.observeDeletedClubs().collect { deleted ->
+                    _state.update { it.copy(hasDeletedClubs = deleted.isNotEmpty()) }
+                }
+            }
+
             userRepository.observeUser(userId)
                 // #7: реагируем только на то, что реально влияет на UI
                 .distinctUntilChanged { old, new ->
@@ -78,7 +87,7 @@ class DirectorHomeViewModel @Inject constructor(
 
                     // #7: один запрос getClubs(ids) вместо N × getClub(id)
                     val clubs = try {
-                        clubRepository.getClubs(ids)
+                        clubRepository.getClubs(ids).filter { it.deletedAt == null }
                     } catch (_: Exception) { emptyList() }
 
                     val active = clubs.find { it.id == activeId }
@@ -92,6 +101,7 @@ class DirectorHomeViewModel @Inject constructor(
                             clubs = clubs,
                             selectedClubId = activeId,
                             currentUser = user,
+                            noClubs = user.clubIds.isEmpty() && user.clubId == null,
                         )
                     }
                 }

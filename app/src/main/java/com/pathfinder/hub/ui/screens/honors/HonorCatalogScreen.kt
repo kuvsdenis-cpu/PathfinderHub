@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,12 +37,18 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.pathfinder.hub.data.local.entity.learning.HonorEntity
+import com.pathfinder.hub.ui.components.CollapsibleSection
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGray
 
@@ -159,12 +167,40 @@ fun HonorCatalogScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            val categoriesById = remember(state.categories) {
+                state.categories.associateBy { it.id }
+            }
+            val grouped = remember(state.honors) {
+                state.honors.groupBy { it.categoryId }
+            }
+            val sortedCategories = remember(state.categories) {
+                state.categories.sortedBy { it.order }
+            }
+
+            // Категории: сначала в порядке order, потом «сироты».
+            val orderedCategoryIds = remember(grouped, sortedCategories) {
+                val ordered = sortedCategories.map { it.id }.filter { it in grouped.keys }
+                val orphans = grouped.keys.filter { it !in ordered }
+                ordered + orphans
+            }
+
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.honors, key = { it.id }) { honor ->
-                    HonorCard(honor, onClick = { onOpenHonor(honor.id) })
+                items(orderedCategoryIds, key = { "cat_$it" }) { categoryId ->
+                    val honors = grouped[categoryId].orEmpty()
+                    CollapsibleSection(
+                        title = categoriesById[categoryId]?.name ?: "Без категории",
+                        badge = "${honors.size}",
+                        initiallyExpanded = false,
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            honors.forEach { honor ->
+                                HonorCard(honor, onClick = { onOpenHonor(honor.id) })
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -183,6 +219,19 @@ private fun HonorCard(honor: HonorEntity, onClick: () -> Unit) {
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Превью-картинка (если есть)
+                if (!honor.previewUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = honor.previewUrl,
+                        contentDescription = honor.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .width(96.dp)
+                            .height(72.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                    Spacer(Modifier.size(12.dp))
+                }
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = honor.name,

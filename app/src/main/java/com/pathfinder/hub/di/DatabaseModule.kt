@@ -21,6 +21,7 @@ object DatabaseModule {
     @Provides fun provideTaskDao(db: AppDatabase): TaskDao = db.taskDao()
     @Provides fun provideLevelDao(db: AppDatabase): LevelDao = db.levelDao()
     @Provides fun provideHonorDao(db: AppDatabase): HonorDao = db.honorDao()
+    @Provides fun provideTestDao(db: AppDatabase): TestDao = db.testDao()
     @Provides fun provideAchievementDao(db: AppDatabase): AchievementDao = db.achievementDao()
     @Provides fun provideModerationDao(db: AppDatabase): ModerationDao = db.moderationDao()
     @Provides fun provideNotificationDao(db: AppDatabase): NotificationDao = db.notificationDao()
@@ -36,8 +37,23 @@ object DatabaseModule {
 
     @Provides fun provideUserClubDao(db: AppDatabase): UserClubDao = db.userClubDao()
 
+    // ---------- Bible ----------
+    @Provides fun provideBibleDao(db: AppDatabase): BibleDao = db.bibleDao()
+
+    // ---------- Pearls (B3.1) ----------
+    @Provides fun providePearlDao(db: AppDatabase): PearlDao = db.pearlDao()
+    @Provides fun providePearlScheduleDao(db: AppDatabase): PearlScheduleDao = db.pearlScheduleDao()
+
+    // ---------- Reading Plan (B4.1) ----------
+    @Provides fun provideReadingPlanScheduleDao(db: AppDatabase): ReadingPlanScheduleDao = db.readingPlanScheduleDao()
+    @Provides fun provideReadingPlanDao(db: AppDatabase): ReadingPlanDao = db.readingPlanDao()
+
     // ---------- Learning: материалы и задания ----------
     @Provides fun provideRequirementMaterialDao(db: AppDatabase): RequirementMaterialDao = db.requirementMaterialDao()
     @Provides fun provideRequirementTaskDao(db: AppDatabase): RequirementTaskDao = db.requirementTaskDao()
     @Provides fun provideRequirementTaskAnswerDao(db: AppDatabase): RequirementTaskAnswerDao = db.requirementTaskAnswerDao()
+
+    // ---------- Learning: книги и стихи ----------
+    @Provides fun provideBookReportDao(db: AppDatabase): BookReportDao = db.bookReportDao()
+    @Provides fun provideVerseProgressDao(db: AppDatabase): VerseProgressDao = db.verseProgressDao()
 }

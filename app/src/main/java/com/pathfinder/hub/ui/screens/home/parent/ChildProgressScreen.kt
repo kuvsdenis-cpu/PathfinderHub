@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -47,7 +48,7 @@ fun ChildProgressScreen(
     viewModel: ChildProgressViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
 
     Scaffold(
         topBar = {
@@ -137,6 +138,33 @@ fun ChildProgressScreen(
                         icon = Icons.Default.Star,
                         title = a.achievementId,
                         subtitle = a.earnedAt?.let { "Получено: " + fmt.format(it) } ?: "",
+                    )
+                }
+            }
+
+            // ---------- Тесты ----------
+            val passedCount = state.testAttempts.count { it.passed }
+            Section("Тесты · $passedCount из ${state.testAttempts.size} пройдено")
+            if (state.testAttempts.isEmpty()) {
+                EmptyText("Пока нет попыток тестов")
+            } else {
+                state.testAttempts.forEach { a ->
+                    val title = when {
+                        a.testId.isNullOrBlank() -> "Тест (без названия)"
+                        state.testTitles[a.testId] != null -> state.testTitles[a.testId]!!
+                        else -> "Тест #" + a.testId.take(8)
+                    }
+                    val pending = a.id in state.pendingAttemptIds
+                    val status = when {
+                        a.passed -> "пройден"
+                        pending -> "на проверке"
+                        else -> "не пройден"
+                    }
+                    val date = " · " + fmt.format(a.completedAt)
+                    RowItem(
+                        icon = Icons.Default.Quiz,
+                        title = title,
+                        subtitle = "${a.score}% · $status$date",
                     )
                 }
             }

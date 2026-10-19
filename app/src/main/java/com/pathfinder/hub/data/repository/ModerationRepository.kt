@@ -197,12 +197,101 @@ class ModerationRepository @Inject constructor(
 
     suspend fun upsertHistory(h: ModerationHistoryEntity) = dao.upsertHistory(h)
 
-    // ==================== УДАЛЕНИЕ ====================
+    // ==================== УДАЛЕНИЕ (tombstone, v39) ====================
 
-    suspend fun deleteComment(clubId: String, commentId: String): Result<Unit> {
-        val remoteResult = firestore.deleteComment(clubId, commentId)
-        // В Room — при необходимости, через DAO
-        // dao.deleteComment(commentId) — если метод есть
-        return remoteResult
+    /**
+     * Soft-delete комментария.
+     *
+     * Семантика:
+     *   - ставит deletedAt / deletedBy / purgeAt = now + 90 дней;
+     *   - комментарий скрывается из UI (фильтры в DAO);
+     *   - в Firestore отправляется UPDATE с deletedAt (не DELETE!) —
+     *     чтобы у других клиентов тоже скрылось;
+     *   - если Firestore упал — уходит в SyncQueue на повтор.
+     *
+     * @param clubId  клуб (для логов и правил)
+     * @param commentId id комментария
+     * @param deletedBy userId того, кто удалил (директор)
+     */
+    suspend fun deleteComment(
+        clubId: String,
+        commentId: String,
+        deletedBy: String,
+    ): Result<Unit> {
+        val now = System.currentTimeMillis()
+        val purgeAt = now + 90L * 24 * 3600 * 1000
+
+        // 1. Берём текущий комментарий из Room
+        val existing = try {
+            dao.getCommentById(commentId)
+        } catch (e: Exception) {
+            Log.e(TAG, "getCommentById упал: $commentId", e)
+            null
+        } ?: return Result.failure(IllegalStateException("Комментарий не найден: $commentId"))
+
+        // 2. Soft-delete в Room
+        try {
+            dao.softDeleteComment(commentId, deletedBy, now, purgeAt)
+        } catch (e: Exception) {
+            Log.e(TAG, "softDeleteComment в Room упал: $commentId", e)
+            return Result.failure(e)
+        }
+
+        // 3. Формируем обновлённый CommentEntity для payload
+        //    (payload — полный CommentEntity, чтобы SyncWorker.processComment
+        //     мог десериализовать его в CommentEntity, а не в Map)
+        val updated = existing.copy(
+            deletedAt = java.util.Date(now),
+            deletedBy = deletedBy,
+            purgeAt = java.util.Date(purgeAt),
+        )
+
+        // 4. SyncQueue — operation = "update", payload = полный CommentEntity
+        try {
+            syncQueue.enqueue(
+                entityType = ENTITY_TYPE_COMMENT,
+                entityId = commentId,
+                operation = "update",
+                payload = updated,
+            )
+            Log.d(TAG, "deleteComment (soft) → в очередь: $commentId")
+        } catch (e: Exception) {
+            Log.e(TAG, "deleteComment: не удалось поставить в очередь $commentId", e)
+        }
+
+        return Result.success(Unit)
     }
+
+    /** Восстановление комментария из tombstone (директор передумал). */
+    suspend fun restoreDeletedComment(commentId: String): Result<Unit> {
+        val existing = try {
+            dao.getCommentById(commentId)
+        } catch (e: Exception) {
+            Log.e(TAG, "restoreDeletedComment: getCommentById упал: $commentId", e)
+            null
+        } ?: return Result.failure(IllegalStateException("Комментарий не найден: $commentId"))
+
+        return try {
+            dao.restoreDeletedComment(commentId)
+            val updated = existing.copy(
+                deletedAt = null,
+                deletedBy = null,
+                purgeAt = null,
+            )
+            syncQueue.enqueue(
+                entityType = ENTITY_TYPE_COMMENT,
+                entityId = commentId,
+                operation = "update",
+                payload = updated,
+            )
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "restoreDeletedComment упал: $commentId", e)
+            Result.failure(e)
+        }
+    }
+
+    /** Список удалённых комментариев клуба — для вкладки «Удалённые». */
+    fun observeDeletedCommentsByClub(clubId: String): Flow<List<CommentEntity>> =
+        dao.observeDeletedCommentsByClub(clubId)
 }

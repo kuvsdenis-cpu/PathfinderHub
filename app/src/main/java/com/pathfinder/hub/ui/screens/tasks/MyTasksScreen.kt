@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Share
@@ -20,8 +21,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.planning.TaskEntity
+import com.pathfinder.hub.ui.screens.tests.TestsForScopeSection
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,6 +31,8 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun MyTasksScreen(
     onBack: () -> Unit,
     onCreateTask: () -> Unit = {},
+    onOpenTest: (testId: String) -> Unit = {},
+    onCreateTest: (taskId: String) -> Unit = {},
     viewModel: MyTasksViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -97,7 +101,20 @@ fun MyTasksScreen(
                         if (state.activeTab == 1) {
                             ArchivedTaskCard(item.task, onRestore = { viewModel.restoreTask(item.task.id) })
                         } else {
-                            TaskCard(item, viewModel)
+                            Column {
+                                TaskCard(
+                                    item = item,
+                                    vm = viewModel,
+                                    canCreateTest = state.canCreateTest,
+                                    onCreateTest = { onCreateTest(item.task.id) },
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                TestsForScopeSection(
+                                    scope = "task",
+                                    scopeId = item.task.id,
+                                    onOpenTest = onOpenTest,
+                                )
+                            }
                         }
                     }
                 }
@@ -124,7 +141,7 @@ private fun ArchivedTaskCard(task: TaskEntity, onRestore: () -> Unit) {
             if (task.archivedAt != null) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "В архиве с: ${java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale("ru")).format(task.archivedAt)}",
+                    "В архиве с: ${java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.forLanguageTag("ru")).format(task.archivedAt)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -143,7 +160,12 @@ private fun ArchivedTaskCard(task: TaskEntity, onRestore: () -> Unit) {
 }
 
 @Composable
-private fun TaskCard(item: TaskWithAssignment, vm: MyTasksViewModel) {
+private fun TaskCard(
+    item: TaskWithAssignment,
+    vm: MyTasksViewModel,
+    canCreateTest: Boolean = false,
+    onCreateTest: () -> Unit = {},
+) {
     val task = item.task
     val status = item.assignmentStatus ?: task.status
     Card(Modifier.fillMaxWidth()) {
@@ -156,6 +178,18 @@ private fun TaskCard(item: TaskWithAssignment, vm: MyTasksViewModel) {
             Spacer(Modifier.height(8.dp))
             Text("Статус: ${statusName(status)}",
                 style = MaterialTheme.typography.labelLarge, color = PathfinderBlue)
+
+            if (canCreateTest) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onCreateTest,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Создать тест")
+                }
+            }
 
             Spacer(Modifier.height(12.dp))
             Row(

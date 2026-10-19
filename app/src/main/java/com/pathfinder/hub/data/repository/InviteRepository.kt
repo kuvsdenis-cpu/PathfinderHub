@@ -90,6 +90,55 @@ class InviteRepository @Inject constructor(
         return invite
     }
 
+    // ==================== ПЕРЕДАЧА КЛУБА ЧЕРЕЗ ИНВАЙТ ====================
+
+    /**
+     * Создаёт transfer-invite (передача владения клубом новому директору).
+     * Перед созданием отзывает все активные transfer-invites этого клуба
+     * (правило: один активный transfer-invite за раз).
+     */
+    suspend fun createTransferInvite(
+        clubId: String,
+        createdBy: String,
+        lifetimeDays: Int = 7,
+    ): InviteEntity {
+        revokeActiveTransferInvites(clubId)
+
+        val now = Date()
+        val expiresAt = Date(now.time + lifetimeDays * 24L * 3600 * 1000)
+        val invite = InviteEntity(
+            id = UUID.randomUUID().toString(),
+            code = generateCode(),
+            clubId = clubId,
+            conferenceId = null,
+            role = "director",
+            permissions = emptyList(),
+            createdBy = createdBy,
+            createdAt = now,
+            expiresAt = expiresAt,
+            status = "active",
+            usedBy = null,
+            usedAt = null,
+            transferOwnership = true,
+        )
+        val ok = remote.createInvite(invite)
+        if (!ok) {
+            Log.w(TAG, "createTransferInvite: Firestore недоступен, только Room")
+        }
+        dao.upsert(invite)
+        return invite
+    }
+
+    /** Отзывает все активные transfer-invites клуба. */
+    suspend fun revokeActiveTransferInvites(clubId: String) {
+        val all = dao.getByClubOnce(clubId)
+        all.filter { it.transferOwnership && it.status == "active" }.forEach { inv ->
+            val revoked = inv.copy(status = "revoked")
+            remote.createInvite(revoked)  // перезаписываем документ
+            dao.upsert(revoked)
+        }
+    }
+
     // ==================== АТОМАРНЫЙ CLAIM ====================
 
     suspend fun reserveInvite(code: String): Result<InviteEntity> {

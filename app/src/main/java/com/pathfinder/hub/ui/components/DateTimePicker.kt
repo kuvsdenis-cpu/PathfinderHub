@@ -33,7 +33,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-private val DISPLAY_FMT = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
+private val DISPLAY_FMT = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.forLanguageTag("ru"))
 
 /**
  * Поле выбора даты и времени.

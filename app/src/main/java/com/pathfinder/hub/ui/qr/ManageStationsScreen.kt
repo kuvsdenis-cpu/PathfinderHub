@@ -47,7 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.qr.QrStationEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import kotlinx.coroutines.Dispatchers
@@ -62,10 +62,6 @@ fun ManageStationsScreen(
     onOpenQuestReadonly: (questId: String) -> Unit = {},
     viewModel: ManageStationsViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,22 +77,34 @@ fun ManageStationsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateStation,
-                containerColor = PathfinderBlue,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, "Создать станцию")
-            }
         }
     ) { padding ->
+        ManageStationsContent(
+            onCreateStation = onCreateStation,
+            onOpenQuestReadonly = onOpenQuestReadonly,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+fun ManageStationsContent(
+    onCreateStation: () -> Unit,
+    onOpenQuestReadonly: (questId: String) -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: ManageStationsViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    Box(modifier.fillMaxSize()) {
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator()
             }
-            else -> Column(Modifier.fillMaxSize().padding(padding)) {
+            else -> Column(Modifier.fillMaxSize()) {
                 TabRow(selectedTabIndex = state.activeTab) {
                     Tab(
                         selected = state.activeTab == 0,
@@ -110,7 +118,6 @@ fun ManageStationsScreen(
                     )
                 }
                 if (state.activeTab == 0) {
-                    // Вкладка «Одиночные»
                     if (state.standalone.isEmpty()) {
                         Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
                             Text(
@@ -159,7 +166,6 @@ fun ManageStationsScreen(
                         }
                     }
                 } else {
-                    // Вкладка «Квесты» — секции по квестам
                     if (state.questsWithStations.isEmpty()) {
                         Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
                             Text(
@@ -244,6 +250,17 @@ fun ManageStationsScreen(
                     }
                 }
             }
+        }
+
+        FloatingActionButton(
+            onClick = onCreateStation,
+            containerColor = PathfinderBlue,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+        ) {
+            Icon(Icons.Default.Add, "Создать станцию")
         }
     }
 }

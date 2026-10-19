@@ -5,6 +5,7 @@ import com.pathfinder.hub.data.local.dao.InviteDao
 import com.pathfinder.hub.data.local.dao.LevelDao
 import com.pathfinder.hub.data.local.dao.ModerationDao
 import com.pathfinder.hub.data.local.dao.TaskDao
+import com.pathfinder.hub.data.local.dao.TestDao
 import com.pathfinder.hub.data.local.dao.UserDao
 import com.pathfinder.hub.data.local.entity.gamification.AchievementProgressEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
@@ -27,6 +28,7 @@ class CheckAchievementsUseCase @Inject constructor(
     private val honorRepository: HonorRepository,
     private val levelDao: LevelDao,
     private val honorDao: HonorDao,
+    private val testDao: TestDao,
     private val taskDao: TaskDao,
     private val inviteDao: InviteDao,
     private val moderationDao: ModerationDao,
@@ -48,7 +50,7 @@ class CheckAchievementsUseCase @Inject constructor(
         val honorReqDone = try { honorDao.countApprovedRequirementsByUser(userId) } catch (_: Exception) { 0 }
         val totalReqDone = levelReqDone + honorReqDone
 
-        val testsDone = try { honorDao.countPassedTestsByUser(userId) } catch (_: Exception) { 0 }
+        val testsDone = try { testDao.countPassedTestsByUser(userId) } catch (_: Exception) { 0 }
         val versesDone = try { honorDao.countVersesByUser(userId) } catch (_: Exception) { 0 }
         val booksDone = try { honorDao.countBookReportsByUser(userId) } catch (_: Exception) { 0 }
         val tasksDone = try { taskDao.countCompletedByUser(userId) } catch (_: Exception) { 0 }

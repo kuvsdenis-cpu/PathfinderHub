@@ -5,6 +5,7 @@ import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.AuthRepository
 import com.pathfinder.hub.data.repository.InviteRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.usecase.club.TransferClubOwnershipUseCase
 import java.util.Date
 import javax.inject.Inject
 
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class RegisterByInviteUseCase @Inject constructor(
     private val userRepo: UserRepository,
     private val inviteRepo: InviteRepository,
-    private val authRepo: AuthRepository
+    private val authRepo: AuthRepository,
+    private val transferClubOwnership: TransferClubOwnershipUseCase,
 ) {
 
     companion object {
@@ -44,6 +46,7 @@ class RegisterByInviteUseCase @Inject constructor(
         birthDate: Date
     ): Result<String> {
         val code = inviteCode.trim().uppercase()
+        val emailNorm = UserRepository.normalizeEmail(email)
 
         // ============================================================
         // ФАЗА 1: резервируем инвайт в Firestore
@@ -60,7 +63,7 @@ class RegisterByInviteUseCase @Inject constructor(
         // ФАЗА 2: создаём Firebase Auth
         // ============================================================
         val displayName = "$firstName $lastName"
-        val authResult = authRepo.registerWithEmail(email, password, displayName)
+        val authResult = authRepo.registerWithEmail(emailNorm, password, displayName)
 
         val uid = authResult.getOrElse { error ->
             Log.e(TAG, "registerWithEmail упал, откатываем reserve", error)
@@ -89,14 +92,15 @@ class RegisterByInviteUseCase @Inject constructor(
         val isConfSec = invite.role == "conference_secretary"
         val user = UserEntity(
             id = uid,
-            email = email,
+            email = emailNorm,
             emailVerified = false,
             firstName = firstName,
             lastName = lastName,
             role = invite.role,
             clubId = if (isConfSec) null else invite.clubId,
             clubIds = if (isConfSec) emptyList() else listOf(invite.clubId),
-            isOwnerClub = invite.role !in listOf("director", "conference_secretary"),
+            // transferOwnership — owner будет назначен через transferClubOwnership.
+            isOwnerClub = !invite.transferOwnership && invite.role !in listOf("director", "conference_secretary"),
             directorPermissions = if (invite.role == "director") invite.permissions else emptyList(),
             conferenceId = if (isConfSec) invite.conferenceId else null,
             birthDate = birthDate,
@@ -119,6 +123,23 @@ class RegisterByInviteUseCase @Inject constructor(
         return try {
             userRepo.upsert(user)
             Log.d(TAG, "userRepo.upsert OK: $uid")
+
+            // ---- Передача владения клубом ----
+            if (invite.transferOwnership) {
+                val transfer = transferClubOwnership(
+                    oldOwnerId = invite.createdBy,
+                    newOwnerId = uid,
+                    clubId = invite.clubId,
+                    clubName = "",
+                    userRole = "director",
+                )
+                if (transfer.isFailure) {
+                    Log.e(TAG, "transferClubOwnership FAILED после upsert", transfer.exceptionOrNull())
+                    // Не критично — user уже создан. Админ разберётся вручную.
+                } else {
+                    Log.d(TAG, "transferClubOwnership OK: ${invite.createdBy} -> $uid")
+                }
+            }
 
             // ============================================================
             // ФАЗА 5: отправляем письмо с подтверждением почты

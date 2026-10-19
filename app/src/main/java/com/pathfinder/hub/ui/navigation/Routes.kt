@@ -14,6 +14,12 @@ object Routes {
 
     // === Director ===
     const val DIRECTOR_HOME = "director_home"
+    const val DIRECTOR_PEOPLE = "director_people"
+    const val DIRECTOR_LEARNING = "director_learning"
+    const val DIRECTOR_PLANNING = "director_planning"
+    const val DIRECTOR_COMMUNICATIONS = "director_communications"
+    const val DIRECTOR_FINANCE = "director_finance"
+    const val DIRECTOR_MANAGEMENT = "director_management"
     const val DIRECTOR_INVITES = "director_invites"
     const val CLUB_MEMBERS = "club_members"
     const val APPROVALS = "approvals"
@@ -78,8 +84,10 @@ object Routes {
     const val CONTENT_MANAGER = "content_manager"
     const val CONTENT_LEVEL = "content_level/{levelId}"
     const val CONTENT_SECTION = "content_section/{levelId}/{sectionId}"
+    const val CONTENT_HONOR = "content_honor/{honorId}"
     fun contentLevel(levelId: String) = "content_level/$levelId"
     fun contentSection(levelId: String, sectionId: String) = "content_section/$levelId/$sectionId"
+    fun contentHonor(honorId: String) = "content_honor/$honorId"
     fun requirementEditor(levelId: String, requirementId: String) =
         "requirement_editor/$levelId/$requirementId"
 
@@ -88,7 +96,12 @@ object Routes {
     const val HONOR_DETAIL = "honor_detail/{honorId}"
     const val HONOR_REQUIREMENT_DETAIL = "honor_requirement_detail/{honorId}/{requirementId}"
     const val MY_HONORS = "my_honors"
-    const val TEST_SCREEN = "test_screen/{honorId}"
+    const val TEST = "test/{testId}"
+    const val OPEN_ANSWERS = "open_answers"
+    const val OPEN_ANSWER_REVIEW = "open_answer_review/{attemptId}"
+    const val TEST_EDITOR = "test_editor/{testId}"
+    const val TEST_EDITOR_FOR_SCOPE = "test_editor_for_scope/{scope}/{scopeId}"
+    const val TEST_QUESTION_EDITOR = "test_question_editor/{testId}"
 
     // === Универсальная загрузка файлов ===
     const val FILE_UPLOAD = "file_upload/{contextType}/{contextId}"
@@ -143,6 +156,9 @@ object Routes {
     // === Archive ===
     const val ARCHIVE = "archive"
 
+    // === Deleted clubs (trash) ===
+    const val DELETED_CLUBS = "deleted_clubs"
+
     // === Пользовательские группы (B) ===
     const val MANAGE_CUSTOM_GROUPS = "manage_custom_groups"
     const val CUSTOM_GROUP_EDITOR = "custom_group_editor/{groupId}"
@@ -151,7 +167,51 @@ object Routes {
     // === Sync ===
     const val SYNC = "sync"
 
+    // === Bible (B2) ===
+    const val BIBLE = "bible"
+    const val BIBLE_BOOKMARKS = "bible/bookmarks"
+    const val BIBLE_BOOK = "bible/book/{bookId}"
+    const val BIBLE_CHAPTER = "bible/chapter/{bookId}/{chapter}?verse={verseId}"
+    const val BIBLE_SEARCH = "bible/search"
+
+    fun bibleBook(bookId: String) = "bible/book/${Uri.encode(bookId)}"
+    fun bibleChapter(bookId: String, chapter: Int, verseId: String? = null): String {
+        val base = "bible/chapter/${Uri.encode(bookId)}/$chapter"
+        return if (verseId != null) "$base?verse=${Uri.encode(verseId)}" else base
+    }
+
+    // === Pearls (B3.1) ===
+    const val PEARLS = "pearls"
+    const val PEARL_DETAIL = "pearls/detail/{pearlId}"
+    fun pearlDetail(pearlId: String) = "pearls/detail/${Uri.encode(pearlId)}"
+    const val PEARLS_ADMIN = "pearls_admin"
+
+    // === Reading Plan (B4.1) ===
+    const val READING_PLANS = "reading_plans"
+    const val READING_PLAN_DETAIL = "reading_plans/{scheduleId}"
+    const val READING_PLAN_DAY = "reading_plans/day/{dayId}"
+    const val READING_PLANS_ADMIN = "reading_plans_admin"
+    fun readingPlanDetail(scheduleId: String) = "reading_plans/${Uri.encode(scheduleId)}"
+    fun readingPlanDay(dayId: String) = "reading_plans/day/${Uri.encode(dayId)}"
+
     // === Helpers ===
+
+    /**
+     * Целевой home-экран для роли.
+     * Возвращает null, если роль неизвестна — вызывающий должен
+     * показать ошибку, НЕ отправлять на teen.
+     */
+    fun homeForRole(role: String?): String? = when (role) {
+        "director" -> DIRECTOR_HOME
+        "instructor" -> INSTRUCTOR_HOME
+        "secretary" -> SECRETARY_HOME
+        "parent" -> PARENT_HOME
+        "conference_admin" -> CONFERENCE_HOME
+        "conference_secretary" -> CONFERENCE_SECRETARY_HOME
+        "teen" -> TEEN_HOME
+        else -> null
+    }
+
     fun onboarding(role: String, userId: String) = "onboarding/$role/$userId"
     fun levelDetail(levelId: String) = "level_detail/$levelId"
     fun requirementDetail(levelId: String, requirementId: String) =
@@ -159,7 +219,12 @@ object Routes {
     fun honorDetail(honorId: String) = "honor_detail/$honorId"
     fun honorRequirementDetail(honorId: String, requirementId: String) =
         "honor_requirement_detail/$honorId/$requirementId"
-    fun testScreen(honorId: String) = "test_screen/$honorId"
+    fun test(testId: String) = "test/$testId"
+    fun openAnswerReview(attemptId: String) = "open_answer_review/$attemptId"
+    fun testEditor(testId: String) = "test_editor/$testId"
+    fun testEditorForScope(scope: String, scopeId: String) =
+        "test_editor_for_scope/$scope/${Uri.encode(scopeId)}"
+    fun testQuestionEditor(testId: String) = "test_question_editor/$testId"
     fun fileUpload(contextType: String, contextId: String = "") =
         "file_upload/$contextType/${Uri.encode(contextId)}"
     fun eventDetail(eventId: String) = "event_detail/$eventId"

@@ -91,7 +91,7 @@ object ShareCardGenerator {
 
         // ---------- Дата ----------
         val dateStr = dateText
-            ?: SimpleDateFormat("d MMMM yyyy", Locale("ru")).format(Date())
+            ?: SimpleDateFormat("d MMMM yyyy", Locale.forLanguageTag("ru")).format(Date())
         val datePaint = Paint().apply {
             isAntiAlias = true
             textSize = 34f

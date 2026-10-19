@@ -5,10 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.reports.ReportEntity
 import com.pathfinder.hub.data.repository.ReportRepository
+import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.PermissionChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,48 +28,47 @@ data class ReportHistoryUiState(
     val infoMessage: String? = null,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ReportHistoryViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val reportRepository: ReportRepository,
-    private val userRepository: com.pathfinder.hub.data.repository.UserRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ReportHistoryUiState())
     val state: StateFlow<ReportHistoryUiState> = _state.asStateFlow()
 
     init {
-        loadReports()
+        observe()
     }
 
-    private fun loadReports() {
+    private fun observe() {
         val userId = sessionManager.getUserId()
         if (userId == null) {
             _state.update { it.copy(isLoading = false, errorMessage = "Пользователь не найден") }
             return
         }
 
+        // canArchive
         viewModelScope.launch {
-            val user = userRepository.getUser(userId)
-            val clubId = user?.clubId
-            val canArchive = com.pathfinder.hub.domain.permissions.PermissionChecker
-                .canArchive(user)
-            _state.update { it.copy(canArchive = canArchive) }
-
-            if (clubId.isNullOrBlank()) {
-                _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
-                return@launch
+            userRepository.observeUser(userId).collect { user ->
+                _state.update { it.copy(canArchive = PermissionChecker.canArchive(user)) }
             }
+        }
 
-            // observeClubReports уже фильтрует archivedAt IS NULL
-            reportRepository.observeClubReports(clubId).collect { reports ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        reports = reports,
-                    )
+        // reports: clubId → перезагрузка
+        viewModelScope.launch {
+            userRepository.observeUser(userId)
+                .map { it?.clubId }
+                .distinctUntilChanged()
+                .flatMapLatest { clubId ->
+                    if (clubId.isNullOrBlank()) flowOf(emptyList())
+                    else reportRepository.observeClubReports(clubId)
                 }
-            }
+                .collect { reports ->
+                    _state.update { it.copy(isLoading = false, reports = reports) }
+                }
         }
     }
 

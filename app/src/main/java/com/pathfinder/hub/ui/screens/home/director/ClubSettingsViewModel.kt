@@ -7,9 +7,15 @@ import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.repository.ClubRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,9 +25,11 @@ data class ClubSettingsUiState(
     val club: ClubEntity? = null,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
-    val saveSuccess: Boolean = false
+    val saveSuccess: Boolean = false,
+    val currentUserIsOwner: Boolean = false
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ClubSettingsViewModel @Inject constructor(
     private val sessionManager: SessionManager,
@@ -44,21 +52,24 @@ class ClubSettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            try {
-                val currentUser = userRepository.getUser(userId)
-                val clubId = currentUser?.clubId
-
-                if (clubId.isNullOrBlank()) {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Клуб не найден") }
-                    return@launch
+            // Отдельная подписка: обновляем только флаг owner,
+            // не трогая существующую цепочку загрузки клуба.
+            launch {
+                userRepository.observeUser(userId).collect { u ->
+                    _state.update { it.copy(currentUserIsOwner = u?.isOwnerClub == true) }
                 }
+            }
 
-                clubRepository.observeClub(clubId).collect { club ->
+            userRepository.observeUser(userId)
+                .map { it?.clubId }
+                .distinctUntilChanged()
+                .flatMapLatest { clubId ->
+                    if (clubId.isNullOrBlank()) flowOf(null)
+                    else clubRepository.observeClub(clubId)
+                }
+                .collect { club ->
                     _state.update { it.copy(isLoading = false, club = club) }
                 }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки") }
-            }
         }
     }
 
@@ -77,5 +88,19 @@ class ClubSettingsViewModel @Inject constructor(
 
     fun clearSaveSuccess() {
         _state.update { it.copy(saveSuccess = false) }
+    }
+
+    /** Soft delete текущего клуба. Только owner. */
+    fun deleteClub(onDeleted: () -> Unit = {}) {
+        val userId = sessionManager.getUserId() ?: return
+        val club = _state.value.club ?: return
+        viewModelScope.launch {
+            try {
+                clubRepository.softDelete(club.id, userId)
+                onDeleted()
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка удаления") }
+            }
+        }
     }
 }

@@ -24,6 +24,9 @@ import com.pathfinder.hub.data.local.entity.auth.InviteEntity
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.UserClubSeeder
+import com.pathfinder.hub.data.local.worker.BibleSeedWorker
+import com.pathfinder.hub.data.local.worker.PearlSeedWorker
+import com.pathfinder.hub.data.local.worker.ReadingPlanSeedWorker
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
 import com.pathfinder.hub.data.archive.PurgeScheduler
 import com.pathfinder.hub.data.sync.SyncScheduler
@@ -107,7 +110,13 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             // Загрузка контента и наблюдение за воркером — как было.
             seedAchievements()
             scheduleContentUpdate()
+            scheduleBibleSeed()
+            schedulePearlSeed()
+            scheduleReadingPlanSeed()
             observeSeedCompletion()  // suspend, не возвращается до конца воркера
+            observeBibleSeedCompletion()
+            observePearlSeedCompletion()
+            observeReadingPlanSeedCompletion()
         }
     }
 
@@ -340,6 +349,165 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             Log.d(TAG, "Ачивки загружены")
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка загрузки ачивок", e)
+        }
+    }
+
+    // ==================== БИБЛИЯ ====================
+
+    private fun scheduleBibleSeed() {
+        val request = OneTimeWorkRequestBuilder<BibleSeedWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            BibleSeedWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+        Log.d(TAG, "Воркер BibleSeedWorker поставлен в очередь (KEEP)")
+    }
+
+    private suspend fun observeBibleSeedCompletion() {
+        val workManager = WorkManager.getInstance(this)
+        kotlinx.coroutines.delay(500L)
+
+        while (true) {
+            val infos = workManager
+                .getWorkInfosForUniqueWork(BibleSeedWorker.WORK_NAME)
+                .get()
+
+            val failed = infos.any {
+                it.state == WorkInfo.State.FAILED ||
+                        it.state == WorkInfo.State.CANCELLED
+            }
+            if (failed) {
+                Log.e(TAG, "❌ BibleSeedWorker завершился неудачей")
+                verifyBibleLoaded()
+                return
+            }
+
+            val anyRunning = infos.any {
+                it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+            }
+            if (!anyRunning) {
+                Log.d(TAG, "✓ BibleSeedWorker завершён")
+                verifyBibleLoaded()
+                return
+            }
+
+            kotlinx.coroutines.delay(1000L)
+        }
+    }
+
+    private suspend fun verifyBibleLoaded() {
+        try {
+            val db = AppDatabase.getInstance(this)
+            val count = db.bibleDao().getVerseCount("rst")
+            Log.d(TAG, "📊 Bible verses in Room: $count")
+            if (count == 0) {
+                Log.e(TAG, "❌ ВНИМАНИЕ: стихи Библии НЕ загружены!")
+            } else {
+                Log.d(TAG, "✅ Библия загружена: $count стихов")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка проверки Библии", e)
+        }
+    }
+
+    // ==================== ЖЕМЧУЖИНЫ (B3.1) ====================
+
+    private fun schedulePearlSeed() {
+        val request = OneTimeWorkRequestBuilder<PearlSeedWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            PearlSeedWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+        Log.d(TAG, "Воркер PearlSeedWorker поставлен в очередь (KEEP)")
+    }
+
+    private suspend fun observePearlSeedCompletion() {
+        val workManager = WorkManager.getInstance(this)
+        kotlinx.coroutines.delay(500L)
+
+        while (true) {
+            val infos = workManager
+                .getWorkInfosForUniqueWork(PearlSeedWorker.WORK_NAME)
+                .get()
+
+            val failed = infos.any {
+                it.state == WorkInfo.State.FAILED ||
+                        it.state == WorkInfo.State.CANCELLED
+            }
+            if (failed) {
+                Log.e(TAG, "PearlSeedWorker завершился неудачей")
+                return
+            }
+
+            val anyRunning = infos.any {
+                it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+            }
+            if (!anyRunning) {
+                Log.d(TAG, "PearlSeedWorker завершён")
+                return
+            }
+
+            kotlinx.coroutines.delay(1000L)
+        }
+    }
+
+    // ==================== ПЛАН ЧТЕНИЯ (B4.1) ====================
+
+    private fun scheduleReadingPlanSeed() {
+        val request = OneTimeWorkRequestBuilder<ReadingPlanSeedWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .build()
+            )
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            ReadingPlanSeedWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+        Log.d(TAG, "Воркер ReadingPlanSeedWorker поставлен в очередь (KEEP)")
+    }
+
+    private suspend fun observeReadingPlanSeedCompletion() {
+        val workManager = WorkManager.getInstance(this)
+        kotlinx.coroutines.delay(500L)
+        while (true) {
+            val infos = workManager
+                .getWorkInfosForUniqueWork(ReadingPlanSeedWorker.WORK_NAME)
+                .get()
+            val failed = infos.any {
+                it.state == WorkInfo.State.FAILED ||
+                        it.state == WorkInfo.State.CANCELLED
+            }
+            if (failed) {
+                Log.e(TAG, "ReadingPlanSeedWorker завершился неудачей")
+                return
+            }
+            val anyRunning = infos.any {
+                it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+            }
+            if (!anyRunning) {
+                Log.d(TAG, "ReadingPlanSeedWorker завершён")
+                return
+            }
+            kotlinx.coroutines.delay(1000L)
         }
     }
 

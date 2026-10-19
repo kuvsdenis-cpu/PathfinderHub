@@ -11,8 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.learning.HonorEntity
+import com.pathfinder.hub.ui.components.CollapsibleSection
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @Suppress("DEPRECATION")
@@ -59,10 +60,35 @@ fun MyHonorsScreen(
                 else -> state.available
             }
 
-            LazyColumn(contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(list, key = { it.id }) { h ->
-                    HonorCard(h) { onOpenHonor(h.id) }
+            val categoriesById = remember(state.categories) {
+                state.categories.associateBy { it.id }
+            }
+            val sortedCategories = remember(state.categories) {
+                state.categories.sortedBy { it.order }
+            }
+            val grouped = remember(list) {
+                list.groupBy { it.categoryId }
+            }
+            val orderedIds = sortedCategories.map { it.id }.filter { it in grouped.keys } +
+                    grouped.keys.filter { it !in sortedCategories.map { c -> c.id } }
+
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(orderedIds, key = { "cat_$it" }) { categoryId ->
+                    val honors = grouped[categoryId].orEmpty()
+                    CollapsibleSection(
+                        title = categoriesById[categoryId]?.name ?: "Без категории",
+                        badge = "${honors.size}",
+                        initiallyExpanded = false,
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            honors.forEach { h ->
+                                HonorCard(h) { onOpenHonor(h.id) }
+                            }
+                        }
+                    }
                 }
             }
         }

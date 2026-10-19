@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -25,6 +25,35 @@ import java.util.Locale
 @Composable
 fun ApprovalsScreen(
     onBack: () -> Unit,
+    viewModel: ApprovalsViewModel = hiltViewModel()
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Проверка требований") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PathfinderBlue,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { padding ->
+        ApprovalsContent(
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+fun ApprovalsContent(
+    modifier: Modifier = Modifier,
     viewModel: ApprovalsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -44,32 +73,15 @@ fun ApprovalsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Одобрение") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PathfinderBlue,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
+    Box(modifier.fillMaxSize()) {
         when {
             state.isLoading -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
             state.errorMessage != null && state.items.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     Text(
                         text = state.errorMessage!!,
                         color = MaterialTheme.colorScheme.error,
@@ -78,7 +90,7 @@ fun ApprovalsScreen(
                 }
             }
             else -> {
-                Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Column(modifier = Modifier.fillMaxSize()) {
                     TabRow(selectedTabIndex = selectedTab) {
                         Tab(
                             selected = selectedTab == 0,
@@ -129,6 +141,11 @@ fun ApprovalsScreen(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 
     rejectDialogItem?.let { item ->
@@ -215,7 +232,7 @@ private fun ApprovalCard(
             item.submittedAt?.let { date ->
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Подано: ${SimpleDateFormat("d MMM yyyy, HH:mm", Locale("ru")).format(date)}",
+                    text = "Подано: ${SimpleDateFormat("d MMM yyyy, HH:mm", Locale.forLanguageTag("ru")).format(date)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

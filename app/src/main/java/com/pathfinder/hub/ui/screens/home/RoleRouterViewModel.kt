@@ -41,14 +41,25 @@ class RoleRouterViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val user = userRepository.getUser(userId)
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        role = user?.role
-                    )
+                if (user == null) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            role = null,
+                            errorMessage = "Пользователь не найден. Войдите заново."
+                        )
+                    }
+                } else {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            role = user.role,
+                            errorMessage = null,
+                        )
+                    }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, errorMessage = e.message) }
+                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки") }
             }
         }
     }

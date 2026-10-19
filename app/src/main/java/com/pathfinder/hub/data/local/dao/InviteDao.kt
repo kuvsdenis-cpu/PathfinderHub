@@ -8,6 +8,8 @@ interface InviteDao {
     @Query("SELECT * FROM invites WHERE code = :code LIMIT 1")
     suspend fun getByCode(code: String): InviteEntity?
     @Query("SELECT * FROM invites WHERE clubId = :clubId")
+    suspend fun getByClubOnce(clubId: String): List<InviteEntity>
+    @Query("SELECT * FROM invites WHERE clubId = :clubId")
     fun observeByClub(clubId: String): Flow<List<InviteEntity>>
     @Query("SELECT COUNT(*) FROM invites WHERE createdBy = :creatorId")
     suspend fun countByCreator(creatorId: String): Int

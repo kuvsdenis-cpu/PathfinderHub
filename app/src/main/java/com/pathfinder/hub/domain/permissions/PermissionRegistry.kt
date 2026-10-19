@@ -66,17 +66,14 @@ object PermissionRegistry {
     /** Все ключи прав. */
     val ALL: List<String> = GROUPS.flatMap { it.permissions.map { p -> p.key } }
 
-    /** Права по умолчанию для со-директора (безопасный набор). */
-    val DEFAULT_CO_DIRECTOR: List<String> = listOf(
-        "members.view",
-        "learning.approve",
-        "learning.homework",
-        "events.create",
-        "events.edit",
-        "tasks.create",
-        "moderation.review",
-        "reports.view",
-    )
+    /**
+     * Права по умолчанию для со-директора.
+     *
+     * ПУСТО: права назначаются при создании/приглашении staff-роли.
+     * Owner (isOwnerClub = true) получает всё автоматически.
+     * Co-director / instructor / secretary — только то, что выдал owner.
+     */
+    val DEFAULT_CO_DIRECTOR: List<String> = emptyList()
 
     fun labelOf(key: String): String =
         GROUPS.flatMap { it.permissions }.find { it.key == key }?.label ?: key

@@ -13,10 +13,16 @@ interface ClubDao {
 
     @Query("SELECT * FROM clubs WHERE id IN (:ids)")
     suspend fun getClubs(ids: List<String>): List<ClubEntity>
-    @Query("SELECT * FROM clubs WHERE conferenceId = :conferenceId ORDER BY name")
+    @Query("SELECT * FROM clubs WHERE conferenceId = :conferenceId AND deletedAt IS NULL ORDER BY name")
     fun observeClubsByConference(conferenceId: String): Flow<List<ClubEntity>>
-    @Query("SELECT * FROM clubs ORDER BY name")
+    @Query("SELECT * FROM clubs WHERE deletedAt IS NULL ORDER BY name")
     fun observeAllClubs(): Flow<List<ClubEntity>>
+
+    @Query("SELECT * FROM clubs WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC")
+    fun observeDeletedClubs(): Flow<List<ClubEntity>>
+
+    @Query("SELECT * FROM clubs WHERE purgeAt IS NOT NULL AND purgeAt < :now")
+    suspend fun getExpiredClubs(now: Long): List<ClubEntity>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(club: ClubEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE)

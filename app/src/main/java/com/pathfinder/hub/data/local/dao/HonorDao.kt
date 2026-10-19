@@ -16,9 +16,6 @@ import com.pathfinder.hub.data.local.entity.learning.HonorProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorVersionEntity
 import com.pathfinder.hub.data.local.entity.learning.MemoryVerseEntity
-import com.pathfinder.hub.data.local.entity.learning.OpenAnswerReviewEntity
-import com.pathfinder.hub.data.local.entity.learning.TestAttemptEntity
-import com.pathfinder.hub.data.local.entity.learning.TestQuestionEntity
 import com.pathfinder.hub.data.local.entity.learning.VerseProgressEntity
 import com.pathfinder.hub.data.local.relation.HonorWithRequirements
 import kotlinx.coroutines.flow.Flow
@@ -89,21 +86,6 @@ interface HonorDao {
     @Query("SELECT * FROM honor_completions WHERE userId = :userId")
     suspend fun getCompletions(userId: String): List<HonorCompletionEntity>
 
-    @Query("SELECT * FROM test_questions WHERE honorId = :honorId ORDER BY RANDOM() LIMIT :limit")
-    suspend fun getRandomQuestions(honorId: String, limit: Int): List<TestQuestionEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertQuestions(qs: List<TestQuestionEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertAttempt(a: TestAttemptEntity)
-
-    @Query("SELECT MAX(attemptNumber) FROM test_attempts WHERE userId = :userId AND honorId = :honorId")
-    suspend fun getLastAttemptNumber(userId: String, honorId: String): Int?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertOpenAnswer(r: OpenAnswerReviewEntity)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertVersion(v: HonorVersionEntity)
 
@@ -169,9 +151,6 @@ interface HonorDao {
     """)
     suspend fun countSpecializationsCompletedInPeriod(clubId: String, from: Long, to: Long): Int
 
-    @Query("SELECT COUNT(*) FROM test_attempts WHERE userId = :userId AND passed = 1")
-    suspend fun countPassedTestsByUser(userId: String): Int
-
     @Query("SELECT COUNT(*) FROM verse_progress WHERE userId = :userId")
     suspend fun countVersesByUser(userId: String): Int
 
@@ -188,4 +167,10 @@ interface HonorDao {
     // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
     @Query("DELETE FROM content_versions")
     suspend fun clearContentVersion()
+
+    @Query("DELETE FROM honor_requirements")
+    suspend fun clearAllRequirements()
+
+    @Query("DELETE FROM honors")
+    suspend fun clearAllHonors()
 }

@@ -59,7 +59,7 @@ class LoginViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             loginSuccess = true,
-                            userRole = user?.role ?: "teen"
+                            userRole = user?.role   // null — не подставляем teen
                         )
                     }
                 },

@@ -21,10 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
+import com.pathfinder.hub.ui.screens.tests.TestsForScopeSection
 import com.pathfinder.hub.ui.theme.PathfinderGreen
 import com.pathfinder.hub.ui.theme.PathfinderRed
 
@@ -34,6 +35,7 @@ fun LevelDetailScreen(
     onBack: () -> Unit,
     onOpenRequirement: (String, String) -> Unit,
     onUploadReport: (String, String) -> Unit,   // оставлен для совместимости с NavHost
+    onOpenTest: (testId: String) -> Unit,
     savedStateHandle: SavedStateHandle,
     viewModel: LevelDetailViewModel = hiltViewModel()
 ) {
@@ -100,6 +102,14 @@ fun LevelDetailScreen(
                         ProgressHeader(
                             approved = state.approvedCount,
                             total = state.totalCount
+                        )
+                    }
+
+                    item {
+                        TestsForScopeSection(
+                            scope = "level",
+                            scopeId = state.level?.id,
+                            onOpenTest = onOpenTest,
                         )
                     }
 

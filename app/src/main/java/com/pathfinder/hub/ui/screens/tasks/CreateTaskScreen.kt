@@ -45,8 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.DateField
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,9 +55,11 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun CreateTaskScreen(
     onBack: () -> Unit,
     onCreated: () -> Unit,
-    viewModel: CreateTaskViewModel = hiltViewModel()
+    viewModel: CreateTaskViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
 
     LaunchedEffect(state.isCreated) {
         if (state.isCreated) onCreated()
@@ -83,9 +86,13 @@ fun CreateTaskScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
             Text("Параметры задания", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
 
@@ -316,6 +323,7 @@ fun CreateTaskScreen(
                 } else {
                     Text("Назначить задание")
                 }
+            }
             }
         }
     }

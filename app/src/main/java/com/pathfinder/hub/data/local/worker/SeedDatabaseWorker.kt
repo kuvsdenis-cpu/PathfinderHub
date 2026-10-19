@@ -6,6 +6,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.pathfinder.hub.data.local.entity.learning.ContentVersionEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorCategoryEntity
@@ -14,9 +15,12 @@ import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelSectionEntity
+import com.pathfinder.hub.data.local.entity.learning.TestEntity
+import com.pathfinder.hub.data.local.entity.learning.TestQuestionEntity
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
 import com.pathfinder.hub.data.repository.StorageRepository
+import com.pathfinder.hub.data.repository.TestRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Date
@@ -27,54 +31,81 @@ class SeedDatabaseWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val levelRepository: LevelRepository,
     private val honorRepository: HonorRepository,
-    private val storageRepository: StorageRepository
+    private val storageRepository: StorageRepository,
+    private val testRepository: TestRepository,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
 
     override suspend fun doWork(): Result {
-        Log.d(TAG, "🚀 Проверяем версию контента…")
+        Log.d(TAG, "🚀 Проверяем версии контента…")
         return try {
             val levelsJson = readAsset("levels.json")
-            val honorsJson = readAsset("honors.json")
+            val categoriesJson = readAsset("honors/categories.json")
+            val testsJson = readAsset("tests.json")
 
-            if (levelsJson == null && honorsJson == null) {
+            if (levelsJson == null && categoriesJson == null && testsJson == null) {
                 Log.w(TAG, "⚠️ JSON не найдены в assets")
                 return Result.failure()
             }
 
             val levelsVersion = extractVersion(levelsJson)
-            val honorsVersion = extractVersion(honorsJson)
-            val currentVersion = honorRepository.getLatestContentVersion()
+            val honorsVersion = extractVersion(categoriesJson)
+            val testsVersion = extractVersion(testsJson)
 
-            Log.d(TAG, "Текущая версия в Room: ${currentVersion?.version ?: "нет"}")
-            Log.d(TAG, "Версия levels.json: $levelsVersion")
-            Log.d(TAG, "Версия honors.json: $honorsVersion")
+            val current = honorRepository.getLatestContentVersion()
+            Log.d(TAG, "Текущие версии в Room: levels=${current?.levelsVersion}, " +
+                    "honors=${current?.honorsVersion}, tests=${current?.testsVersion}")
+            Log.d(TAG, "Версии в assets: levels=$levelsVersion, honors=$honorsVersion, tests=$testsVersion")
 
+            var newLevelsVersion = current?.levelsVersion
+            var newHonorsVersion = current?.honorsVersion
+            var newTestsVersion = current?.testsVersion
             var updated = false
-            if (levelsJson != null && shouldUpdate(currentVersion?.version, levelsVersion)) {
+
+            // LEVELS
+            if (levelsJson != null && shouldUpdate(current?.levelsVersion, levelsVersion)) {
                 seedLevels(levelsJson)
+                newLevelsVersion = levelsVersion
                 updated = true
             }
-            if (honorsJson != null && shouldUpdate(currentVersion?.version, honorsVersion)) {
-                seedHonors(honorsJson)
+
+            // HONORS
+            if (categoriesJson != null && shouldUpdate(current?.honorsVersion, honorsVersion)) {
+                seedHonors()
+                newHonorsVersion = honorsVersion
+                updated = true
+            }
+
+            // TESTS
+            if (testsJson != null && shouldUpdate(current?.testsVersion, testsVersion)) {
+                seedTests(testsJson)
+                newTestsVersion = testsVersion
                 updated = true
             }
 
             if (updated) {
-                val newVersion = maxOf(levelsVersion, honorsVersion)
+                val aggregateVersion = listOfNotNull(
+                    newLevelsVersion,
+                    newHonorsVersion,
+                    newTestsVersion
+                ).maxOrNull() ?: "0"
+
                 honorRepository.upsertContentVersion(
                     ContentVersionEntity(
-                        version = newVersion,
+                        version = aggregateVersion,
                         updatedAt = Date(),
                         levels = 0,
                         honors = 0,
-                        changelog = "Автообновление из assets"
+                        changelog = "Автообновление из assets (раздельные версии)",
+                        levelsVersion = newLevelsVersion,
+                        honorsVersion = newHonorsVersion,
+                        testsVersion = newTestsVersion
                     )
                 )
-                Log.d(TAG, "✅ Контент обновлён до версии $newVersion")
+                Log.d(TAG, "✅ Контент обновлён. Агрегированная версия: $aggregateVersion")
             } else {
-                Log.d(TAG, "✓ Версия не изменилась")
+                Log.d(TAG, "✓ Версии не изменились")
             }
 
             Result.success()
@@ -161,16 +192,96 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
     // ==================== СПЕЦИАЛИЗАЦИИ ====================
 
-    private suspend fun seedHonors(json: String) {
-        val type = object : TypeToken<HonorsFile>() {}.type
-        val file: HonorsFile = gson.fromJson(json, type)
-        honorRepository.upsertCategories(file.categories)
-        val honors = file.honors.map { it.toEntity() }
+    /**
+     * Читает все JSON из assets/honors/ (кроме categories.json).
+     */
+    private fun readAllHonorsFiles(): List<ParsedHonor> {
+        val all = mutableListOf<ParsedHonor>()
+        val files = try {
+            applicationContext.assets.list("honors") ?: emptyArray()
+        } catch (e: Exception) {
+            Log.w(TAG, "Папка assets/honors не найдена", e)
+            emptyArray()
+        }
+        for (file in files.filter { it.endsWith(".json") && it != "categories.json" }) {
+            val json = readAsset("honors/$file") ?: continue
+            try {
+                val type = object : TypeToken<List<ParsedHonor>>() {}.type
+                val honors: List<ParsedHonor> = gson.fromJson(json, type)
+                all.addAll(honors)
+                Log.d(TAG, "  honors/$file: ${honors.size} специализаций")
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка парсинга honors/$file", e)
+            }
+        }
+        return all
+    }
+
+    private suspend fun seedHonors() {
+        val categoriesJson = readAsset("honors/categories.json")
+            ?: throw IllegalStateException("assets/honors/categories.json не найден")
+        val categoriesFile: CategoriesFile =
+            gson.fromJson(categoriesJson, CategoriesFile::class.java)
+        honorRepository.upsertCategories(categoriesFile.categories)
+
+        val allHonors = readAllHonorsFiles()
+        if (allHonors.isEmpty()) {
+            throw IllegalStateException("assets/honors/*.json — ни одного файла")
+        }
+
+        Log.d(TAG, "🧹 Очищаем старые специализации и требования…")
+        honorRepository.clearAllHonors()
+        honorRepository.clearAllHonorRequirements()
+
+        val honors = allHonors.map { it.toEntity() }
         honorRepository.upsertHonors(honors)
-        val requirements = file.honors.flatMap { it.requirements }
+        val requirements = allHonors.flatMap { it.requirements }
         honorRepository.upsertRequirements(requirements)
-        Log.d(TAG, "Загружено: ${file.categories.size} категорий, " +
+
+        Log.d(TAG, "Загружено: ${categoriesFile.categories.size} категорий, " +
                 "${honors.size} специализаций, ${requirements.size} требований")
+    }
+
+    // ==================== ТЕСТЫ ====================
+
+    private suspend fun seedTests(json: String) {
+        val type = object : TypeToken<TestsFile>() {}.type
+        val file: TestsFile = gson.fromJson(json, type)
+
+        var testCount = 0
+        var questionCount = 0
+        for (parsed in file.tests) {
+            val test = TestEntity(
+                id = parsed.id,
+                scope = parsed.scope,
+                scopeId = parsed.scopeId,
+                title = parsed.title,
+                description = parsed.description,
+                passScore = parsed.passScore,
+                clubId = null,
+                archivedAt = null,
+            )
+            testRepository.upsertTest(test)
+            testCount++
+
+            val questions = parsed.questions.mapIndexed { idx, q ->
+                TestQuestionEntity(
+                    id = q.id,
+                    testId = parsed.id,
+                    clubId = null,
+                    honorId = "",
+                    type = q.type,
+                    text = q.text,
+                    options = q.options,
+                    correctAnswer = q.correctAnswer,
+                    points = q.points,
+                    order = idx,
+                )
+            }
+            testRepository.replaceQuestions(parsed.id, questions)
+            questionCount += questions.size
+        }
+        Log.d(TAG, "Загружено тестов: $testCount, вопросов: $questionCount")
     }
 
     // ==================== УТИЛИТЫ ====================
@@ -212,10 +323,10 @@ data class ParsedSection(
     val requirements: List<LevelRequirementEntity>
 )
 
-data class HonorsFile(
+/** categories.json — только категории. */
+data class CategoriesFile(
     val version: String,
-    val categories: List<HonorCategoryEntity>,
-    val honors: List<ParsedHonor>
+    val categories: List<HonorCategoryEntity>
 )
 
 data class ParsedHonor(
@@ -233,6 +344,10 @@ data class ParsedHonor(
     val promotedAt: String? = null,
     val promotedBy: String? = null,
     val contentVersion: String = "2024.1",
+    @SerializedName("preview")
+    val preview: String? = null,
+    @SerializedName("img")
+    val img: String? = null,
     val requirements: List<HonorRequirementEntity> = emptyList()
 ) {
     fun toEntity(): HonorEntity = HonorEntity(
@@ -249,6 +364,32 @@ data class ParsedHonor(
         scope = scope,
         promotedAt = null,
         promotedBy = promotedBy,
-        contentVersion = contentVersion
+        contentVersion = contentVersion,
+        previewUrl = preview,
+        imageUrl = img
     )
 }
+
+data class TestsFile(
+    val version: String,
+    val tests: List<ParsedTest>
+)
+
+data class ParsedTest(
+    val id: String,
+    val scope: String,
+    val scopeId: String?,
+    val title: String,
+    val description: String = "",
+    val passScore: Int = 80,
+    val questions: List<ParsedQuestion> = emptyList(),
+)
+
+data class ParsedQuestion(
+    val id: String,
+    val type: String,
+    val text: String,
+    val options: List<String> = emptyList(),
+    val correctAnswer: String = "",
+    val points: Int = 1,
+)

@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,8 +32,6 @@ fun ChatsListScreen(
     onCreateGroup: () -> Unit = {},
     viewModel: ChatsListViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,36 +47,49 @@ fun ChatsListScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             )
-        },
-        floatingActionButton = {
-            if (state.canCreateGroup) {
-                ExtendedFloatingActionButton(
-                    onClick = onCreateGroup,
-                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("Группа") },
-                )
-            }
-        },
+        }
     ) { padding ->
+        ChatsListContent(
+            onOpenClubChat = onOpenClubChat,
+            onOpenDM = onOpenDM,
+            onOpenGroup = onOpenGroup,
+            onCreateGroup = onCreateGroup,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+fun ChatsListContent(
+    onOpenClubChat: (clubId: String) -> Unit,
+    onOpenDM: (dmId: String, otherUid: String) -> Unit,
+    onOpenGroup: (groupId: String) -> Unit = {},
+    onCreateGroup: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: ChatsListViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+
+    Box(modifier.fillMaxSize()) {
         when {
             state.isLoading -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) { CircularProgressIndicator() }
 
             state.errorMessage != null -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(state.errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
 
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // ---------- Чат клуба ----------
                 item {
                     Text("Общие",
                         style = MaterialTheme.typography.labelLarge,
@@ -108,7 +119,6 @@ fun ChatsListScreen(
                     }
                 }
 
-                // ---------- Личные ----------
                 item {
                     Spacer(Modifier.height(8.dp))
                     Text("Личные (${state.dms.size})",
@@ -163,7 +173,6 @@ fun ChatsListScreen(
                     }
                 }
 
-                // ---------- Групповые ----------
                 item {
                     Spacer(Modifier.height(8.dp))
                     Text("Групповые (${state.groups.size})",
@@ -220,6 +229,17 @@ fun ChatsListScreen(
                     }
                 }
             }
+        }
+
+        if (state.canCreateGroup) {
+            ExtendedFloatingActionButton(
+                onClick = onCreateGroup,
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                text = { Text("Группа") },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+            )
         }
     }
 }

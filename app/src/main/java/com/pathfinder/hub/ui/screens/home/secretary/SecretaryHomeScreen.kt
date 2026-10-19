@@ -9,8 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Assignment
@@ -43,7 +42,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.screens.home.common.HomeHeaderViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -77,16 +76,12 @@ fun SecretaryHomeScreen(
                 title = { Text("Панель секретаря") },
                 actions = {
                     IconButton(onClick = onNavigateToNotifications) {
-                        Icon(
-                            Icons.Default.Notifications, "Уведомления",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.Default.Notifications, "Уведомления",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     IconButton(onClick = { viewModel.logout() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Logout, "Выйти",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.Logout, "Выйти",
+                            tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -105,97 +100,114 @@ fun SecretaryHomeScreen(
             ) { CircularProgressIndicator() }
             return@Scaffold
         }
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "Привет, ${state.user?.firstName ?: "Секретарь"}!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        "Ваш клуб",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        state.clubName ?: "—",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    val loc = state.clubLocation
-                    if (!loc.isNullOrBlank()) {
-                        Spacer(Modifier.height(4.dp))
-                        Text(loc, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+            item {
+                Text(
+                    "Привет, ${state.user?.firstName ?: "Секретарь"}!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-            // Клуб
-            if (!state.clubId.isNullOrBlank()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigateToClubInfo(state.clubId!!) },
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Public, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(28.dp)
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "Ваш клуб",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(Modifier.size(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "О клубе",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Информация, расписание, контакты",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            state.clubName ?: "—",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val loc = state.clubLocation
+                        if (!loc.isNullOrBlank()) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(loc, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
             }
 
-            Text(
-                "Администрирование",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
+            if (!state.clubId.isNullOrBlank()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onNavigateToClubInfo(state.clubId!!) },
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Public, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "О клубе",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Информация, расписание, контакты",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.PersonAdd, "Инвайты", "Создать и управлять", onNavigateToInvites, Modifier.weight(1f))
-                Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+            item {
+                Text(
+                    "Администрирование",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
-                Tile(Icons.Default.Assessment, "Отчёты", "История", onNavigateToReports, Modifier.weight(1f))
+
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.PersonAdd, "Инвайты", "Создать и управлять", onNavigateToInvites, Modifier.weight(1f))
+                    Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
-                Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
+                    Tile(Icons.Default.Assessment, "Отчёты", "История", onNavigateToReports, Modifier.weight(1f))
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Assignment, "Задания", "Назначить", onNavigateToTasks, Modifier.weight(1f))
-                Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
+                    Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))
-                Spacer(Modifier.weight(1f))
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.Assignment, "Задания", "Назначить", onNavigateToTasks, Modifier.weight(1f))
+                    Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+                }
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
+                }
             }
         }
     }

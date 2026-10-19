@@ -68,12 +68,13 @@ class FirestoreUserDataSource @Inject constructor() {
     private fun mapToUserEntity(data: Map<String, Any?>): UserEntity {
         return UserEntity(
             id = data["id"] as? String ?: "",
-            email = data["email"] as? String ?: "",
+            email = (data["email"] as? String ?: "").trim().lowercase(),
             emailVerified = data["emailVerified"] as? Boolean ?: false,
             firstName = data["firstName"] as? String ?: "",
             lastName = data["lastName"] as? String ?: "",
             role = data["role"] as? String ?: "teen",
             clubId = data["clubId"] as? String,
+            clubIds = (data["clubIds"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
             conferenceId = data["conferenceId"] as? String,
             birthDate = parseDate(data["birthDate"]) ?: Date(),
             avatar = data["avatar"] as? String,
@@ -103,6 +104,7 @@ class FirestoreUserDataSource @Inject constructor() {
         map["lastName"] = user.lastName
         map["role"] = user.role
         map["clubId"] = user.clubId
+        map["clubIds"] = user.clubIds
         map["conferenceId"] = user.conferenceId
         map["birthDate"] = user.birthDate
         map["avatar"] = user.avatar

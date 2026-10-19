@@ -42,7 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.parent.PaymentEntity
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
@@ -57,7 +57,7 @@ fun ParentPaymentsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
 
     LaunchedEffect(state.infoMessage) {
         state.infoMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }

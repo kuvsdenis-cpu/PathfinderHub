@@ -38,8 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.domain.permissions.PermissionRegistry
+import com.pathfinder.hub.ui.components.CollapsibleSection
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,8 +99,14 @@ fun ManagePermissionsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
+                val roleLabel = when (state.target?.role) {
+                    "director" -> "со-директор"
+                    "instructor" -> "наставник"
+                    "secretary" -> "секретарь"
+                    else -> "сотрудник"
+                }
                 Text(
-                    "Отметьте, что может делать со-директор",
+                    "Отметьте, что может делать $roleLabel",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -112,29 +119,22 @@ fun ManagePermissionsScreen(
                 Spacer(Modifier.height(12.dp))
 
                 PermissionRegistry.GROUPS.forEach { group ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                    val selectedCount = group.permissions.count { it.key in state.selected }
+                    CollapsibleSection(
+                        title = group.title,
+                        badge = if (selectedCount > 0) "$selectedCount из ${group.permissions.size}" else null,
+                        initiallyExpanded = false,
                     ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(
-                                group.title,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            group.permissions.forEach { perm ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Checkbox(
-                                        checked = perm.key in state.selected,
-                                        onCheckedChange = { viewModel.toggle(perm.key) }
-                                    )
-                                    Text(perm.label, style = MaterialTheme.typography.bodyMedium)
-                                }
+                        group.permissions.forEach { perm ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Checkbox(
+                                    checked = perm.key in state.selected,
+                                    onCheckedChange = { viewModel.toggle(perm.key) }
+                                )
+                                Text(perm.label, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }

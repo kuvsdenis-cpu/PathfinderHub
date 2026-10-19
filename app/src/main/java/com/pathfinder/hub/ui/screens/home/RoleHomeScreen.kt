@@ -6,7 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.pathfinder.hub.ui.navigation.Routes
 
@@ -17,22 +17,18 @@ fun RoleHomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(state.role) {
-        if (!state.isLoading && state.role != null) {
-            val route = when (state.role) {
-                "director" -> Routes.DIRECTOR_HOME
-                "instructor" -> Routes.INSTRUCTOR_HOME
-                "secretary" -> Routes.SECRETARY_HOME
-                "parent" -> Routes.PARENT_HOME
-                "conference_admin" -> Routes.CONFERENCE_HOME
-                "conference_secretary" -> Routes.CONFERENCE_SECRETARY_HOME
-                "teen" -> Routes.TEEN_HOME
-                else -> Routes.TEEN_HOME
-            }
+    LaunchedEffect(state.isLoading, state.role, state.errorMessage) {
+        if (state.isLoading) return@LaunchedEffect
+        if (state.errorMessage != null) return@LaunchedEffect
 
-            navController.navigate(route) {
-                popUpTo(Routes.ROLE_HOME) { inclusive = true }
-            }
+        val route = Routes.homeForRole(state.role)
+        if (route == null) {
+            // Неизвестная роль — покажем ошибку (см. UI ниже), НЕ teen.
+            return@LaunchedEffect
+        }
+
+        navController.navigate(route) {
+            popUpTo(Routes.ROLE_HOME) { inclusive = true }
         }
     }
 
@@ -49,6 +45,25 @@ fun RoleHomeScreen(
                     color = MaterialTheme.colorScheme.error
                 )
                 Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } }
+                }) {
+                    Text("Вернуться ко входу")
+                }
+            }
+        } else if (Routes.homeForRole(state.role) == null) {
+            // Роль не распознана — не ведём на teen.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Неизвестная роль: ${state.role ?: "—"}",
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Обратитесь к администратору клуба",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(Modifier.height(12.dp))
                 Button(onClick = {
                     navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } }
                 }) {

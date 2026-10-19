@@ -112,7 +112,7 @@ object CertificatePdfGenerator {
         canvas.drawText("Выдан", cx, 355f, smallPaint)
         canvas.drawText(userName, cx, 395f, namePaint)
 
-        val fmt = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+        val fmt = SimpleDateFormat("d MMMM yyyy", Locale.forLanguageTag("ru"))
         canvas.drawText("Дата выдачи: " + fmt.format(issuedAt), cx, 445f, smallPaint)
 
         canvas.drawText("Pathfinder Hub", cx, 525f, smallPaint)

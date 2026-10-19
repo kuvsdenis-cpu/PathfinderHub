@@ -17,5 +17,9 @@ data class ClubEntity(
     val reviewWindowHours: Int, val escalationHours: Int,
     val defaultReportTemplateId: String?, val reportPeriods: List<String>,
     val autoGenerateReports: Boolean, val updatedAt: Date,
-    val updatedBy: String, val syncedAt: Date? = null
+    val updatedBy: String, val syncedAt: Date? = null,
+    // Soft delete (v32): корзина на 90 дней
+    val deletedAt: Date? = null,
+    val deletedBy: String? = null,
+    val purgeAt: Date? = null
 )

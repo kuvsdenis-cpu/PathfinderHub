@@ -13,8 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -24,12 +25,10 @@ import java.util.Locale
 fun EventsScreen(
     onBack: () -> Unit,
     onOpenEvent: (String) -> Unit,
-    onCreateEvent: (() -> Unit)? = null, // <-- ИЗМЕНЕНО: сделано nullable
-    viewModel: EventsViewModel = hiltViewModel()
+    onCreateEvent: (() -> Unit)? = null,
+    viewModel: EventsViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val fmt = remember { SimpleDateFormat("d MMMM, HH:mm", Locale("ru")) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -45,26 +44,32 @@ fun EventsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        },
-        floatingActionButton = {
-            if (onCreateEvent != null && state.activeTab == 0) {
-                FloatingActionButton(
-                    onClick = onCreateEvent,
-                    containerColor = PathfinderBlue,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) {
-                    Icon(Icons.Default.Add, "Создать событие")
-                }
-            }
         }
     ) { padding ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            return@Scaffold
-        }
-        Column(Modifier.fillMaxSize().padding(padding)) {
+        EventsContent(
+            onOpenEvent = onOpenEvent,
+            onCreateEvent = onCreateEvent,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+            clubContextViewModel = clubContextViewModel,
+        )
+    }
+}
+
+@Composable
+fun EventsContent(
+    onOpenEvent: (String) -> Unit,
+    onCreateEvent: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    viewModel: EventsViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
+    val fmt = remember { SimpleDateFormat("d MMMM, HH:mm", Locale.forLanguageTag("ru")) }
+
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = state.activeTab) {
                 Tab(
                     selected = state.activeTab == 0,
@@ -114,6 +119,19 @@ fun EventsScreen(
                 }
             }
         }
+
+        if (onCreateEvent != null && state.activeTab == 0) {
+            FloatingActionButton(
+                onClick = onCreateEvent,
+                containerColor = PathfinderBlue,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+            ) {
+                Icon(Icons.Default.Add, "Создать событие")
+            }
+        }
     }
 }
 
@@ -139,7 +157,7 @@ private fun ArchivedEventCard(
             if (event.archivedAt != null) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "В архиве с: ${java.text.SimpleDateFormat("d MMM yyyy", Locale("ru")).format(event.archivedAt)}",
+                    "В архиве с: ${SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru")).format(event.archivedAt)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

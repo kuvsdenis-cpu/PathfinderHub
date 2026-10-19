@@ -42,10 +42,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.parent.PaymentEntity
+import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
-import com.pathfinder.hub.ui.theme.PathfinderGreen
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -55,20 +55,9 @@ fun DirectorPaymentsScreen(
     onBack: () -> Unit,
     onCreate: () -> Unit,
     viewModel: DirectorPaymentsViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    val snackbar = remember { SnackbarHostState() }
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
-
-    LaunchedEffect(state.infoMessage) {
-        state.infoMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
-    }
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
-    }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 title = { Text("Взносы клуба") },
@@ -91,8 +80,36 @@ fun DirectorPaymentsScreen(
             )
         }
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            // Фильтры
+        DirectorPaymentsContent(
+            onCreate = onCreate,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+            clubContextViewModel = clubContextViewModel,
+        )
+    }
+}
+
+@Composable
+fun DirectorPaymentsContent(
+    onCreate: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DirectorPaymentsViewModel = hiltViewModel(),
+    clubContextViewModel: ClubContextViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val clubState by clubContextViewModel.state.collectAsState()
+    val snackbar = remember { SnackbarHostState() }
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
+
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
+    }
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
+    }
+
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -152,6 +169,11 @@ fun DirectorPaymentsScreen(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 

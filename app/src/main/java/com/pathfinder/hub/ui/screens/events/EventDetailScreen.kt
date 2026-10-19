@@ -47,11 +47,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.qr.EntityQrHelper
 import com.pathfinder.hub.ui.share.ShareCardGenerator
 import com.pathfinder.hub.ui.share.ShareCardHelper
 import com.pathfinder.hub.ui.theme.PathfinderBlue
+import com.pathfinder.hub.ui.screens.tests.TestsForScopeSection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,10 +65,11 @@ import java.util.Locale
 fun EventDetailScreen(
     onBack: () -> Unit,
     onOpenConsents: (String) -> Unit = {},
+    onOpenTest: (testId: String) -> Unit,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val fmt = remember { SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("ru")) }
+    val fmt = remember { SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.forLanguageTag("ru")) }
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(state.consentMessage) {
@@ -253,6 +255,13 @@ fun EventDetailScreen(
                     }
                 }
             }
+
+            // ---------- Тесты события ----------
+            TestsForScopeSection(
+                scope = "event",
+                scopeId = e.id,
+                onOpenTest = onOpenTest,
+            )
 
             // ---------- A2/A3: Участники события (для staff) ----------
             if (state.canManageAttendance && state.participantRows.isNotEmpty()) {

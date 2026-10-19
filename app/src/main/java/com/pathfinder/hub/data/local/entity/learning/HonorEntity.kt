@@ -8,5 +8,7 @@ data class HonorEntity(
     val level: Int, val year: Int, val source: String, val description: String,
     val version: String, val isLocal: Boolean = false, val localClubId: String?,
     val scope: String = "global", val promotedAt: Date?, val promotedBy: String?,
-    val contentVersion: String
+    val contentVersion: String,
+    val previewUrl: String? = null,
+    val imageUrl: String? = null
 )

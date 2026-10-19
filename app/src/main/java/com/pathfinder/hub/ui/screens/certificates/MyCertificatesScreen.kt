@@ -52,7 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.gamification.CertificateEntity
 import com.pathfinder.hub.ui.share.ShareCardGenerator
 import com.pathfinder.hub.ui.share.ShareCardHelper
@@ -74,7 +74,7 @@ fun MyCertificatesScreen(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val fmt = SimpleDateFormat("d MMM yyyy", Locale("ru"))
+    val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(state.message) {

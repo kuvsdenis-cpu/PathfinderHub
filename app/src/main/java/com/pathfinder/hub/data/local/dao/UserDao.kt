@@ -9,7 +9,11 @@ interface UserDao {
     fun observeUser(userId: String): Flow<UserEntity?>
     @Query("SELECT * FROM users WHERE id = :userId")
     suspend fun getUser(userId: String): UserEntity?
-    @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
+    /**
+     * Поиск по email без учёта регистра.
+     * Email — регистронезависимый: Ivan@mail.ru == ivan@mail.ru.
+     */
+    @Query("SELECT * FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
     /**
      * Участники клуба. Фильтр через user_clubs (мультиклубность),

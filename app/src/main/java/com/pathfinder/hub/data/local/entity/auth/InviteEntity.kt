@@ -9,5 +9,7 @@ data class InviteEntity(
     val role: String,
     val permissions: List<String> = emptyList(),
     val createdBy: String, val createdAt: Date,
-    val expiresAt: Date, val status: String, val usedBy: String?, val usedAt: Date?
+    val expiresAt: Date, val status: String, val usedBy: String?, val usedAt: Date?,
+    // v33: передача владения клубом через инвайт
+    val transferOwnership: Boolean = false
 )

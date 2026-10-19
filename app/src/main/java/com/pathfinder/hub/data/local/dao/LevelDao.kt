@@ -119,6 +119,9 @@ interface LevelDao {
     @Query("SELECT * FROM leader_checklists WHERE childId = :childId")
     suspend fun getChecklistsForChild(childId: String): List<LeaderChecklistEntity>
 
+    @Query("SELECT * FROM leader_checklists WHERE leaderId = :leaderId ORDER BY updatedAt DESC")
+    fun observeMyChecklists(leaderId: String): Flow<List<LeaderChecklistEntity>>
+
     // ==================== ОДОБРЕНИЯ ====================
 
     @Query("""SELECT lp.* FROM level_progress lp

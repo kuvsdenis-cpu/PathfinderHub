@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
@@ -49,7 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.EmailVerificationBanner
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
@@ -77,6 +79,9 @@ fun TeenHomeScreen(
     onNavigateToCrossClub: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
+    onNavigateToBible: () -> Unit = {},
+    onNavigateToPearls: () -> Unit = {},
+    onNavigateToReadingPlan: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -111,310 +116,368 @@ fun TeenHomeScreen(
     ) { padding ->
         if (state.isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            ) { CircularProgressIndicator() }
             return@Scaffold
         }
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Приветствие
-            val firstName = state.user?.firstName ?: "Следопыт"
-            Text(
-                text = "Привет, $firstName!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Плашка "Почта не подтверждена"
-            if (state.user?.emailVerified == false) {
-                EmailVerificationBanner(
-                    isSending = state.resendingVerification,
-                    message = state.verificationSentMessage,
-                    onResend = viewModel::resendVerificationEmail
+            item {
+                val firstName = state.user?.firstName ?: "Следопыт"
+                Text(
+                    text = "Привет, $firstName!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            // Карточка текущей ступени
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Текущая ступень",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = state.currentLevel?.name ?: "Все ступени пройдены!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    LinearProgressIndicator(
-                        progress = { state.levelProgressPercent / 100f },
-                        modifier = Modifier.fillMaxWidth(),
-                        color = PathfinderBlue
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Пройдено ступеней: ${state.completedLevels} из ${state.totalLevels}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+            // Плашка "Почта не подтверждена"
+            if (state.user?.emailVerified == false) {
+                item {
+                    EmailVerificationBanner(
+                        isSending = state.resendingVerification,
+                        message = state.verificationSentMessage,
+                        onResend = viewModel::resendVerificationEmail
                     )
                 }
             }
+
+            // Карточка текущей ступени
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Текущая ступень",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = state.currentLevel?.name ?: "Все ступени пройдены!",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        LinearProgressIndicator(
+                            progress = { state.levelProgressPercent / 100f },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = PathfinderBlue
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Пройдено ступеней: ${state.completedLevels} из ${state.totalLevels}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+
             // Клуб
             if (!state.user?.clubId.isNullOrBlank()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onNavigateToClubInfo(state.user!!.clubId!!) },
                     ) {
-                        Icon(
-                            Icons.Default.Public, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(Modifier.size(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "О клубе",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Public, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
                             )
-                            Text(
-                                "Информация, расписание, контакты",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Spacer(Modifier.size(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "О клубе",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Информация, расписание, контакты",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
             }
 
             // Кнопки разделов - Ряд 1
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ActionTile(
-                    icon = Icons.Default.MenuBook,
-                    label = "Ступени",
-                    onClick = onNavigateToLevels,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.WorkspacePremium,
-                    label = "Специализации",
-                    onClick = onNavigateToHonors,
-                    modifier = Modifier.weight(1f)
-                )
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionTile(Icons.Default.MenuBook, "Ступени", onNavigateToLevels, Modifier.weight(1f))
+                    ActionTile(Icons.Default.WorkspacePremium, "Специализации", onNavigateToHonors, Modifier.weight(1f))
+                }
             }
             // Кнопки разделов - Ряд 2
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ActionTile(
-                    icon = Icons.Default.Star,
-                    label = "Цифровая форма",
-                    onClick = onNavigateToDigitalUniform,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.CheckCircle,
-                    label = "Достижения",
-                    onClick = onNavigateToAchievements,
-                    modifier = Modifier.weight(1f)
-                )
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionTile(Icons.Default.Star, "Цифровая форма", onNavigateToDigitalUniform, Modifier.weight(1f))
+                    ActionTile(Icons.Default.CheckCircle, "Достижения", onNavigateToAchievements, Modifier.weight(1f))
+                }
             }
             // Кнопки разделов - Ряд 3
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ActionTile(
-                    icon = Icons.Default.EmojiEvents,
-                    label = "Челленджи",
-                    onClick = onNavigateToChallenges,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.AccountBalance,
-                    label = "Отчёты",
-                    onClick = onNavigateToReports,
-                    modifier = Modifier.weight(1f)
-                )
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionTile(Icons.Default.EmojiEvents, "Челленджи", onNavigateToChallenges, Modifier.weight(1f))
+                    ActionTile(Icons.Default.AccountBalance, "Отчёты", onNavigateToReports, Modifier.weight(1f))
+                }
             }
-            // Кнопки разделов - Ряд 4 (Чаты + Сертификаты + QR)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ActionTile(
-                    icon = Icons.Default.Chat,
-                    label = "Чаты",
-                    onClick = onNavigateToChats,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.Description,
-                    label = "Сертификаты",
-                    onClick = onNavigateToCertificates,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.QrCodeScanner,
-                    label = "QR",
-                    onClick = onNavigateToQrScanner,
-                    modifier = Modifier.weight(1f)
-                )
+            // Кнопки разделов - Ряд 4
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionTile(Icons.Default.Chat, "Чаты", onNavigateToChats, Modifier.weight(1f))
+                    ActionTile(Icons.Default.Description, "Сертификаты", onNavigateToCertificates, Modifier.weight(1f))
+                    ActionTile(Icons.Default.QrCodeScanner, "QR", onNavigateToQrScanner, Modifier.weight(1f))
+                }
+            }
+            // Кнопки разделов - Ряд 5
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionTile(Icons.Default.Bolt, "Активность", onNavigateToActivity, Modifier.weight(1f))
+                    ActionTile(Icons.Default.Public, "Межклубные", onNavigateToCrossClub, Modifier.weight(1f))
+                }
             }
 
-            // Кнопки разделов - Ряд 5 (Активность)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ActionTile(
-                    icon = Icons.Default.Bolt,
-                    label = "Активность",
-                    onClick = onNavigateToActivity,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionTile(
-                    icon = Icons.Default.Public,
-                    label = "Межклубные",
-                    onClick = onNavigateToCrossClub,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            // Задачи
-            SectionCard(
-                icon = Icons.Default.CheckCircle,
-                title = "Мои задачи",
-                actionLabel = "Все задачи",
-                onActionClick = onNavigateToTasks
-            ) {
-                if (state.tasksToday.isEmpty()) {
-                    Text(
-                        text = "Задач пока нет",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            // Библия
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToBible,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
-                } else {
-                    state.tasksToday.take(3).forEach { task ->
-                        Column(Modifier.fillMaxWidth()) {
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Book, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(Modifier.size(16.dp))
+                        Column(Modifier.weight(1f)) {
                             Text(
-                                text = task.title,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
+                                "Библия",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = statusLabel(task.status),
-                                style = MaterialTheme.typography.labelLarge,
+                                "Чтение и закладки",
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Spacer(Modifier.height(8.dp))
-                    }
-                    if (state.tasksToday.size > 3) {
-                        Text(
-                            text = "и ещё ${state.tasksToday.size - 3}…",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
-            // Ближайшее событие
-            SectionCard(
-                icon = Icons.Default.Event,
-                title = "Ближайшее событие",
-                actionLabel = "Все события",
-                onActionClick = onNavigateToEvents
-            ) {
-                val event = state.nextEvent
-                if (event == null) {
-                    Text(
-                        text = "Пока нет запланированных событий",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            // Жемчужины
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToPearls,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
                     )
-                } else {
-                    Text(
-                        text = event.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    val fmt = SimpleDateFormat("d MMMM, HH:mm", Locale("ru"))
-                    Text(
-                        text = fmt.format(event.dateStart),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (event.location.isNotBlank()) {
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = event.location,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.AutoStories, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(32.dp)
                         )
-                    }
-                }
-            }
-            // Достижения
-            SectionCard(
-                icon = Icons.Default.Star,
-                title = "Последние достижения",
-                actionLabel = "Все достижения",
-                onActionClick = onNavigateToAchievements
-            ) {
-                if (state.recentAchievements.isEmpty()) {
-                    Text(
-                        text = "Достижений пока нет — вперёд к первым!",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    state.recentAchievements.forEach { ach ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = PathfinderBlue,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(Modifier.size(8.dp))
+                        Spacer(Modifier.size(16.dp))
+                        Column(Modifier.weight(1f)) {
                             Text(
-                                text = ach.achievementId,
-                                style = MaterialTheme.typography.bodyLarge
+                                "Жемчужины",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Стихи недели на 2026 год",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Spacer(Modifier.height(4.dp))
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+
+            // План чтения
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToReadingPlan,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Outlined.CalendarMonth, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(Modifier.size(16.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "План чтения",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Библия и труды Духа Пророчества на 2026",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Задачи
+            item {
+                SectionCard(
+                    icon = Icons.Default.CheckCircle,
+                    title = "Мои задачи",
+                    actionLabel = "Все задачи",
+                    onActionClick = onNavigateToTasks
+                ) {
+                    if (state.tasksToday.isEmpty()) {
+                        Text("Задач пока нет", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        state.tasksToday.take(3).forEach { task ->
+                            Column(Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = task.title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = statusLabel(task.status),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        if (state.tasksToday.size > 3) {
+                            Text(
+                                text = "и ещё ${state.tasksToday.size - 3}…",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Ближайшее событие
+            item {
+                SectionCard(
+                    icon = Icons.Default.Event,
+                    title = "Ближайшее событие",
+                    actionLabel = "Все события",
+                    onActionClick = onNavigateToEvents
+                ) {
+                    val event = state.nextEvent
+                    if (event == null) {
+                        Text("Пока нет запланированных событий", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Text(
+                            text = event.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        val fmt = SimpleDateFormat("d MMMM, HH:mm", Locale.forLanguageTag("ru"))
+                        Text(text = fmt.format(event.dateStart), style = MaterialTheme.typography.bodyLarge)
+                        if (event.location.isNotBlank()) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = event.location,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Достижения
+            item {
+                SectionCard(
+                    icon = Icons.Default.Star,
+                    title = "Последние достижения",
+                    actionLabel = "Все достижения",
+                    onActionClick = onNavigateToAchievements
+                ) {
+                    if (state.recentAchievements.isEmpty()) {
+                        Text("Достижений пока нет — вперёд к первым!", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        state.recentAchievements.forEach { ach ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = PathfinderBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.size(8.dp))
+                                Text(text = ach.achievementId, style = MaterialTheme.typography.bodyLarge)
+                            }
+                            Spacer(Modifier.height(4.dp))
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(Modifier.height(8.dp)) }
         }
     }
 }
@@ -436,10 +499,7 @@ private fun ActionTile(
         ) {
             Icon(icon, contentDescription = null)
             Spacer(Modifier.height(4.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge
-            )
+            Text(text = label, style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -455,11 +515,7 @@ private fun SectionCard(
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = PathfinderBlue
-                )
+                Icon(imageVector = icon, contentDescription = null, tint = PathfinderBlue)
                 Spacer(Modifier.size(8.dp))
                 Text(
                     text = title,

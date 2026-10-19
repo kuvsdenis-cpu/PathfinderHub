@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +32,9 @@ fun LoginScreen(
 
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
-            onLoginSuccess(state.userRole ?: "teen")
+            // #12: не подставляем teen. Если role null — навигация уйдёт на
+            // ROLE_HOME, и RoleRouterViewModel покажет ошибку.
+            onLoginSuccess(state.userRole ?: "")
         }
     }
 

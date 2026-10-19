@@ -21,7 +21,10 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -43,7 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,9 +58,6 @@ fun ManageQuestsScreen(
     onCreateQuest: () -> Unit,
     viewModel: ManageQuestsViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsState()
-    var deleteId by remember { mutableStateOf<String?>(null) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,23 +73,34 @@ fun ManageQuestsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateQuest,
-                containerColor = PathfinderBlue,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, "Создать квест")
-            }
         }
     ) { padding ->
+        ManageQuestsContent(
+            onOpenQuest = onOpenQuest,
+            onCreateQuest = onCreateQuest,
+            modifier = Modifier.padding(padding),
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+fun ManageQuestsContent(
+    onOpenQuest: (String) -> Unit,
+    onCreateQuest: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ManageQuestsViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    var deleteId by remember { mutableStateOf<String?>(null) }
+
+    Box(modifier.fillMaxSize()) {
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator()
             }
             state.items.isEmpty() -> Box(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                Modifier.fillMaxSize().padding(24.dp),
                 Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -108,7 +120,7 @@ fun ManageQuestsScreen(
                 }
             }
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -180,26 +192,37 @@ fun ManageQuestsScreen(
                 }
             }
         }
+
+        FloatingActionButton(
+            onClick = onCreateQuest,
+            containerColor = PathfinderBlue,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+        ) {
+            Icon(Icons.Default.Add, "Создать квест")
+        }
     }
 
     deleteId?.let { id ->
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = { deleteId = null },
             title = { Text("Удалить квест?") },
             text = { Text("Все связи со станциями и прогресс участников будут потеряны.") },
             confirmButton = {
-                androidx.compose.material3.Button(
+                Button(
                     onClick = {
                         viewModel.deleteQuest(id)
                         deleteId = null
                     },
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) { Text("Удалить") }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { deleteId = null }) {
+                TextButton(onClick = { deleteId = null }) {
                     Text("Отмена")
                 }
             }

@@ -14,7 +14,8 @@ import javax.inject.Singleton
 @Singleton
 class SyncQueueManager @Inject constructor(
     private val syncDao: SyncDao,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val syncScheduler: SyncScheduler
 ) {
 
     private val gson = Gson()
@@ -43,7 +44,10 @@ class SyncQueueManager @Inject constructor(
         )
         syncDao.upsertItem(item)
         Log.d(TAG, "Enqueue: $operation $entityType/$entityId")
+        syncScheduler.syncNow()
     }
+
+    fun getCurrentUserId(): String? = sessionManager.getUserId()
 
     suspend fun getNextBatch(limit: Int = 50): List<SyncQueueItemEntity> {
         return syncDao.getNextBatch(limit)

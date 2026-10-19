@@ -7,10 +7,14 @@ import com.pathfinder.hub.data.local.entity.gamification.HomeworkEntity
 import com.pathfinder.hub.data.repository.AchievementRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -21,7 +25,7 @@ data class CreateHomeworkUiState(
     val title: String = "",
     val description: String = "",
     val dueDate: Date? = null,
-    val rewardType: String = "text",       // "text" | "points" | "achievement"
+    val rewardType: String = "text",
     val rewardText: String = "",
     val rewardPoints: String = "0",
     val rewardAchievementId: String = "",
@@ -31,6 +35,7 @@ data class CreateHomeworkUiState(
     val teenCount: Int = 0,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CreateHomeworkViewModel @Inject constructor(
     private val sessionManager: SessionManager,
@@ -47,12 +52,19 @@ class CreateHomeworkViewModel @Inject constructor(
         val uid = creatorId
         if (uid != null) {
             viewModelScope.launch {
-                val user = userRepository.getUser(uid)
-                val clubId = user?.clubId ?: return@launch
-                try {
-                    val teens = userRepository.observeClubMembersByRole(clubId, "teen").first()
-                    _state.update { it.copy(teenCount = teens.size) }
-                } catch (_: Exception) {}
+                userRepository.observeUser(uid)
+                    .map { it?.clubId }
+                    .distinctUntilChanged()
+                    .collectLatest { clubId ->
+                        if (clubId.isNullOrBlank()) {
+                            _state.update { it.copy(teenCount = 0) }
+                            return@collectLatest
+                        }
+                        try {
+                            val teens = userRepository.observeClubMembersByRole(clubId, "teen").first()
+                            _state.update { it.copy(teenCount = teens.size) }
+                        } catch (_: Exception) {}
+                    }
             }
         }
     }

@@ -49,6 +49,55 @@ class ClubRepository @Inject constructor(
         }
     }
 
+    // ---------- Soft delete (v32) ----------
+
+    suspend fun softDelete(clubId: String, deletedBy: String, retentionDays: Int = 90) {
+        val club = dao.getClub(clubId) ?: return
+        val now = java.util.Date()
+        val purgeAt = java.util.Date(now.time + retentionDays * 24L * 3600L * 1000L)
+        val updated = club.copy(
+            deletedAt = now,
+            deletedBy = deletedBy,
+            purgeAt = purgeAt,
+            updatedAt = now,
+            updatedBy = deletedBy,
+        )
+        db.withTransaction {
+            dao.update(updated)
+            syncQueueManager.enqueue("club", club.id, "UPDATE", updated)
+        }
+    }
+
+    suspend fun restore(clubId: String, restoredBy: String) {
+        val club = dao.getClub(clubId) ?: return
+        val now = java.util.Date()
+        val updated = club.copy(
+            deletedAt = null,
+            deletedBy = null,
+            purgeAt = null,
+            updatedAt = now,
+            updatedBy = restoredBy,
+        )
+        db.withTransaction {
+            dao.update(updated)
+            syncQueueManager.enqueue("club", club.id, "UPDATE", updated)
+        }
+    }
+
+    fun observeDeletedClubs(): Flow<List<ClubEntity>> = dao.observeDeletedClubs()
+
+    suspend fun purgeExpired(nowMillis: Long): Int {
+        val expired = dao.getExpiredClubs(nowMillis)
+        if (expired.isEmpty()) return 0
+        db.withTransaction {
+            expired.forEach { club ->
+                dao.delete(club)
+                syncQueueManager.enqueue("club", club.id, "DELETE", club)
+            }
+        }
+        return expired.size
+    }
+
     suspend fun getConference(id: String): ConferenceEntity? = dao.getConference(id)
     fun observeConference(): Flow<ConferenceEntity?> = dao.observeConference()
     suspend fun upsertConference(conference: ConferenceEntity) {

@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.storage.FileUploadContext
@@ -21,7 +21,6 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun HonorRequirementDetailScreen(
     onBack: () -> Unit,
-    onOpenTest: () -> Unit,
     onOpenReport: () -> Unit,
     navBackStackEntry: NavBackStackEntry? = null,
     viewModel: HonorRequirementDetailViewModel = hiltViewModel()
@@ -116,20 +115,11 @@ fun HonorRequirementDetailScreen(
 
             Spacer(Modifier.weight(1f))
 
-            if (req.type == "test") {
-                Button(
-                    onClick = onOpenTest,
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
-                ) {
-                    Text("Пройти тест")
-                }
-            } else {
-                Button(
-                    onClick = onOpenReport,
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
-                ) {
-                    Text(if (state.mediaUrls.isEmpty()) "Загрузить отчёт" else "Загрузить ещё файл")
-                }
+            Button(
+                onClick = onOpenReport,
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+            ) {
+                Text(if (state.mediaUrls.isEmpty()) "Загрузить отчёт" else "Загрузить ещё файл")
             }
             Spacer(Modifier.height(8.dp))
             if (state.status == "not_started" || state.status == "rejected") {
