@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.learning.HonorProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
+import com.pathfinder.hub.data.local.entity.learning.BookEntity
+import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.HonorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,14 +27,16 @@ data class HonorRequirementDetailUiState(
     val honorName: String = "",
     val isSaving: Boolean = false,
     val successMessage: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val books: List<BookEntity> = emptyList()
 )
 
 @HiltViewModel
 class HonorRequirementDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val honorRepository: HonorRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val honorId: String = savedStateHandle.get<String>("honorId") ?: ""
@@ -70,6 +74,11 @@ class HonorRequirementDetailViewModel @Inject constructor(
                     mediaUrls = p?.mediaUrls ?: emptyList(),
                     honorName = honor?.name ?: ""
                 )
+            }
+
+            if (req.bookIds.isNotEmpty()) {
+                val books = bookRepository.getByIds(req.bookIds)
+                _state.update { it.copy(books = books) }
             }
         }
     }

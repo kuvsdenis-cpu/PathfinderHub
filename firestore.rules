@@ -436,6 +436,14 @@ service cloud.firestore {
         }
       }
 
+      // ---------- BOOKS (клубные книги) ----------
+      match /books/{bookId} {
+        allow read: if isSignedIn() && isOwnClub(clubId);
+        allow create, update, delete: if isSignedIn() && isOwnClub(clubId) && (
+          hasPerm("content.edit") || isInstructor()
+        );
+      }
+
       // ---------- COMMENTS (чат клуба) ----------
       match /comments/{commentId} {
         // Автор видит свой комментарий в любом статусе (с пометкой).

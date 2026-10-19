@@ -83,6 +83,10 @@ import com.pathfinder.hub.ui.screens.payments.DirectorPaymentsScreen
 import com.pathfinder.hub.ui.screens.payments.CreatePaymentScreen
 import com.pathfinder.hub.ui.screens.certificates.MyCertificatesScreen
 import com.pathfinder.hub.ui.screens.honors.HonorCatalogScreen
+import com.pathfinder.hub.ui.screens.books.BooksScreen
+import com.pathfinder.hub.ui.screens.books.BookDetailScreen
+import com.pathfinder.hub.ui.screens.books.BookReaderScreen
+import com.pathfinder.hub.ui.screens.books.CreateBookScreen
 import com.pathfinder.hub.ui.screens.honors.HonorDetailScreen
 import com.pathfinder.hub.ui.screens.honors.HonorRequirementDetailScreen
 import com.pathfinder.hub.ui.screens.honors.MyHonorsScreen
@@ -687,6 +691,37 @@ fun PathfinderNavHost(
             )
         }
 
+        // ===== Books =====
+        composable(Routes.BOOKS) {
+            BooksScreen(
+                onBack = { navController.popBackStack() },
+                onOpenBook = { id -> navController.navigate(Routes.bookDetail(id)) },
+                onCreateBook = { navController.navigate(Routes.CREATE_BOOK) },
+            )
+        }
+        composable(Routes.CREATE_BOOK) {
+            CreateBookScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.BOOK_DETAIL,
+            arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
+            BookDetailScreen(
+                onBack = { navController.popBackStack() },
+                onRead = { navController.navigate(Routes.bookReader(bookId)) },
+            )
+        }
+        composable(
+            route = Routes.BOOK_READER,
+            arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+        ) {
+            BookReaderScreen(onBack = { navController.popBackStack() })
+        }
+
         // ===== Teen Home =====
         composable(Routes.TEEN_HOME) {
             TeenHomeScreen(
@@ -712,7 +747,8 @@ fun PathfinderNavHost(
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToBible = { navController.navigate(Routes.BIBLE) },
                 onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
-                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) }
+                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
+                onNavigateToBooks = { navController.navigate(Routes.BOOKS) }
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
@@ -780,6 +816,9 @@ fun PathfinderNavHost(
                 },
                 onAttachTaskFile = { requirementId, taskId ->
                     navController.navigate(Routes.fileUpload("TASK_ANSWER", "$requirementId|$taskId"))
+                },
+                onOpenBook = { bookId ->
+                    navController.navigate(Routes.bookDetail(bookId))
                 },
                 savedStateHandle = backStackEntry.savedStateHandle
             )
@@ -942,6 +981,9 @@ fun PathfinderNavHost(
             HonorRequirementDetailScreen(
                 onBack = { navController.popBackStack() },
                 onOpenReport = { navController.navigate(Routes.fileUpload("HONOR_REQUIREMENT", requirementId)) },
+                onOpenBook = { bookId ->
+                    navController.navigate(Routes.bookDetail(bookId))
+                },
                 navBackStackEntry = backStackEntry
             )
         }

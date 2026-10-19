@@ -21,6 +21,10 @@ import com.pathfinder.hub.data.remote.FirestoreRequirementContentDataSource
 import com.pathfinder.hub.data.remote.FirestoreTaskAnswerDataSource
 import com.pathfinder.hub.data.remote.FirestoreQrDataSource
 import com.pathfinder.hub.data.remote.FirestoreChallengeDataSource
+import com.pathfinder.hub.data.remote.FirestoreBookDataSource
+import com.pathfinder.hub.data.local.entity.learning.BookEntity
+import com.pathfinder.hub.data.repository.BookRepository
+import kotlinx.coroutines.flow.first
 import com.pathfinder.hub.data.local.dao.QrStationDao
 import com.pathfinder.hub.data.local.dao.BibleDao
 import com.pathfinder.hub.data.local.dao.PearlDao
@@ -53,6 +57,8 @@ class SyncWorker @AssistedInject constructor(
     private val bibleDao: BibleDao,
     private val pearlDao: PearlDao,
     private val readingPlanDao: ReadingPlanDao,
+    private val bookDataSource: FirestoreBookDataSource,
+    private val bookRepository: BookRepository,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -151,6 +157,30 @@ class SyncWorker @AssistedInject constructor(
         pullBibleBookmarks(uid)
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
+        pullClubBooks(uid)
+    }
+
+    private suspend fun pullClubBooks(uid: String) {
+        val clubIds = try {
+            bookRepository.getClubIdsForUser(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullClubBooks: clubIds failed ${e.message}")
+            return
+        }
+        for (clubId in clubIds) {
+            try {
+                val snapshot = bookDataSource.observeClubBooks(clubId).first()
+                if (snapshot.hasError) continue
+                for (remote in snapshot.items) {
+                    val local = bookRepository.getById(remote.id)
+                    if (local != null && local.pendingSync) continue
+                    if (local != null && (local.createdAt ?: 0L) >= (remote.createdAt ?: 0L)) continue
+                    bookRepository.upsert(remote)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "pullClubBooks skip $clubId: ${e.message}")
+            }
+        }
     }
 
     private suspend fun pullBibleBookmarks(uid: String) {
@@ -274,6 +304,9 @@ class SyncWorker @AssistedInject constructor(
             }
             if (item.entityType == "reading_plan_progress") {
                 return processReadingPlanProgress(item)
+            }
+            if (item.entityType == "book") {
+                return processBook(item)
             }
 
             // ---------- Общая ветка для остальных сущностей ----------
@@ -608,6 +641,31 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun processBook(item: SyncQueueItemEntity): ProcessResult {
+        val book = try {
+            gson.fromJson(item.payload, BookEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "book deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (book.clubId.isNullOrBlank() || book.id.isBlank())
+            return ProcessResult.PERMANENT_FAILURE
+
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = bookDataSource.pushBook(book)
+                if (r.isSuccess) {
+                    try { bookRepository.upsert(book.copy(pendingSync = false)) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = bookDataSource.deleteBook(book.clubId!!, book.id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
     private fun classifyError(error: Throwable?): ProcessResult {
         return when (error) {
             is FirebaseFirestoreException -> when (error.code) {
@@ -678,6 +736,7 @@ class SyncWorker @AssistedInject constructor(
             "challenge_progress" -> if (clubId != null) "clubs/$clubId/challengeProgress" else null
             "conference_event" -> if (payload["conferenceId"] != null) "conferences/${payload["conferenceId"]}/events" else null
             "test" -> if (clubId != null) "clubs/$clubId/tests" else null
+            "book" -> if (clubId != null) "clubs/$clubId/books" else null
             "test_question" -> {
                 val testId = payload["testId"] as? String
                 if (clubId != null && testId != null) "clubs/$clubId/tests/$testId/questions" else null

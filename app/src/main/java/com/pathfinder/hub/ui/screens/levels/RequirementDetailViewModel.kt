@@ -7,6 +7,8 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.local.entity.learning.BookEntity
+import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +32,8 @@ data class RequirementDetailUiState(
     val isSaving: Boolean = false,
     val successMessage: String? = null,
     val errorMessage: String? = null,
-    val userRole: String = ""
+    val userRole: String = "",
+    val books: List<BookEntity> = emptyList()
 )
 
 @HiltViewModel
@@ -38,7 +41,8 @@ class RequirementDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val levelRepository: LevelRepository,
     private val sessionManager: SessionManager,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
@@ -96,6 +100,11 @@ class RequirementDetailViewModel @Inject constructor(
                     levelName = level?.name ?: "",
                     sectionName = section?.name ?: ""
                 )
+            }
+
+            if (req.bookIds.isNotEmpty()) {
+                val books = bookRepository.getByIds(req.bookIds)
+                _state.update { it.copy(books = books) }
             }
         }
     }

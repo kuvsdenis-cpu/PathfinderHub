@@ -5,6 +5,11 @@ import androidx.room.*
     foreignKeys = [ForeignKey(HonorEntity::class, ["id"], ["honorId"], onDelete = ForeignKey.CASCADE)],
     indices = [Index("honorId")])
 data class HonorRequirementEntity(
-    @PrimaryKey val id: String, val honorId: String, val text: String,
-    val type: String, val order: Int
+    @PrimaryKey val id: String,
+    val honorId: String,
+    val text: String,
+    val type: String,
+    val order: Int,
+    /** Книги на выбор для этого требования (JSON-массив через Converters). */
+    val bookIds: List<String> = emptyList()
 )

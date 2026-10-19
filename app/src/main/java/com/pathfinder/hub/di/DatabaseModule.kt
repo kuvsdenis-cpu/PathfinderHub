@@ -56,4 +56,8 @@ object DatabaseModule {
     // ---------- Learning: книги и стихи ----------
     @Provides fun provideBookReportDao(db: AppDatabase): BookReportDao = db.bookReportDao()
     @Provides fun provideVerseProgressDao(db: AppDatabase): VerseProgressDao = db.verseProgressDao()
+
+    // ---------- Books ----------
+    @Provides fun provideBookDao(db: AppDatabase): BookDao = db.bookDao()
+    @Provides fun provideBookBookmarkDao(db: AppDatabase): BookBookmarkDao = db.bookBookmarkDao()
 }

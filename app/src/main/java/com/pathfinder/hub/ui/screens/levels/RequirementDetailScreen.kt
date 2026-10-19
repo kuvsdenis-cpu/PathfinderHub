@@ -52,6 +52,7 @@ import com.pathfinder.hub.ui.learning.RequirementContentViewModel
 import com.pathfinder.hub.ui.learning.RequirementContentSection
 import androidx.compose.material.icons.filled.Edit
 import com.pathfinder.hub.ui.common.AttachmentPreview
+import com.pathfinder.hub.ui.screens.books.RequirementBooksSection
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
@@ -65,6 +66,7 @@ fun RequirementDetailScreen(
     onUploadReport: (String, String) -> Unit,
     onOpenEditor: (String, String) -> Unit = { _, _ -> },
     onAttachTaskFile: (requirementId: String, taskId: String) -> Unit = { _, _ -> },
+    onOpenBook: (bookId: String) -> Unit = {},
     savedStateHandle: SavedStateHandle,
     viewModel: RequirementDetailViewModel = hiltViewModel(),
     contentViewModel: RequirementContentViewModel = hiltViewModel()
@@ -252,6 +254,14 @@ fun RequirementDetailScreen(
                     Spacer(Modifier.height(16.dp))
 
                     StatusCard(state.status, state.comment)
+
+                    if (state.books.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        RequirementBooksSection(
+                            books = state.books,
+                            onOpenBook = onOpenBook
+                        )
+                    }
 
                     RequirementContentSection(
                         viewModel = contentViewModel,

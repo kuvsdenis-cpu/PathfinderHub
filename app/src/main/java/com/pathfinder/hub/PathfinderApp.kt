@@ -25,6 +25,7 @@ import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.UserClubSeeder
 import com.pathfinder.hub.data.local.worker.BibleSeedWorker
+import com.pathfinder.hub.data.local.worker.BookSeedWorker
 import com.pathfinder.hub.data.local.worker.PearlSeedWorker
 import com.pathfinder.hub.data.local.worker.ReadingPlanSeedWorker
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
@@ -113,6 +114,7 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             scheduleBibleSeed()
             schedulePearlSeed()
             scheduleReadingPlanSeed()
+            scheduleBookSeed()
             observeSeedCompletion()  // suspend, не возвращается до конца воркера
             observeBibleSeedCompletion()
             observePearlSeedCompletion()
@@ -416,6 +418,24 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка проверки Библии", e)
         }
+    }
+
+    // ==================== КНИГИ ====================
+
+    private fun scheduleBookSeed() {
+        val request = OneTimeWorkRequestBuilder<BookSeedWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .build()
+            )
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            BookSeedWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+        Log.d(TAG, "Воркер BookSeedWorker поставлен в очередь (KEEP)")
     }
 
     // ==================== ЖЕМЧУЖИНЫ (B3.1) ====================

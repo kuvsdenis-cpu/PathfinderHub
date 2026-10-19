@@ -167,6 +167,15 @@ object Routes {
     // === Sync ===
     const val SYNC = "sync"
 
+    // === Books ===
+    const val BOOKS = "books"
+    const val BOOK_DETAIL = "books/detail/{bookId}"
+    fun bookDetail(bookId: String) = "books/detail/${Uri.encode(bookId)}"
+
+    const val BOOK_READER = "books/reader/{bookId}"
+    const val CREATE_BOOK = "books/create"
+    fun bookReader(bookId: String) = "books/reader/${Uri.encode(bookId)}"
+
     // === Bible (B2) ===
     const val BIBLE = "bible"
     const val BIBLE_BOOKMARKS = "bible/bookmarks"

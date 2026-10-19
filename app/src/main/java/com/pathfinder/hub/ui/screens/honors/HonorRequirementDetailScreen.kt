@@ -13,6 +13,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.storage.FileUploadContext
+import com.pathfinder.hub.ui.screens.books.RequirementBooksSection
 import com.pathfinder.hub.ui.storage.FileUploadResult
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -22,6 +23,7 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun HonorRequirementDetailScreen(
     onBack: () -> Unit,
     onOpenReport: () -> Unit,
+    onOpenBook: (bookId: String) -> Unit = {},
     navBackStackEntry: NavBackStackEntry? = null,
     viewModel: HonorRequirementDetailViewModel = hiltViewModel()
 ) {
@@ -111,6 +113,14 @@ fun HonorRequirementDetailScreen(
                     AttachmentPreview(url = url)
                     Spacer(Modifier.height(8.dp))
                 }
+            }
+
+            if (state.books.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                RequirementBooksSection(
+                    books = state.books,
+                    onOpenBook = onOpenBook
+                )
             }
 
             Spacer(Modifier.weight(1f))

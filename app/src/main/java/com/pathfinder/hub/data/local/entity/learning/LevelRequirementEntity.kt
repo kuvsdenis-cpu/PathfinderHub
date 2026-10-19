@@ -34,5 +34,12 @@ data class LevelRequirementEntity(
      * Список URL изображений (pre-signed или локальные asset-пути).
      * Хранится в SQLite как JSON-строка через Converters.
      */
-    val imageUrls: List<String> = emptyList()
+    val imageUrls: List<String> = emptyList(),
+
+    /**
+     * Книги, предлагаемые на выбор для этого требования.
+     * Хранится как JSON-массив через Converters (как imageUrls).
+     * Пустой список — требование не ссылается на книги.
+     */
+    val bookIds: List<String> = emptyList()
 )
