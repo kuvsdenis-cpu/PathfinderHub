@@ -124,6 +124,18 @@ fun SyncScreen(
             ) {
                 Text("Синхронизировать сейчас")
             }
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = viewModel::forceReseedLevels,
+                enabled = !state.isSyncing,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("Пересидить уровни")
+            }
         }
     }
 }

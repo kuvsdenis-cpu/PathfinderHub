@@ -2,6 +2,7 @@ package com.pathfinder.hub.data.remote
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import kotlinx.coroutines.tasks.await
 import java.util.Date
@@ -45,7 +46,9 @@ class FirestoreUserDataSource @Inject constructor() {
 
     suspend fun saveUser(user: UserEntity): Boolean = try {
         Log.d(TAG, "saveUser: id=${user.id}, role=${user.role}")
-        usersCollection.document(user.id).set(mapFromUserEntity(user)).await()
+        usersCollection.document(user.id)
+            .set(mapFromUserEntity(user), SetOptions.merge())
+            .await()
         Log.d(TAG, "saveUser OK: ${user.id}")
         true
     } catch (e: Exception) {
@@ -55,7 +58,9 @@ class FirestoreUserDataSource @Inject constructor() {
 
     suspend fun updateUser(user: UserEntity): Boolean = try {
         Log.d(TAG, "updateUser: id=${user.id}")
-        usersCollection.document(user.id).set(mapFromUserEntity(user)).await()
+        usersCollection.document(user.id)
+            .set(mapFromUserEntity(user), SetOptions.merge())
+            .await()
         Log.d(TAG, "updateUser OK: ${user.id}")
         true
     } catch (e: Exception) {
@@ -103,8 +108,9 @@ class FirestoreUserDataSource @Inject constructor() {
         map["firstName"] = user.firstName
         map["lastName"] = user.lastName
         map["role"] = user.role
-        map["clubId"] = user.clubId
-        map["clubIds"] = user.clubIds
+        // Не пишем пустые clubId/clubIds — иначе затрём remote-данные
+        if (!user.clubId.isNullOrBlank()) map["clubId"] = user.clubId
+        if (user.clubIds.isNotEmpty()) map["clubIds"] = user.clubIds
         map["conferenceId"] = user.conferenceId
         map["birthDate"] = user.birthDate
         map["avatar"] = user.avatar

@@ -59,5 +59,4 @@ object DatabaseModule {
 
     // ---------- Books ----------
     @Provides fun provideBookDao(db: AppDatabase): BookDao = db.bookDao()
-    @Provides fun provideBookBookmarkDao(db: AppDatabase): BookBookmarkDao = db.bookBookmarkDao()
 }

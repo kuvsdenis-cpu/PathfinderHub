@@ -71,9 +71,19 @@ class LevelRepository @Inject constructor(
     suspend fun upsertSections(sections: List<LevelSectionEntity>) = dao.upsertSections(sections)
     suspend fun upsertRequirements(reqs: List<LevelRequirementEntity>) = dao.upsertRequirements(reqs)
 
+    /**
+     * Атомарная замена сидового контента уровней.
+     * Всё внутри — одна транзакция: при исключении БД откатится
+     * к состоянию до очистки, данные не потеряются.
+     */
+    suspend fun seedLevelsAtomically(block: suspend () -> Unit) {
+        database.withTransaction { block() }
+    }
+
     // ---------- Очистка перед перезагрузкой ----------
     suspend fun clearAllRequirements() = dao.clearAllRequirements()
     suspend fun clearAllSections() = dao.clearAllSections()
+    suspend fun clearAllLevels() = dao.clearAllLevels()
 
     // ---------- Пользовательские данные (с enqueue + транзакция) ----------
 

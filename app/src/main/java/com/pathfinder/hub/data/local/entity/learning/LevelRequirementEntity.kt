@@ -41,5 +41,5 @@ data class LevelRequirementEntity(
      * Хранится как JSON-массив через Converters (как imageUrls).
      * Пустой список — требование не ссылается на книги.
      */
-    val bookIds: List<String> = emptyList()
+    val bookIds: List<String>? = emptyList()
 )

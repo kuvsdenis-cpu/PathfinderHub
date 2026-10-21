@@ -149,7 +149,6 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ContentVersionEntity::class,
         HonorDraftEntity::class,
         BookEntity::class,
-        BookBookmarkEntity::class,
         BookReportEntity::class,
         MemoryVerseEntity::class,
         VerseProgressEntity::class,
@@ -267,7 +266,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ReadingPlanDayEntity::class,
         ReadingPlanProgressEntity::class
     ],
-    version = 44,
+    version = 45,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -291,7 +290,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun testDao(): TestDao
     abstract fun bookReportDao(): BookReportDao
     abstract fun bookDao(): BookDao
-    abstract fun bookBookmarkDao(): BookBookmarkDao
     abstract fun verseProgressDao(): VerseProgressDao
 
     // Learning — материалы и задания

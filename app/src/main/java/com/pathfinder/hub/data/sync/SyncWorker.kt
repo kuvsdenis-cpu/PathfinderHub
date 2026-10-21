@@ -24,6 +24,9 @@ import com.pathfinder.hub.data.remote.FirestoreChallengeDataSource
 import com.pathfinder.hub.data.remote.FirestoreBookDataSource
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.repository.BookRepository
+import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.data.repository.ClubRepository
+import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import kotlinx.coroutines.flow.first
 import com.pathfinder.hub.data.local.dao.QrStationDao
 import com.pathfinder.hub.data.local.dao.BibleDao
@@ -59,6 +62,8 @@ class SyncWorker @AssistedInject constructor(
     private val readingPlanDao: ReadingPlanDao,
     private val bookDataSource: FirestoreBookDataSource,
     private val bookRepository: BookRepository,
+    private val userRepository: UserRepository,
+    private val clubRepository: ClubRepository,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -69,6 +74,13 @@ class SyncWorker @AssistedInject constructor(
         val batch = syncQueue.getNextBatch(50)
         if (batch.isEmpty()) {
             Log.d(TAG, "✓ Queue empty")
+            // Pull должен идти даже при пустой очереди,
+            // иначе clubIds/pearlProgress и т.п. никогда не подтянутся.
+            try {
+                pullUserData()
+            } catch (e: Exception) {
+                Log.w(TAG, "Pull failed: ${e.message}")
+            }
             return Result.success()
         }
 
@@ -154,6 +166,8 @@ class SyncWorker @AssistedInject constructor(
 
     private suspend fun pullUserData() {
         val uid = syncQueue.getCurrentUserId() ?: return
+        pullUser(uid)
+        pullClubs(uid)
         pullBibleBookmarks(uid)
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
@@ -181,6 +195,146 @@ class SyncWorker @AssistedInject constructor(
                 Log.w(TAG, "pullClubBooks skip $clubId: ${e.message}")
             }
         }
+    }
+
+        private suspend fun pullUser(uid: String) {
+        val r = firestore.pullDocument("users", uid)
+        val doc = r.getOrNull() ?: run {
+            Log.d(TAG, "pullUser: users/$uid не найден в Firestore")
+            return
+        }
+        try {
+            val remoteClubIds = (doc["clubIds"] as? List<*>)
+                ?.filterIsInstance<String>()?.filter { it.isNotBlank() }
+                ?: emptyList()
+            val remoteClubId = (doc["clubId"] as? String)?.takeIf { it.isNotBlank() }
+
+            val local = userRepository.getUserLocalOnly(uid)
+            if (local == null) {
+                Log.d(TAG, "pullUser: local user $uid НЕ НАЙДЕН")
+                return
+            }
+            Log.d(TAG, "pullUser: local.clubIds=${local.clubIds}, local.clubId=${local.clubId}")
+            Log.d(TAG, "pullUser: remoteClubIds=$remoteClubIds, remoteClubId=$remoteClubId")
+
+            val mergedClubIds = (local.clubIds + remoteClubIds).distinct()
+            val mergedClubId = local.clubId
+                ?: remoteClubId
+                ?: mergedClubIds.firstOrNull()
+
+            Log.d(TAG, "pullUser: mergedClubIds=$mergedClubIds, mergedClubId=$mergedClubId")
+
+            if (mergedClubIds != local.clubIds || mergedClubId != local.clubId) {
+                Log.d(TAG, "pullUser: ОБНОВЛЯЕМ local -> $mergedClubIds / $mergedClubId")
+                userRepository.update(local.copy(
+                    clubIds = mergedClubIds, clubId = mergedClubId,
+                ))
+            } else {
+                Log.d(TAG, "pullUser: без изменений")
+            }
+
+            // Дополнительно: проверяем, что клубы есть в Room
+            for (cid in mergedClubIds) {
+                val club = try { userRepository.getUserLocalOnly(uid) } catch (_: Exception) { null }
+                // Не используем clubRepository здесь, чтобы не менять конструктор.
+                // Просто логируем факт наличия id.
+                Log.d(TAG, "pullUser: clubId=$cid (см. ClubContextViewModel)")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "pullUser skip: ${e.message}")
+        }
+    }
+
+    /**
+     * Тянет клубы пользователя из Firestore в Room.
+     * Берёт clubIds из user (после pullUser), для каждого делает
+     * pullDocument("clubs", clubId), маппит в ClubEntity и upsert.
+     */
+    private suspend fun pullClubs(uid: String) {
+        val user = userRepository.getUserLocalOnly(uid) ?: return
+        val ids = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (ids.isEmpty()) {
+            Log.d(TAG, "pullClubs: у $uid нет клубов")
+            return
+        }
+        for (clubId in ids) {
+            try {
+                val local = clubRepository.getClub(clubId)
+                val r = firestore.pullDocument("clubs", clubId)
+                val doc = r.getOrNull() ?: run {
+                    Log.d(TAG, "pullClubs: clubs/$clubId не найден в Firestore")
+                    continue
+                }
+                // Не перезаписываем, если локально свежее (по updatedAt)
+                val remoteUpdatedAt = parseDate(doc["updatedAt"])?.time ?: 0L
+                if (local != null && (local.updatedAt.time >= remoteUpdatedAt)) {
+                    Log.d(TAG, "pullClubs: $clubId локально свежее — skip")
+                    continue
+                }
+                val club = mapToClubEntity(clubId, doc)
+                clubRepository.upsert(club)
+                Log.d(TAG, "pullClubs: $clubId -> \"${club.name}\"")
+            } catch (e: Exception) {
+                Log.w(TAG, "pullClubs skip $clubId: ${e.message}")
+            }
+        }
+    }
+
+    private fun mapToClubEntity(id: String, d: Map<String, Any?>): ClubEntity {
+        fun str(k: String, def: String = ""): String = (d[k] as? String) ?: def
+        fun bool(k: String, def: Boolean = false): Boolean = (d[k] as? Boolean) ?: def
+        fun int(k: String, def: Int = 0): Int = (d[k] as? Number)?.toInt() ?: def
+        fun long(k: String): Long? = (d[k] as? Number)?.toLong()
+        fun date(k: String): java.util.Date? = parseDate(d[k])
+        fun strList(k: String): List<String> =
+            (d[k] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        return ClubEntity(
+            id = id,
+            conferenceId = str("conferenceId"),
+            name = str("name"),
+            logoUrl = d["logoUrl"] as? String,
+            city = str("city"),
+            region = str("region"),
+            contactEmail = str("contactEmail"),
+            contactPhone = str("contactPhone"),
+            foundedAt = date("foundedAt"),
+            motto = d["motto"] as? String,
+            meetingDay = str("meetingDay"),
+            startTime = str("startTime"),
+            endTime = str("endTime"),
+            location = str("location"),
+            frequency = str("frequency"),
+            autoAcceptInvite = bool("autoAcceptInvite"),
+            inviteLifetimeDays = int("inviteLifetimeDays"),
+            requireParentalConsent = bool("requireParentalConsent"),
+            maxMembers = (d["maxMembers"] as? Number)?.toInt(),
+            paymentEnabled = bool("paymentEnabled"),
+            membershipFee = (d["membershipFee"] as? Number)?.toDouble(),
+            membershipPeriod = d["membershipPeriod"] as? String,
+            paymentMethods = strList("paymentMethods"),
+            paymentRemindersEnabled = bool("paymentRemindersEnabled"),
+            autoModerationEnabled = bool("autoModerationEnabled"),
+            reviewWindowHours = int("reviewWindowHours"),
+            escalationHours = int("escalationHours"),
+            defaultReportTemplateId = d["defaultReportTemplateId"] as? String,
+            reportPeriods = strList("reportPeriods"),
+            autoGenerateReports = bool("autoGenerateReports"),
+            updatedAt = date("updatedAt") ?: java.util.Date(0),
+            updatedBy = str("updatedBy"),
+            syncedAt = date("syncedAt"),
+            deletedAt = date("deletedAt"),
+            deletedBy = d["deletedBy"] as? String,
+            purgeAt = date("purgeAt"),
+        )
+    }
+
+    private fun parseDate(v: Any?): java.util.Date? = when (v) {
+        null -> null
+        is java.util.Date -> v
+        is com.google.firebase.Timestamp -> v.toDate()
+        is Long -> java.util.Date(v)
+        is Number -> java.util.Date(v.toLong())
+        else -> null
     }
 
     private suspend fun pullBibleBookmarks(uid: String) {
@@ -212,7 +366,7 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun pullPearlProgress(uid: String) {
+        private suspend fun pullPearlProgress(uid: String) {
         val r = firestore.pullCollection("users/$uid/pearlProgress")
         val docs = r.getOrNull() ?: return
         for (doc in docs) {
@@ -220,23 +374,44 @@ class SyncWorker @AssistedInject constructor(
                 val pearlId = doc["pearlId"] as? String ?: continue
                 val existing = pearlDao.getProgress(uid, pearlId)
                 val remoteReviewed = (doc["lastReviewedAt"] as? Number)?.toLong() ?: 0L
-                if (existing != null && (existing.lastReviewedAt ?: 0L) >= remoteReviewed) continue
-                pearlDao.upsertProgress(
-                    PearlProgressEntity(
-                        id = "$uid:$pearlId",
-                        userId = uid,
-                        pearlId = pearlId,
-                        memorized = doc["memorized"] as? Boolean ?: false,
-                        memorizedAt = (doc["memorizedAt"] as? Number)?.toLong(),
-                        lastReviewedAt = remoteReviewed,
-                        reviewCount = (doc["reviewCount"] as? Number)?.toInt() ?: 0,
-                        pendingSync = false,
-                    )
+                val remoteScore = (doc["trainingScore"] as? Number)?.toInt()
+                val remoteAttempts = (doc["trainingAttempts"] as? Number)?.toInt() ?: 0
+                val remoteTrainedAt = (doc["lastTrainedAt"] as? Number)?.toLong()
+
+                val base = existing ?: PearlProgressEntity(
+                    id = "$uid:$pearlId",
+                    userId = uid,
+                    pearlId = pearlId,
                 )
+                val merged = base.copy(
+                    memorized = if (remoteReviewed > (base.lastReviewedAt ?: 0L))
+                        doc["memorized"] as? Boolean ?: base.memorized else base.memorized,
+                    memorizedAt = (doc["memorizedAt"] as? Number)?.toLong() ?: base.memorizedAt,
+                    lastReviewedAt = maxOfNullable(base.lastReviewedAt, remoteReviewed)
+                        ?: base.lastReviewedAt,
+                    reviewCount = maxOf(base.reviewCount, (doc["reviewCount"] as? Number)?.toInt() ?: 0),
+                    trainingScore = maxOfNullable(base.trainingScore, remoteScore),
+                    trainingAttempts = maxOf(base.trainingAttempts, remoteAttempts),
+                    lastTrainedAt = maxOfNullable(base.lastTrainedAt, remoteTrainedAt),
+                    pendingSync = base.pendingSync,
+                )
+                if (merged != base) pearlDao.upsertProgress(merged)
             } catch (e: Exception) {
                 Log.w(TAG, "pull pearl skip: ${e.message}")
             }
         }
+    }
+
+    private fun maxOfNullable(a: Int?, b: Int?): Int? = when {
+        a == null -> b
+        b == null -> a
+        else -> maxOf(a, b)
+    }
+
+    private fun maxOfNullable(a: Long?, b: Long?): Long? = when {
+        a == null -> b
+        b == null -> a
+        else -> maxOf(a, b)
     }
 
     private suspend fun pullReadingPlanProgress(uid: String) {
@@ -592,6 +767,9 @@ class SyncWorker @AssistedInject constructor(
                     "memorizedAt" to p.memorizedAt,
                     "lastReviewedAt" to p.lastReviewedAt,
                     "reviewCount" to p.reviewCount,
+                    "trainingScore" to p.trainingScore,
+                    "trainingAttempts" to p.trainingAttempts,
+                    "lastTrainedAt" to p.lastTrainedAt,
                 )
                 val r = firestore.pushDocument(collection, p.pearlId, payload)
                 if (r.isSuccess) {

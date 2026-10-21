@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.content.Context
 import javax.inject.Inject
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 data class SyncUiState(
     val isSyncing: Boolean = false,
@@ -21,8 +23,8 @@ data class SyncUiState(
 @HiltViewModel
 class SyncViewModel @Inject constructor(
     private val syncScheduler: SyncScheduler,
-    private val syncDao: SyncDao
-) : ViewModel() {
+    private val syncDao: SyncDao,
+    @ApplicationContext private val app: Context) : ViewModel() {
 
     private val _state = MutableStateFlow(SyncUiState())
     val state: StateFlow<SyncUiState> = _state.asStateFlow()
@@ -45,5 +47,14 @@ class SyncViewModel @Inject constructor(
 
     fun syncNow() {
         syncScheduler.syncNow()
+    }
+
+    /** Принудительный пересид уровней из assets/levels.json. */
+    fun forceReseedLevels() {
+        val ctx = app
+        val req = androidx.work.OneTimeWorkRequestBuilder<com.pathfinder.hub.data.local.worker.SeedDatabaseWorker>()
+            .setInputData(androidx.work.workDataOf("forceLevels" to true))
+            .build()
+        androidx.work.WorkManager.getInstance(ctx).enqueue(req)
     }
 }

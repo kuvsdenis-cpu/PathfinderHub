@@ -102,8 +102,9 @@ class RequirementDetailViewModel @Inject constructor(
                 )
             }
 
-            if (req.bookIds.isNotEmpty()) {
-                val books = bookRepository.getByIds(req.bookIds)
+            val bookIds = req.bookIds.orEmpty()
+            if (bookIds.isNotEmpty()) {
+                val books = bookRepository.getByIds(bookIds)
                 _state.update { it.copy(books = books) }
             }
         }

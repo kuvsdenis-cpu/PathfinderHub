@@ -178,7 +178,24 @@ class UserRepository @Inject constructor(
      * Первый добавленный становится активным.
      */
     suspend fun addClubToUser(userId: String, clubId: String) {
-        val current = dao.getUser(userId) ?: return
+        var current = dao.getUser(userId) ?: return
+        // Если локально clubIds пусто — сначала подтянуть remote,
+        // чтобы не потерять старые клубы (после wipe/логина).
+        if (current.clubIds.isEmpty()) {
+            try {
+                val remote = firestore.getUser(userId)
+                if (remote != null && remote.clubIds.isNotEmpty()) {
+                    current = current.copy(
+                        clubIds = remote.clubIds,
+                        clubId = current.clubId ?: remote.clubId,
+                    )
+                    dao.update(current)
+                    Log.d(TAG, "addClubToUser: подтянул remote clubIds=${remote.clubIds}")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "addClubToUser: remote pull failed ${e.message}")
+            }
+        }
         val newList = buildSet {
             current.clubId?.takeIf { it.isNotBlank() }?.let { add(it) }
             addAll(current.clubIds.filter { it.isNotBlank() })

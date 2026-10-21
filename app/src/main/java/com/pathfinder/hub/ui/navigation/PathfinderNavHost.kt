@@ -115,6 +115,7 @@ import com.pathfinder.hub.ui.bible.BibleBookmarksScreen
 import com.pathfinder.hub.ui.bible.BibleSearchScreen
 import com.pathfinder.hub.ui.pearls.PearlsScreen
 import com.pathfinder.hub.ui.pearls.PearlDetailScreen
+import com.pathfinder.hub.ui.pearls.PearlTrainingScreen
 import com.pathfinder.hub.ui.pearls.PearlAdminScreen
 import com.pathfinder.hub.ui.readingplan.ReadingPlansScreen
 import com.pathfinder.hub.ui.readingplan.ReadingPlanDetailScreen
@@ -361,6 +362,7 @@ fun PathfinderNavHost(
         composable(Routes.DIRECTOR_LEARNING) {
             DirectorLearningScreen(
                 onBack = { navController.popBackStack() },
+                onOpenLibrary = { navController.navigate(Routes.BOOKS) },
                 onOpenAttempt = { attemptId ->
                     navController.navigate(Routes.openAnswerReview(attemptId))
                 },
@@ -448,6 +450,7 @@ fun PathfinderNavHost(
                 onOpenReport = { reportId ->
                     navController.navigate(Routes.reportDetail(reportId))
                 },
+                onNavigateToSync = { navController.navigate(Routes.SYNC) },
             )
         }
         composable(Routes.DELETED_CLUBS) {
@@ -624,13 +627,21 @@ fun PathfinderNavHost(
         composable(
             route = Routes.PEARL_DETAIL,
             arguments = listOf(navArgument("pearlId") { type = NavType.StringType })
-        ) {
+        ) { backStackEntry ->
+            val pearlId = backStackEntry.arguments?.getString("pearlId") ?: ""
             PearlDetailScreen(
                 onBack = { navController.popBackStack() },
                 onOpenInBible = { bookId, chapter, verseId ->
                     navController.navigate(Routes.bibleChapter(bookId, chapter, verseId))
                 },
+                onTrain = { navController.navigate(Routes.pearlTraining(pearlId)) },
             )
+        }
+        composable(
+            route = Routes.PEARL_TRAINING,
+            arguments = listOf(navArgument("pearlId") { type = NavType.StringType })
+        ) {
+            PearlTrainingScreen(onBack = { navController.popBackStack() })
         }
 
         // ===== Bible (B2) =====
@@ -713,6 +724,12 @@ fun PathfinderNavHost(
             BookDetailScreen(
                 onBack = { navController.popBackStack() },
                 onRead = { navController.navigate(Routes.bookReader(bookId)) },
+                onCreateTest = {
+                    navController.navigate(Routes.testEditorForScope("book", bookId))
+                },
+                onOpenTest = { testId ->
+                    navController.navigate(Routes.test(testId))
+                },
             )
         }
         composable(

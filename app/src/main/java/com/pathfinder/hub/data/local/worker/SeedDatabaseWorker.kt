@@ -62,9 +62,10 @@ class SeedDatabaseWorker @AssistedInject constructor(
             var newHonorsVersion = current?.honorsVersion
             var newTestsVersion = current?.testsVersion
             var updated = false
+            val forceLevels = inputData.getBoolean("forceLevels", false)
 
             // LEVELS
-            if (levelsJson != null && shouldUpdate(current?.levelsVersion, levelsVersion)) {
+            if (levelsJson != null && (forceLevels || shouldUpdate(current?.levelsVersion, levelsVersion))) {
                 seedLevels(levelsJson)
                 newLevelsVersion = levelsVersion
                 updated = true
@@ -139,55 +140,68 @@ class SeedDatabaseWorker @AssistedInject constructor(
         val type = object : TypeToken<LevelsFile>() {}.type
         val file: LevelsFile = gson.fromJson(json, type)
 
-        Log.d(TAG, "🧹 Очищаем старые секции и требования…")
-        levelRepository.clearAllRequirements()
-        levelRepository.clearAllSections()
-
-        for (parsed in file.levels) {
-            val correctLevelId = parsed.level.id.trim()
-
-            Log.d(TAG, "📥 [${parsed.level.name}] levelId='$correctLevelId'")
-
-            levelRepository.upsertLevels(listOf(parsed.level))
-
-            val sections = parsed.sections.map { s ->
-                LevelSectionEntity(
-                    id = s.id.trim(),
-                    levelId = correctLevelId,
-                    name = s.name.trim(),
-                    order = s.order
-                )
-            }
-            levelRepository.upsertSections(sections)
-
-            // Картинки уже залиты в бакет скриптом tools/upload_level_images.py.
-            // Бакет открыт на чтение levels_images/* → URL вечные, без подписи.
-            // Coil скачает один раз и закэширует на диск.
-            val requirements = parsed.sections.flatMap { section ->
-                section.requirements.map { req ->
-                    val resolvedImages = req.imageUrls.map { path ->
-                        storageRepository.buildLevelImageUrl(path)
-                    }
-                    req.copy(
-                        id = req.id.trim(),
-                        sectionId = section.id.trim(),
-                        levelId = correctLevelId,
-                        text = req.text.trim(),
-                        type = req.type.trim(),
-                        imageUrls = resolvedImages,
-                    )
+        val problems = mutableListOf<String>()
+        for ((idx, parsed) in file.levels.withIndex()) {
+            val lid = parsed.level.id.trim()
+            if (lid.isBlank()) problems += "level[$idx]: пустой id"
+            if (parsed.sections.isEmpty()) problems += "level[$idx] ($lid): 0 секций"
+            var reqCount = 0
+            for (sec in parsed.sections) {
+                if (sec.id.isBlank()) problems += "level[$idx] ($lid): секция с пустым id"
+                for (r in sec.requirements) {
+                    if (r.id.isBlank()) problems += "level[$idx] ($lid)/${sec.id}: пустой id требования"
+                    reqCount++
                 }
             }
-            levelRepository.upsertRequirements(requirements)
-
-            Log.d(TAG, "Уровень '${parsed.level.name}' (id=$correctLevelId): " +
-                    "${sections.size} разделов, ${requirements.size} требований")
+            if (reqCount == 0) problems += "level[$idx] ($lid): 0 требований"
+            Log.d(TAG, "validate [$lid]: ${parsed.sections.size} секций, $reqCount требований")
+        }
+        if (problems.isNotEmpty()) {
+            Log.e(TAG, "❌ levels.json невалиден:\n" + problems.joinToString("\n"))
+            throw IllegalStateException("levels.json невалиден: ${problems.size} проблем")
         }
 
-        val allSections = levelRepository.debugDistinctSectionLevelIds()
-        val allReqs = levelRepository.debugDistinctRequirementLevelIds()
-        Log.d(TAG, "✅ ПОСЛЕ ЗАГРУЗКИ: DISTINCT levelId (sections)=$allSections")
-        Log.d(TAG, "✅ ПОСЛЕ ЗАГРУЗКИ: DISTINCT levelId (requirements)=$allReqs")
+        levelRepository.seedLevelsAtomically {
+            Log.d(TAG, "🧹 Очищаем levels/sections/requirements…")
+            levelRepository.clearAllRequirements()
+            levelRepository.clearAllSections()
+            levelRepository.clearAllLevels()
+
+            for (parsed in file.levels) {
+                val lid = parsed.level.id.trim()
+                levelRepository.upsertLevels(listOf(parsed.level.copy(id = lid)))
+
+                val sections = parsed.sections.map { sec ->
+                    LevelSectionEntity(
+                        id = sec.id.trim(),
+                        levelId = lid,
+                        name = sec.name.trim(),
+                        order = sec.order,
+                    )
+                }
+                levelRepository.upsertSections(sections)
+
+                val reqs = parsed.sections.flatMap { sec ->
+                    sec.requirements.map { req ->
+                        val imgs = req.imageUrls.map { path ->
+                            storageRepository.buildLevelImageUrl(path)
+                        }
+                        req.copy(
+                            id = req.id.trim(),
+                            sectionId = sec.id.trim(),
+                            levelId = lid,
+                            text = req.text.trim(),
+                            type = req.type.trim(),
+                            imageUrls = imgs,
+                            bookIds = req.bookIds ?: emptyList(),
+                        )
+                    }
+                }
+                levelRepository.upsertRequirements(reqs)
+                Log.d(TAG, "✅ [$lid] ${sections.size} секций, ${reqs.size} требований")
+            }
+        }
+        Log.d(TAG, "✅ levels пересижены атомарно")
     }
 
     // ==================== СПЕЦИАЛИЗАЦИИ ====================

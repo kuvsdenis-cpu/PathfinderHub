@@ -192,7 +192,9 @@ object Routes {
     // === Pearls (B3.1) ===
     const val PEARLS = "pearls"
     const val PEARL_DETAIL = "pearls/detail/{pearlId}"
+    const val PEARL_TRAINING = "pearls/training/{pearlId}"
     fun pearlDetail(pearlId: String) = "pearls/detail/${Uri.encode(pearlId)}"
+    fun pearlTraining(pearlId: String) = "pearls/training/${Uri.encode(pearlId)}"
     const val PEARLS_ADMIN = "pearls_admin"
 
     // === Reading Plan (B4.1) ===

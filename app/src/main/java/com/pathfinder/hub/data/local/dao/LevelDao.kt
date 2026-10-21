@@ -200,4 +200,7 @@ interface LevelDao {
 
     @Query("SELECT * FROM level_requirements LIMIT 10")
     suspend fun debugDumpRequirements(): List<LevelRequirementEntity>
+
+    @Query("DELETE FROM levels")
+    suspend fun clearAllLevels()
 }
