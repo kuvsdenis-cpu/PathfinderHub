@@ -40,16 +40,16 @@ class SeedDatabaseWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         Log.d(TAG, "🚀 Проверяем версии контента…")
         return try {
-            val levelsJson = readAsset("levels.json")
+            val levelsIndexJson = readAsset("levels/index.json")
             val categoriesJson = readAsset("honors/categories.json")
             val testsJson = readAsset("tests.json")
 
-            if (levelsJson == null && categoriesJson == null && testsJson == null) {
+            if (levelsIndexJson == null && categoriesJson == null && testsJson == null) {
                 Log.w(TAG, "⚠️ JSON не найдены в assets")
                 return Result.failure()
             }
 
-            val levelsVersion = extractVersion(levelsJson)
+            val levelsVersion = extractVersion(levelsIndexJson)
             val honorsVersion = extractVersion(categoriesJson)
             val testsVersion = extractVersion(testsJson)
 
@@ -65,8 +65,8 @@ class SeedDatabaseWorker @AssistedInject constructor(
             val forceLevels = inputData.getBoolean("forceLevels", false)
 
             // LEVELS
-            if (levelsJson != null && (forceLevels || shouldUpdate(current?.levelsVersion, levelsVersion))) {
-                seedLevels(levelsJson)
+            if (levelsIndexJson != null && (forceLevels || shouldUpdate(current?.levelsVersion, levelsVersion))) {
+                seedLevels(levelsIndexJson)
                 newLevelsVersion = levelsVersion
                 updated = true
             }
@@ -136,12 +136,31 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
     // ==================== УРОВНИ ====================
 
-    private suspend fun seedLevels(json: String) {
-        val type = object : TypeToken<LevelsFile>() {}.type
-        val file: LevelsFile = gson.fromJson(json, type)
+    private suspend fun seedLevels(indexJson: String) {
+        // 1. Парсим index.json
+        val index: LevelsIndex = gson.fromJson(indexJson, LevelsIndex::class.java)
+            ?: throw IllegalStateException("levels/index.json пуст")
+        if (index.files.isEmpty()) {
+            throw IllegalStateException("levels/index.json: files пуст")
+        }
+
+        // 2. Читаем каждый файл как один уровень
+        val parsedLevels = mutableListOf<ParsedLevel>()
+        for (fileName in index.files) {
+            val lvlJson = readAsset("levels/$fileName")
+                ?: throw IllegalStateException("Asset не найден: levels/$fileName")
+            try {
+                val parsed: ParsedLevel = gson.fromJson(lvlJson, ParsedLevel::class.java)
+                    ?: throw IllegalStateException("$fileName: пустой уровень")
+                parsedLevels.add(parsed)
+                Log.d(TAG, "  levels/$fileName: ${parsed.sections.size} секций")
+            } catch (e: Exception) {
+                throw IllegalStateException("Ошибка парсинга levels/$fileName: ${e.message}")
+            }
+        }
 
         val problems = mutableListOf<String>()
-        for ((idx, parsed) in file.levels.withIndex()) {
+        for ((idx, parsed) in parsedLevels.withIndex()) {
             val lid = parsed.level.id.trim()
             if (lid.isBlank()) problems += "level[$idx]: пустой id"
             if (parsed.sections.isEmpty()) problems += "level[$idx] ($lid): 0 секций"
@@ -167,7 +186,7 @@ class SeedDatabaseWorker @AssistedInject constructor(
             levelRepository.clearAllSections()
             levelRepository.clearAllLevels()
 
-            for (parsed in file.levels) {
+            for (parsed in parsedLevels) {
                 val lid = parsed.level.id.trim()
                 levelRepository.upsertLevels(listOf(parsed.level.copy(id = lid)))
 
@@ -318,6 +337,11 @@ class SeedDatabaseWorker @AssistedInject constructor(
 }
 
 // ==================== DTO ====================
+
+data class LevelsIndex(
+    val version: String,
+    val files: List<String>
+)
 
 data class LevelsFile(
     val version: String,
