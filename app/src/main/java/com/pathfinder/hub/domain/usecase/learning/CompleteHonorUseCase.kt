@@ -31,7 +31,7 @@ class CompleteHonorUseCase @Inject constructor(
             else currentUniform.copy(earnedBadges = currentUniform.earnedBadges + newBadge, updatedAt = now)
         }
 
-        achievementRepo.upsertUniform(updatedUniform)
+        achievementRepo.upsertUniformWithSync(updatedUniform)
         checkAchievementsUseCase(userId) // <-- АВТОМАТИЧЕСКАЯ ПРОВЕРКА АЧИВОК
 
         Result.success(Unit)

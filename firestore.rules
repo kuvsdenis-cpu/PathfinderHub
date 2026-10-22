@@ -99,6 +99,10 @@ service cloud.firestore {
     // USERS
     // ============================================================
     match /users/{userId} {
+      match /digitalUniform/{docId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
+
 
       allow read: if isSignedIn() && (
         uid() == userId
@@ -695,6 +699,31 @@ service cloud.firestore {
         allow delete: if isConferenceAdmin();
       }
 
+      // ---------- CUSTOM GROUPS ----------
+      // Создают: директор, со-директор (hasPerm/isOwner) и инструктор.
+      match /customGroups/{customGroupId} {
+        allow read: if isSignedIn() && isOwnClub(clubId);
+        allow create, update, delete: if isSignedIn() && isOwnClub(clubId) && (
+          hasPerm("content.edit") || isInstructor()
+        );
+      }
+
+      // ---------- CUSTOM GROUP EXCLUSIONS ----------
+      // Выход из группы: документ на (groupId, userId).
+      // Создаёт сам пользователь (self-leave) или staff (remove).
+      // Чтение — всем участникам клуба (для resolveMembers в UI).
+      match /customGroups/{customGroupId}/exclusions/{excludedUserId} {
+        allow read: if isSignedIn() && isOwnClub(clubId);
+        allow create, update: if isSignedIn() && isOwnClub(clubId) && (
+          request.auth.uid == excludedUserId
+          || hasPerm("content.edit") || isInstructor()
+        );
+        allow delete: if isSignedIn() && isOwnClub(clubId) && (
+          request.auth.uid == excludedUserId
+          || hasPerm("content.edit") || isInstructor()
+        );
+      }
+
       // ---------- GROUP CHATS ----------
       match /groupChats/{groupId} {
         allow read: if isSignedIn() && (
@@ -718,7 +747,15 @@ service cloud.firestore {
           allow create: if isSignedIn()
             && isOwnClub(clubId)
             && request.resource.data.authorId == uid();
-          allow update, delete: if false;
+          // Редактирование: только автор, только text + editedAt.
+          allow update: if isSignedIn()
+            && isOwnClub(clubId)
+            && resource.data.authorId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['text', 'editedAt'])
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0;
+          allow delete: if false;
         }
       }
 
@@ -747,7 +784,15 @@ service cloud.firestore {
           allow create: if isSignedIn()
             && isOwnClub(clubId)
             && request.resource.data.authorId == uid();
-          allow update, delete: if false;
+          // Редактирование: только автор, только text + editedAt.
+          allow update: if isSignedIn()
+            && isOwnClub(clubId)
+            && resource.data.authorId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['text', 'editedAt'])
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0;
+          allow delete: if false;
         }
       }
     }
@@ -824,6 +869,15 @@ service cloud.firestore {
         && request.resource.data.status in ['active', 'claiming', 'used', 'expired'];
 
       allow delete: if isConferenceAdmin();
+    }
+
+    // ============================================================
+    // INFO ARTICLES (глобальный справочник)
+    // ============================================================
+    match /info_articles/{articleId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn()
+        && (isConferenceAdmin() || hasPerm("content.edit"));
     }
 
     // ============================================================

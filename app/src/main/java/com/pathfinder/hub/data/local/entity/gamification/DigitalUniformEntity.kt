@@ -6,7 +6,8 @@ import java.util.Date
 data class DigitalUniformEntity(
     @PrimaryKey val userId: String, val shirtColor: String, val tieColor: String,
     val earnedBadges: List<BadgeItem>, val earnedChevrons: List<ChevronItem>,
-    val specialMarks: List<SpecialMarkItem>, val updatedAt: Date
+    val specialMarks: List<SpecialMarkItem>, val updatedAt: Date,
+    val pendingSync: Boolean = false, val syncedAt: Date? = null
 )
 
 data class BadgeItem(val honorId: String, val position: Int, val earnedAt: Date)

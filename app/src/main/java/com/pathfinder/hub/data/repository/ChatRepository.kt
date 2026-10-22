@@ -69,6 +69,22 @@ class ChatRepository @Inject constructor(
         return firestore.sendGroupMessage(clubId, groupId, authorId, text, attachments)
     }
 
+    suspend fun editDmMessage(
+        clubId: String, dmId: String, messageId: String,
+        authorId: String, newText: String,
+    ): Result<Unit> {
+        if (newText.isBlank()) return Result.failure(IllegalArgumentException("Пустое сообщение"))
+        return firestore.editDmMessage(clubId, dmId, messageId, authorId, newText.trim())
+    }
+
+    suspend fun editGroupMessage(
+        clubId: String, groupId: String, messageId: String,
+        authorId: String, newText: String,
+    ): Result<Unit> {
+        if (newText.isBlank()) return Result.failure(IllegalArgumentException("Пустое сообщение"))
+        return firestore.editGroupMessage(clubId, groupId, messageId, authorId, newText.trim())
+    }
+
     // ==================== Разовые запросы ====================
 
     suspend fun getMyDmsOnce(clubId: String, userId: String): List<DirectMessageMeta> =

@@ -80,6 +80,8 @@ class FirestoreUserDataSource @Inject constructor() {
             role = data["role"] as? String ?: "teen",
             clubId = data["clubId"] as? String,
             clubIds = (data["clubIds"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+            isOwnerClub = data["isOwnerClub"] as? Boolean ?: true,
+            directorPermissions = (data["directorPermissions"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
             conferenceId = data["conferenceId"] as? String,
             birthDate = parseDate(data["birthDate"]) ?: Date(),
             avatar = data["avatar"] as? String,
@@ -111,6 +113,8 @@ class FirestoreUserDataSource @Inject constructor() {
         // Не пишем пустые clubId/clubIds — иначе затрём remote-данные
         if (!user.clubId.isNullOrBlank()) map["clubId"] = user.clubId
         if (user.clubIds.isNotEmpty()) map["clubIds"] = user.clubIds
+        map["isOwnerClub"] = user.isOwnerClub
+        map["directorPermissions"] = user.directorPermissions
         map["conferenceId"] = user.conferenceId
         map["birthDate"] = user.birthDate
         map["avatar"] = user.avatar

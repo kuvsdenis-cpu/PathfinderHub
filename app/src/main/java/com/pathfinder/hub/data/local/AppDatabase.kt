@@ -185,6 +185,8 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
 
         // Custom Groups (B1)
         CustomGroupEntity::class,
+        com.pathfinder.hub.data.local.entity.info.InfoArticleEntity::class,
+        com.pathfinder.hub.data.local.entity.groups.CustomGroupExclusionEntity::class,
 
         // User-Clubs (B1)
         UserClubEntity::class,
@@ -266,7 +268,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ReadingPlanDayEntity::class,
         ReadingPlanProgressEntity::class
     ],
-    version = 45,
+    version = 50,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -339,6 +341,10 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Custom Groups (B1)
     abstract fun customGroupDao(): CustomGroupDao
+    abstract fun customGroupExclusionDao(): CustomGroupExclusionDao
+
+    // Info
+    abstract fun infoArticleDao(): com.pathfinder.hub.data.local.dao.InfoArticleDao
 
     // User-Clubs (B1)
     abstract fun userClubDao(): UserClubDao

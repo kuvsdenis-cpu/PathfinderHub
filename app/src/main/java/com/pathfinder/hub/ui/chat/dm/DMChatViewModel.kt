@@ -27,6 +27,8 @@ data class DMChatUiState(
     val messages: List<ChatMessage> = emptyList(),
     val inputText: String = "",
     val isSending: Boolean = false,
+    val editingMessageId: String? = null,
+    val editDraft: String = "",
     val errorMessage: String? = null,
 )
 
@@ -101,6 +103,34 @@ class DMChatViewModel @Inject constructor(
                 onSuccess = { _state.update { it.copy(inputText = "", isSending = false) } },
                 onFailure = { e ->
                     _state.update { it.copy(isSending = false, errorMessage = e.message) }
+                },
+            )
+        }
+    }
+
+    fun startEdit(message: ChatMessage) {
+        if (message.authorId != _state.value.currentUserId) return
+        _state.update { it.copy(editingMessageId = message.id, editDraft = message.text) }
+    }
+
+    fun cancelEdit() = _state.update { it.copy(editingMessageId = null, editDraft = "") }
+
+    fun onEditDraftChange(v: String) = _state.update { it.copy(editDraft = v) }
+
+    fun submitEdit() {
+        val s = _state.value
+        val clubId = s.clubId ?: return
+        val dm = s.dmId ?: return
+        val uid = s.currentUserId ?: return
+        val mid = s.editingMessageId ?: return
+        val text = s.editDraft.trim()
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val r = chatRepo.editDmMessage(clubId, dm, mid, uid, text)
+            r.fold(
+                onSuccess = { _state.update { it.copy(editingMessageId = null, editDraft = "") } },
+                onFailure = { e ->
+                    _state.update { it.copy(errorMessage = e.message) }
                 },
             )
         }

@@ -9,7 +9,9 @@ import javax.inject.Inject
 class AchievementRepository @Inject constructor(
     private val dao: AchievementDao,
     private val certFirestore: FirestoreCertificateDataSource,
+    private val syncQueue: com.pathfinder.hub.data.sync.SyncQueueManager,
 ) {
+    private val gson = com.google.gson.Gson()
     fun observeAll(): Flow<List<AchievementEntity>> = dao.observeAll()
     suspend fun upsertAll(items: List<AchievementEntity>) = dao.upsertAll(items)
     fun observeProgress(u: String): Flow<List<AchievementProgressEntity>> = dao.observeProgress(u)
@@ -18,6 +20,24 @@ class AchievementRepository @Inject constructor(
     suspend fun revoke(u: String, a: String, at: Long, b: String, r: String) = dao.revoke(u, a, at, b, r)
     fun observeUniform(u: String): Flow<DigitalUniformEntity?> = dao.observeUniform(u)
     suspend fun upsertUniform(u: DigitalUniformEntity) = dao.upsertUniform(u)
+
+    suspend fun getUniform(userId: String): DigitalUniformEntity? = dao.getUniform(userId)
+
+    suspend fun upsertUniformWithSync(u: DigitalUniformEntity) {
+        val toSave = u.copy(pendingSync = true)
+        dao.upsertUniform(toSave)
+        syncQueue.enqueue(
+            entityType = "digital_uniform",
+            entityId = u.userId,
+            operation = "upsert",
+            payload = gson.toJson(toSave),
+        )
+    }
+
+    suspend fun markUniformSynced(userId: String, syncedAt: Long) =
+        dao.markUniformSynced(userId, syncedAt)
+
+    suspend fun getPendingUniforms(): List<DigitalUniformEntity> = dao.getPendingUniforms()
     fun observeActiveChallenges(c: String): Flow<List<ChallengeEntity>> = dao.observeActiveChallenges(c)
     suspend fun upsertChallenge(c: ChallengeEntity) = dao.upsertChallenge(c)
     fun observeChallengeProgress(id: String): Flow<List<ChallengeProgressEntity>> = dao.observeChallengeProgress(id)

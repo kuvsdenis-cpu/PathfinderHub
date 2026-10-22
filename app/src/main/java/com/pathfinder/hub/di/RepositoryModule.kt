@@ -56,7 +56,8 @@ object RepositoryModule {
     fun provideAchievementRepo(
         d: AchievementDao,
         certFirestore: com.pathfinder.hub.data.remote.FirestoreCertificateDataSource,
-    ) = AchievementRepository(d, certFirestore)
+        syncQueue: com.pathfinder.hub.data.sync.SyncQueueManager,
+    ) = AchievementRepository(d, certFirestore, syncQueue)
 
     @Provides @Singleton
     fun provideModerationRepo(
@@ -132,9 +133,18 @@ object RepositoryModule {
 
 
     @Provides @Singleton
+    fun provideInfoArticleDao(db: AppDatabase): com.pathfinder.hub.data.local.dao.InfoArticleDao = db.infoArticleDao()
+
+    @Provides @Singleton
+    fun provideCustomGroupExclusionDao(db: AppDatabase): CustomGroupExclusionDao =
+        db.customGroupExclusionDao()
+
+    @Provides @Singleton
     fun provideCustomGroupRepo(
         db: AppDatabase,
         d: CustomGroupDao,
+        exclusionDao: CustomGroupExclusionDao,
+        userDao: UserDao,
         syncQueueManager: SyncQueueManager,
-    ) = CustomGroupRepository(db, d, syncQueueManager)
+    ) = CustomGroupRepository(db, d, exclusionDao, userDao, syncQueueManager)
 }

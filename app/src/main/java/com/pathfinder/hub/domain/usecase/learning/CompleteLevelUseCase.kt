@@ -31,7 +31,7 @@ class CompleteLevelUseCase @Inject constructor(
             else currentUniform.copy(earnedChevrons = currentUniform.earnedChevrons + newChevron, updatedAt = now)
         }
 
-        achievementRepo.upsertUniform(updatedUniform)
+        achievementRepo.upsertUniformWithSync(updatedUniform)
         checkAchievementsUseCase(userId) // <-- АВТОМАТИЧЕСКАЯ ПРОВЕРКА АЧИВОК
 
         Result.success(Unit)

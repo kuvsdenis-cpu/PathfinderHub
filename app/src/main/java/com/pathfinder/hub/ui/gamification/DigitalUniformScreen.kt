@@ -1,6 +1,10 @@
 package com.pathfinder.hub.ui.gamification
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.data.local.entity.gamification.DigitalUniformEntity
+import com.pathfinder.hub.R
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -40,6 +45,7 @@ import java.util.Locale
 @Composable
 fun DigitalUniformScreen(
     onNavigateBack: () -> Unit = {},
+    onOpenDetail: () -> Unit = {},
     viewModel: DigitalUniformViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -125,12 +131,14 @@ fun DigitalUniformScreen(
                     modifier = Modifier.fillMaxWidth().padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    UniformAvatar(
-                        shirtColor = uniform.shirtColor,
-                        tieColor = uniform.tieColor,
-                        badgesCount = uniform.earnedBadges.size,
-                        chevronsCount = uniform.earnedChevrons.size,
-                        marksCount = uniform.specialMarks.size
+                    Image(
+                        painter = painterResource(R.drawable.uniform_base),
+                        contentDescription = "Цифровая форма",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clickable { onOpenDetail() },
+                        contentScale = ContentScale.Fit,
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -203,33 +211,6 @@ fun DigitalUniformScreen(
     }
 }
 
-@Composable
-private fun UniformAvatar(
-    shirtColor: String,
-    tieColor: String,
-    badgesCount: Int,
-    chevronsCount: Int,
-    marksCount: Int
-) {
-    Canvas(modifier = Modifier.size(200.dp)) {
-        val centerX = size.width / 2
-        val centerY = size.height / 2
-
-        drawCircle(color = Color(0xFFFFDBB5), radius = 40f, center = Offset(centerX, centerY - 60f))
-        drawRect(color = parseColor(shirtColor), topLeft = Offset(centerX - 50f, centerY - 20f), size = Size(100f, 120f))
-        drawRect(color = parseColor(tieColor), topLeft = Offset(centerX - 10f, centerY - 20f), size = Size(20f, 80f))
-
-        for (i in 0 until badgesCount.coerceAtMost(3)) {
-            drawCircle(color = PathfinderBlue, radius = 8f, center = Offset(centerX - 35f, centerY + 10f + i * 20f))
-        }
-        for (i in 0 until chevronsCount.coerceAtMost(3)) {
-            drawCircle(color = Color(0xFFFFD700), radius = 8f, center = Offset(centerX + 35f, centerY + 10f + i * 20f))
-        }
-        for (i in 0 until marksCount.coerceAtMost(3)) {
-            drawCircle(color = Color(0xFFFF6B6B), radius = 8f, center = Offset(centerX - 30f + i * 30f, centerY - 40f), style = Stroke(width = 2f))
-        }
-    }
-}
 
 @Composable
 private fun UniformSection(

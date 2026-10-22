@@ -23,6 +23,12 @@ interface AchievementDao {
     fun observeUniform(userId: String): Flow<DigitalUniformEntity?>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertUniform(u: DigitalUniformEntity)
+    @Query("SELECT * FROM digital_uniforms WHERE userId = :userId")
+    suspend fun getUniform(userId: String): DigitalUniformEntity?
+    @Query("UPDATE digital_uniforms SET pendingSync = 0, syncedAt = :syncedAt WHERE userId = :userId")
+    suspend fun markUniformSynced(userId: String, syncedAt: Long)
+    @Query("SELECT * FROM digital_uniforms WHERE pendingSync = 1")
+    suspend fun getPendingUniforms(): List<DigitalUniformEntity>
     @Query("SELECT * FROM challenges WHERE clubId = :clubId AND status = 'active'")
     fun observeActiveChallenges(clubId: String): Flow<List<ChallengeEntity>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)

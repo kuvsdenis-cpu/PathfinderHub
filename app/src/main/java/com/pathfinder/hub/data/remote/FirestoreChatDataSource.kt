@@ -314,6 +314,56 @@ class FirestoreChatDataSource @Inject constructor() {
         }
     }
 
+    // ==================== Редактирование ====================
+
+    suspend fun editDmMessage(
+        clubId: String, dmId: String, messageId: String,
+        authorId: String, newText: String,
+    ): Result<Unit> = try {
+        if (newText.isBlank()) {
+            throw IllegalArgumentException("Текст не может быть пустым")
+        }
+        val ref = dmMessagesRef(clubId, dmId).document(messageId)
+        val snap = ref.get().await()
+        if (!snap.exists()) throw IllegalStateException("Сообщение не найдено")
+        val realAuthor = snap.getString("authorId") ?: ""
+        if (realAuthor != authorId) throw IllegalStateException("Можно редактировать только свои сообщения")
+        ref.update(
+            mapOf(
+                "text" to newText,
+                "editedAt" to Timestamp(Date()),
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Log.e(TAG, "editDmMessage failed", e)
+        Result.failure(e)
+    }
+
+    suspend fun editGroupMessage(
+        clubId: String, groupId: String, messageId: String,
+        authorId: String, newText: String,
+    ): Result<Unit> = try {
+        if (newText.isBlank()) {
+            throw IllegalArgumentException("Текст не может быть пустым")
+        }
+        val ref = groupMessagesRef(clubId, groupId).document(messageId)
+        val snap = ref.get().await()
+        if (!snap.exists()) throw IllegalStateException("Сообщение не найдено")
+        val realAuthor = snap.getString("authorId") ?: ""
+        if (realAuthor != authorId) throw IllegalStateException("Можно редактировать только свои сообщения")
+        ref.update(
+            mapOf(
+                "text" to newText,
+                "editedAt" to Timestamp(Date()),
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Log.e(TAG, "editGroupMessage failed", e)
+        Result.failure(e)
+    }
+
     // ==================== Маппинг ====================
 
     private fun mapDm(id: String, d: Map<String, Any?>): DirectMessageMeta =
@@ -347,6 +397,7 @@ class FirestoreChatDataSource @Inject constructor() {
             attachments = (d["attachments"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
             createdAt = parseDate(d["createdAt"]) ?: Date(),
             status = d["status"] as? String ?: "published",
+            editedAt = parseDate(d["editedAt"]),
         )
 
     private fun parseDate(v: Any?): Date? = when (v) {

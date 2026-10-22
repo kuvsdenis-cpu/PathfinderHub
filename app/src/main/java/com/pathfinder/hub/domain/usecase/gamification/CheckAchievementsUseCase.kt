@@ -8,6 +8,8 @@ import com.pathfinder.hub.data.local.dao.TaskDao
 import com.pathfinder.hub.data.local.dao.TestDao
 import com.pathfinder.hub.data.local.dao.UserDao
 import com.pathfinder.hub.data.local.entity.gamification.AchievementProgressEntity
+import com.pathfinder.hub.data.local.entity.gamification.DigitalUniformEntity
+import com.pathfinder.hub.data.local.entity.gamification.SpecialMarkItem
 import com.pathfinder.hub.data.repository.AchievementRepository
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
@@ -135,6 +137,7 @@ class CheckAchievementsUseCase @Inject constructor(
                         pendingSync = false
                     )
                 )
+                addSpecialMarkToUniform(userId, achievement.id, achievement.icon)
                 newlyEarned.add(achievement.id)
             }
         }
@@ -143,4 +146,28 @@ class CheckAchievementsUseCase @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    private suspend fun addSpecialMarkToUniform(userId: String, achievementId: String, icon: String) {
+        try {
+            val current = achievementRepository.getUniform(userId)
+            val now = Date()
+            val newMark = SpecialMarkItem(achievementId = achievementId, icon = icon, earnedAt = now)
+            val updated = if (current == null) {
+                DigitalUniformEntity(
+                    userId = userId,
+                    shirtColor = "#1E88E5",
+                    tieColor = "#FFC107",
+                    earnedBadges = emptyList(),
+                    earnedChevrons = emptyList(),
+                    specialMarks = listOf(newMark),
+                    updatedAt = now,
+                )
+            } else {
+                if (current.specialMarks.any { it.achievementId == achievementId }) current
+                else current.copy(specialMarks = current.specialMarks + newMark, updatedAt = now)
+            }
+            achievementRepository.upsertUniformWithSync(updated)
+        } catch (_: Exception) {}
+    }
 }
+

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -83,6 +84,7 @@ fun TeenHomeScreen(
     onNavigateToPearls: () -> Unit = {},
     onNavigateToReadingPlan: () -> Unit = {},
     onNavigateToBooks: () -> Unit = {},
+    onNavigateToInfo: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -270,6 +272,7 @@ fun TeenHomeScreen(
                 ) {
                     ActionTile(Icons.Default.Bolt, "Активность", onNavigateToActivity, Modifier.weight(1f))
                     ActionTile(Icons.Default.Public, "Межклубные", onNavigateToCrossClub, Modifier.weight(1f))
+                    ActionTile(Icons.Default.Info, "Справка", onNavigateToInfo, Modifier.weight(1f))
                 }
             }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.repository.ChatRepository
+import com.pathfinder.hub.data.repository.CustomGroupRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ data class GroupMessageUi(
     val attachments: List<String>,
     val createdAt: Date,
     val isOwn: Boolean,
+    val editedAt: Date? = null,
 )
 
 data class CustomGroupChatUiState(
@@ -37,6 +39,10 @@ data class CustomGroupChatUiState(
     val messages: List<GroupMessageUi> = emptyList(),
     val inputText: String = "",
     val isSending: Boolean = false,
+    val isLeaving: Boolean = false,
+    val leaveBlockedReason: String? = null,
+    val editingMessageId: String? = null,
+    val editDraft: String = "",
     val errorMessage: String? = null,
 )
 
@@ -46,6 +52,7 @@ class CustomGroupChatViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val chatRepo: ChatRepository,
+    private val customGroupRepo: CustomGroupRepository,
 ) : ViewModel() {
 
     private val groupId: String = savedStateHandle.get<String>("groupId") ?: ""
@@ -101,6 +108,7 @@ class CustomGroupChatViewModel @Inject constructor(
                                 attachments = m.attachments,
                                 createdAt = m.createdAt,
                                 isOwn = m.authorId == uid,
+                                editedAt = m.editedAt,
                             )
                         }
                         _state.update { it.copy(messages = ui, isLoading = false) }
@@ -127,6 +135,56 @@ class CustomGroupChatViewModel @Inject constructor(
                 onFailure = { e ->
                     _state.update { it.copy(isSending = false, errorMessage = e.message) }
                 },
+            )
+        }
+    }
+
+    fun leaveGroup(onLeft: () -> Unit) {
+        val s = _state.value
+        val gid = s.groupId ?: return
+        val uid = s.currentUserId ?: return
+        if (s.isLeaving) return
+        _state.update { it.copy(isLeaving = true, leaveBlockedReason = null) }
+        viewModelScope.launch {
+            val r = customGroupRepo.leaveGroup(gid, uid)
+            r.fold(
+                onSuccess = {
+                    _state.update { it.copy(isLeaving = false) }
+                    onLeft()
+                },
+                onFailure = { e ->
+                    _state.update {
+                        it.copy(isLeaving = false, leaveBlockedReason = e.message ?: "Не удалось выйти")
+                    }
+                },
+            )
+        }
+    }
+
+    fun clearLeaveError() = _state.update { it.copy(leaveBlockedReason = null) }
+
+    fun startEdit(message: GroupMessageUi) {
+        if (message.authorId != _state.value.currentUserId) return
+        _state.update { it.copy(editingMessageId = message.id, editDraft = message.text) }
+    }
+
+    fun cancelEdit() = _state.update { it.copy(editingMessageId = null, editDraft = "") }
+
+    fun onEditDraftChange(v: String) = _state.update { it.copy(editDraft = v) }
+
+    fun submitEdit() {
+        val s = _state.value
+        val clubId = s.clubId ?: return
+        val gid = s.groupId ?: return
+        val uid = s.currentUserId ?: return
+        val mid = s.editingMessageId ?: return
+        val text = s.editDraft.trim()
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val r = chatRepo.editGroupMessage(clubId, gid, mid, uid, text)
+            r.fold(
+                onSuccess = { _state.update { it.copy(editingMessageId = null, editDraft = "") } },
+                onFailure = { e -> _state.update { it.copy(errorMessage = e.message) } },
             )
         }
     }

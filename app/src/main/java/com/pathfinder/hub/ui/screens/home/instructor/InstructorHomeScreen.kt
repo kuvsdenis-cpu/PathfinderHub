@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Public
@@ -66,6 +67,7 @@ fun InstructorHomeScreen(
     onNavigateToContentManager: () -> Unit = {},
     onNavigateToNotifications: () -> Unit,
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
+    onNavigateToInfo: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -221,7 +223,7 @@ fun InstructorHomeScreen(
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))
-                    Spacer(Modifier.weight(1f))
+                    Tile(Icons.Default.Info, "Справка", "Форма и безопасность", onNavigateToInfo, Modifier.weight(1f))
                 }
             }
 

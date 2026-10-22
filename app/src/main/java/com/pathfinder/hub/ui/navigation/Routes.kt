@@ -119,6 +119,7 @@ object Routes {
 
     // === Teen - Gamification ===
     const val DIGITAL_UNIFORM = "digital_uniform"
+    const val DIGITAL_UNIFORM_DETAIL = "digital_uniform/detail"
     const val ACHIEVEMENTS = "achievements"
 
     // === Teen - Challenges ===
@@ -163,6 +164,15 @@ object Routes {
     const val MANAGE_CUSTOM_GROUPS = "manage_custom_groups"
     const val CUSTOM_GROUP_EDITOR = "custom_group_editor/{groupId}"
     fun customGroupEditor(groupId: String) = "custom_group_editor/$groupId"
+
+    // === Доп. информация ===
+    const val INFO_HUB = "info_hub"
+    const val INFO_CATEGORY = "info_category/{categoryId}"
+    const val INFO_ARTICLE = "info_article/{categoryId}/{articleId}"
+    const val INFO_EDITOR = "info_editor/{categoryId}/{articleId}"
+    fun infoEditor(categoryId: String, articleId: String? = null) = "info_editor/$categoryId/${articleId ?: "new"}"
+    fun infoCategory(categoryId: String) = "info_category/$categoryId"
+    fun infoArticle(categoryId: String, articleId: String) = "info_article/$categoryId/$articleId"
 
     // === Sync ===
     const val SYNC = "sync"

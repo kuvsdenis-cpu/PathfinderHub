@@ -24,4 +24,5 @@ data class ChatMessage(
     val attachments: List<String>,
     val createdAt: Date,
     val status: String,
+    val editedAt: Date? = null,
 )

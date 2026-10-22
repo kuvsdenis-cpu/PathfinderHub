@@ -8,6 +8,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.pathfinder.hub.ui.info.InfoHubScreen
+import com.pathfinder.hub.ui.info.InfoCategoryScreen
+import com.pathfinder.hub.ui.info.InfoArticleScreen
+import com.pathfinder.hub.ui.info.InfoEditorScreen
 import com.pathfinder.hub.ui.challenges.ChallengeDetailScreen
 import com.pathfinder.hub.ui.challenges.ChallengesScreen
 import com.pathfinder.hub.ui.chat.list.ChatsListScreen
@@ -207,6 +211,7 @@ fun PathfinderNavHost(
                 onNavigateToOpenAnswers = { navController.navigate(Routes.OPEN_ANSWERS) },
                 onNavigateToContentManager = { navController.navigate(Routes.CONTENT_MANAGER) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -336,6 +341,7 @@ fun PathfinderNavHost(
                 onNavigateToPearlsAdmin = { navController.navigate(Routes.PEARLS_ADMIN) },
                 onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
                 onNavigateToReadingPlanAdmin = { navController.navigate(Routes.READING_PLANS_ADMIN) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -765,7 +771,8 @@ fun PathfinderNavHost(
                 onNavigateToBible = { navController.navigate(Routes.BIBLE) },
                 onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
                 onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
-                onNavigateToBooks = { navController.navigate(Routes.BOOKS) }
+                onNavigateToBooks = { navController.navigate(Routes.BOOKS) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) }
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
@@ -1100,7 +1107,17 @@ fun PathfinderNavHost(
         composable(Routes.SETTINGS) { SettingsScreen(onBack = { navController.popBackStack() }) }
 
         // ===== Gamification =====
-        composable(Routes.DIGITAL_UNIFORM) { DigitalUniformScreen(onNavigateBack = { navController.popBackStack() }) }
+        composable(Routes.DIGITAL_UNIFORM) {
+            DigitalUniformScreen(
+                onOpenDetail = { navController.navigate(Routes.DIGITAL_UNIFORM_DETAIL) },
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.DIGITAL_UNIFORM_DETAIL) {
+            com.pathfinder.hub.ui.gamification.DigitalUniformDetailScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
         composable(Routes.ACHIEVEMENTS) { AchievementsScreen(onNavigateBack = { navController.popBackStack() }) }
 
         // ===== Challenges =====
@@ -1166,6 +1183,49 @@ fun PathfinderNavHost(
         }
         composable(Routes.MODERATION) { ModerationScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.NOTIFICATIONS) { NotificationsScreen(onBack = { navController.popBackStack() }) }
+        // ===== Доп. информация =====
+        composable(Routes.INFO_HUB) {
+            InfoHubScreen(
+                onBack = { navController.popBackStack() },
+                onOpenCategory = { catId -> navController.navigate(Routes.infoCategory(catId)) },
+                onOpenEditor = { catId -> navController.navigate(Routes.infoEditor(catId ?: "other")) }
+            )
+        }
+        composable(
+            route = Routes.INFO_CATEGORY,
+            arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val catId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            InfoCategoryScreen(
+                onBack = { navController.popBackStack() },
+                onOpenArticle = { cId, aId -> navController.navigate(Routes.infoArticle(cId, aId)) },
+                onOpenEditor = { cId -> navController.navigate(Routes.infoEditor(cId)) }
+            )
+        }
+        composable(
+            route = Routes.INFO_EDITOR,
+            arguments = listOf(
+                navArgument("categoryId") { type = NavType.StringType },
+                navArgument("articleId") { type = NavType.StringType }
+            )
+        ) {
+            InfoEditorScreen(onBack = { navController.popBackStack() })
+        }
+        
+        composable(
+            route = Routes.INFO_ARTICLE,
+            arguments = listOf(
+                navArgument("categoryId") { type = NavType.StringType },
+                navArgument("articleId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val catId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            val artId = backStackEntry.arguments?.getString("articleId") ?: ""
+            InfoArticleScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Routes.SYNC) { SyncScreen(onBack = { navController.popBackStack() }) }
 
         composable(

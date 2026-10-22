@@ -84,4 +84,21 @@ interface UserDao {
     /** Пакетный резолв имён: один запрос вместо N. */
     @Query("SELECT * FROM users WHERE id IN (:ids)")
     suspend fun getUsersByIds(ids: List<String>): List<UserEntity>
+
+    /**
+     * Owner клуба: director + isOwnerClub + клуб среди clubIds/clubId.
+     * Мультиклубность: проверяем и user_clubs.
+     */
+    @Transaction
+    @Query("""
+        SELECT u.* FROM users u
+        WHERE u.role = 'director'
+          AND u.isOwnerClub = 1
+          AND (
+            u.clubId = :clubId
+            OR EXISTS (SELECT 1 FROM user_clubs uc WHERE uc.userId = u.id AND uc.clubId = :clubId)
+          )
+        LIMIT 1
+    """)
+    suspend fun getClubOwner(clubId: String): UserEntity?
 }

@@ -41,6 +41,7 @@ fun DirectorHomeScreen(
     onNavigateToPearlsAdmin: () -> Unit = {},
     onNavigateToReadingPlan: () -> Unit = {},
     onNavigateToReadingPlanAdmin: () -> Unit = {},
+    onNavigateToInfo: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
@@ -397,6 +398,41 @@ fun DirectorHomeScreen(
                                     "Импорт / экспорт JSON",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Доп. информация ----------
+                item {
+                    Card(
+                        onClick = onNavigateToInfo,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Доп. информация",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Форма, безопасность, атрибутика",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

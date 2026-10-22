@@ -23,6 +23,12 @@ import com.pathfinder.hub.data.remote.FirestoreQrDataSource
 import com.pathfinder.hub.data.remote.FirestoreChallengeDataSource
 import com.pathfinder.hub.data.remote.FirestoreBookDataSource
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
+import com.pathfinder.hub.data.local.entity.gamification.DigitalUniformEntity
+import com.pathfinder.hub.data.local.entity.gamification.BadgeItem
+import com.pathfinder.hub.data.local.entity.gamification.ChevronItem
+import com.pathfinder.hub.data.local.entity.gamification.SpecialMarkItem
+import com.pathfinder.hub.data.repository.AchievementRepository
+import java.util.Date
 import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.data.repository.ClubRepository
@@ -64,6 +70,11 @@ class SyncWorker @AssistedInject constructor(
     private val bookRepository: BookRepository,
     private val userRepository: UserRepository,
     private val clubRepository: ClubRepository,
+    private val achievementRepository: AchievementRepository,
+    private val customGroupDao: com.pathfinder.hub.data.local.dao.CustomGroupDao,
+    private val exclusionDao: com.pathfinder.hub.data.local.dao.CustomGroupExclusionDao,
+    private val infoArticleDao: com.pathfinder.hub.data.local.dao.InfoArticleDao,
+    private val infoDataSource: com.pathfinder.hub.data.remote.FirestoreInfoDataSource,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -172,6 +183,10 @@ class SyncWorker @AssistedInject constructor(
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
         pullClubBooks(uid)
+        pullDigitalUniform(uid)
+        pullCustomGroups(uid)
+        pullCustomGroupExclusions(uid)
+        pullInfoArticles()
     }
 
     private suspend fun pullClubBooks(uid: String) {
@@ -438,6 +453,335 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun processDigitalUniform(item: SyncQueueItemEntity): ProcessResult {
+        val uniform = try {
+            gson.fromJson(item.payload, DigitalUniformEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "digital_uniform deserialize failed", e)
+            return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (uniform.userId.isBlank()) return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "users/${uniform.userId}/digitalUniform"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "userId" to uniform.userId,
+                    "shirtColor" to uniform.shirtColor,
+                    "tieColor" to uniform.tieColor,
+                    "earnedBadges" to uniform.earnedBadges.map {
+                        mapOf("honorId" to it.honorId, "position" to it.position, "earnedAt" to it.earnedAt.time)
+                    },
+                    "earnedChevrons" to uniform.earnedChevrons.map {
+                        mapOf("levelId" to it.levelId, "position" to it.position, "earnedAt" to it.earnedAt.time)
+                    },
+                    "specialMarks" to uniform.specialMarks.map {
+                        mapOf("achievementId" to it.achievementId, "icon" to it.icon, "earnedAt" to it.earnedAt.time)
+                    },
+                    "updatedAt" to uniform.updatedAt.time,
+                )
+                val r = firestore.pushDocument(collection, uniform.userId, payload)
+                if (r.isSuccess) {
+                    try { achievementRepository.markUniformSynced(uniform.userId, System.currentTimeMillis()) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, uniform.userId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun pullDigitalUniform(uid: String) {
+        val r = firestore.pullCollection("users/$uid/digitalUniform")
+        val docs = r.getOrNull() ?: return
+        for (doc in docs) {
+            try {
+                val remoteUserId = doc["userId"] as? String ?: uid
+                val local = achievementRepository.getUniform(remoteUserId)
+                if (local != null && local.pendingSync) continue
+
+                val remoteBadges = (doc["earnedBadges"] as? List<*>)?.mapNotNull { raw ->
+                    @Suppress("UNCHECKED_CAST")
+                    val m = raw as? Map<String, Any?> ?: return@mapNotNull null
+                    val honorId = m["honorId"] as? String ?: return@mapNotNull null
+                    BadgeItem(
+                        honorId = honorId,
+                        position = (m["position"] as? Number)?.toInt() ?: 0,
+                        earnedAt = Date((m["earnedAt"] as? Number)?.toLong() ?: 0L)
+                    )
+                } ?: emptyList()
+                val remoteChevrons = (doc["earnedChevrons"] as? List<*>)?.mapNotNull { raw ->
+                    @Suppress("UNCHECKED_CAST")
+                    val m = raw as? Map<String, Any?> ?: return@mapNotNull null
+                    val levelId = m["levelId"] as? String ?: return@mapNotNull null
+                    ChevronItem(
+                        levelId = levelId,
+                        position = (m["position"] as? Number)?.toInt() ?: 0,
+                        earnedAt = Date((m["earnedAt"] as? Number)?.toLong() ?: 0L)
+                    )
+                } ?: emptyList()
+                val remoteMarks = (doc["specialMarks"] as? List<*>)?.mapNotNull { raw ->
+                    @Suppress("UNCHECKED_CAST")
+                    val m = raw as? Map<String, Any?> ?: return@mapNotNull null
+                    val achievementId = m["achievementId"] as? String ?: return@mapNotNull null
+                    SpecialMarkItem(
+                        achievementId = achievementId,
+                        icon = m["icon"] as? String ?: "",
+                        earnedAt = Date((m["earnedAt"] as? Number)?.toLong() ?: 0L)
+                    )
+                } ?: emptyList()
+
+                val mergedBadges = (local?.earnedBadges.orEmpty() + remoteBadges).distinctBy { it.honorId }
+                val mergedChevrons = (local?.earnedChevrons.orEmpty() + remoteChevrons).distinctBy { it.levelId }
+                val mergedMarks = (local?.specialMarks.orEmpty() + remoteMarks).distinctBy { it.achievementId }
+
+                val remoteUpdatedAt = (doc["updatedAt"] as? Number)?.toLong() ?: 0L
+                val baseUpdatedAt = local?.updatedAt?.time ?: 0L
+                val updated = DigitalUniformEntity(
+                    userId = remoteUserId,
+                    shirtColor = (doc["shirtColor"] as? String) ?: local?.shirtColor ?: "#1E88E5",
+                    tieColor = (doc["tieColor"] as? String) ?: local?.tieColor ?: "#FFC107",
+                    earnedBadges = mergedBadges,
+                    earnedChevrons = mergedChevrons,
+                    specialMarks = mergedMarks,
+                    updatedAt = Date(maxOf(remoteUpdatedAt, baseUpdatedAt)),
+                    pendingSync = false,
+                    syncedAt = Date()
+                )
+                achievementRepository.upsertUniform(updated)
+            } catch (e: Exception) {
+                Log.w(TAG, "pull digital_uniform skip: ${e.message}")
+            }
+        }
+    }
+
+    // ==================== CUSTOM GROUPS (B-sync) ====================
+
+    private suspend fun processCustomGroup(item: SyncQueueItemEntity): ProcessResult {
+        val group = try {
+            gson.fromJson(item.payload, com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "custom_group deserialize failed", e)
+            return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (group.clubId.isBlank() || group.id.isBlank()) return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "clubs/${group.clubId}/customGroups"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val r = firestore.pushDocument(collection, group.id, mapFromCustomGroup(group))
+                if (r.isSuccess) {
+                    try { customGroupDao.upsert(group.copy(pendingSync = false)) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, group.id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun pullCustomGroups(uid: String) {
+        val user = userRepository.getUserLocalOnly(uid) ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        for (clubId in clubIds) {
+            try {
+                val docs = firestore.pullCollection("clubs/$clubId/customGroups").getOrNull() ?: continue
+                for (doc in docs) {
+                    try {
+                        val id = doc["id"] as? String ?: continue
+                        val remote = mapToCustomGroup(id, clubId, doc)
+                        val local = customGroupDao.getById(id)
+                        if (local != null && local.pendingSync) continue
+                        if (local != null && local.updatedAt.time >= remote.updatedAt.time) continue
+                        if (local != null && local.archivedAt != null && remote.archivedAt == null) continue
+                        customGroupDao.upsert(remote)
+                        Log.d(TAG, "pullCustomGroups: $clubId/$id -> \"${remote.name}\"")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "pullCustomGroups skip doc: ${e.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "pullCustomGroups skip club $clubId: ${e.message}")
+            }
+        }
+    }
+
+    private fun mapFromCustomGroup(g: com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity): Map<String, Any?> =
+        mapOf(
+            "id" to g.id,
+            "clubId" to g.clubId,
+            "name" to g.name,
+            "description" to g.description,
+            "createdBy" to g.createdBy,
+            "createdAt" to g.createdAt,
+            "updatedAt" to g.updatedAt,
+            "ruleJson" to g.ruleJson,
+            "forcedMemberIdsJson" to g.forcedMemberIdsJson,
+            "archivedAt" to g.archivedAt,
+            "purgeAfter" to g.purgeAfter,
+            "pendingSync" to false,
+        )
+
+    private fun mapToCustomGroup(
+        id: String, clubId: String, d: Map<String, Any?>,
+    ): com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity =
+        com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity(
+            id = id,
+            clubId = clubId,
+            name = d["name"] as? String ?: "",
+            description = d["description"] as? String ?: "",
+            createdBy = d["createdBy"] as? String ?: "",
+            createdAt = parseDate(d["createdAt"]) ?: java.util.Date(0),
+            updatedAt = parseDate(d["updatedAt"]) ?: java.util.Date(0),
+            ruleJson = d["ruleJson"] as? String ?: "{}",
+            forcedMemberIdsJson = d["forcedMemberIdsJson"] as? String ?: "[]",
+            archivedAt = parseDate(d["archivedAt"]),
+            purgeAfter = parseDate(d["purgeAfter"]),
+            pendingSync = false,
+        )
+
+    // ==================== CUSTOM GROUP EXCLUSIONS ====================
+
+    private suspend fun processCustomGroupExclusion(item: SyncQueueItemEntity): ProcessResult {
+        val excl = try {
+            gson.fromJson(
+                item.payload,
+                com.pathfinder.hub.data.local.entity.groups.CustomGroupExclusionEntity::class.java,
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "custom_group_exclusion deserialize failed", e)
+            return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (excl.groupId.isBlank() || excl.userId.isBlank()) return ProcessResult.PERMANENT_FAILURE
+
+        // clubId берём из группы: в exclusion его нет.
+        val group = try { customGroupDao.getById(excl.groupId) } catch (_: Exception) { null }
+        val clubId = group?.clubId
+        if (clubId.isNullOrBlank()) {
+            Log.w(TAG, "custom_group_exclusion: группа ${excl.groupId} не найдена — skip")
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        val collection = "clubs/$clubId/customGroups/${excl.groupId}/exclusions"
+        return when (item.operation.lowercase()) {
+            "upsert", "create", "update" -> {
+                val payload = mapOf(
+                    "groupId" to excl.groupId,
+                    "userId" to excl.userId,
+                    "excludedAt" to excl.excludedAt,
+                    "excludedBy" to excl.excludedBy,
+                    "reason" to excl.reason,
+                    "pendingSync" to false,
+                )
+                val r = firestore.pushDocument(collection, excl.userId, payload)
+                if (r.isSuccess) {
+                    try { exclusionDao.markSynced(excl.groupId, excl.userId) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, excl.userId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    /**
+     * Тянет исключения по всем группам всех клубов пользователя.
+     * Merge по (groupId, userId): LWW по excludedAt, pendingSync локально не сбрасываем.
+     */
+    private suspend fun pullCustomGroupExclusions(uid: String) {
+        val user = userRepository.getUserLocalOnly(uid) ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        for (clubId in clubIds) {
+            try {
+                val groups = customGroupDao.observeActiveByClub(clubId).first()
+                for (g in groups) {
+                    try {
+                        val docs = firestore
+                            .pullCollection("clubs/$clubId/customGroups/${g.id}/exclusions")
+                            .getOrNull() ?: continue
+                        for (doc in docs) {
+                            try {
+                                val userId = doc["userId"] as? String ?: continue
+                                val local = exclusionDao.getExclusion(g.id, userId)
+                                if (local != null && local.pendingSync) continue
+                                val remoteAt = parseDate(doc["excludedAt"]) ?: java.util.Date(0)
+                                if (local != null && local.excludedAt.time >= remoteAt.time) continue
+                                exclusionDao.upsert(
+                                    com.pathfinder.hub.data.local.entity.groups.CustomGroupExclusionEntity(
+                                        groupId = g.id,
+                                        userId = userId,
+                                        excludedAt = remoteAt,
+                                        excludedBy = doc["excludedBy"] as? String ?: userId,
+                                        reason = doc["reason"] as? String ?: "left",
+                                        pendingSync = false,
+                                    )
+                                )
+                                Log.d(TAG, "pullCustomGroupExclusions: ${g.id}/$userId")
+                            } catch (e: Exception) {
+                                Log.w(TAG, "pullCustomGroupExclusions skip doc: ${e.message}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "pullCustomGroupExclusions skip group ${g.id}: ${e.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "pullCustomGroupExclusions skip club $clubId: ${e.message}")
+            }
+        }
+    }
+
+    // ==================== INFO ARTICLES ====================
+
+    private suspend fun processInfoArticle(item: SyncQueueItemEntity): ProcessResult {
+        val entity = try {
+            gson.fromJson(item.payload, com.pathfinder.hub.data.local.entity.info.InfoArticleEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "info_article deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "info_articles"
+        return when (item.operation.lowercase()) {
+            "upsert", "create", "update" -> {
+                val r = infoDataSource.push(entity)
+                if (r.isSuccess) {
+                    try { infoArticleDao.upsert(entity.copy(pendingSync = false)) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                // Soft delete: обновляем документ в Firestore, ставя deletedAt
+                val payload = mapOf("deletedAt" to System.currentTimeMillis())
+                val r = firestore.pushDocument(collection, item.entityId, payload)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun pullInfoArticles() {
+        try {
+            val list = infoDataSource.pullAll()
+            for (remote in list) {
+                val local = infoArticleDao.getById(remote.id)
+                if (local == null || local.updatedAt.time < remote.updatedAt.time) {
+                    infoArticleDao.upsert(remote)
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "pullInfoArticles skip: ${e.message}")
+        }
+    }
+
     private enum class ProcessResult {
         SUCCESS,
         RETRY,
@@ -482,6 +826,18 @@ class SyncWorker @AssistedInject constructor(
             }
             if (item.entityType == "book") {
                 return processBook(item)
+            }
+            if (item.entityType == "digital_uniform") {
+                return processDigitalUniform(item)
+            }
+            if (item.entityType == "custom_group") {
+                return processCustomGroup(item)
+            }
+            if (item.entityType == "custom_group_exclusion") {
+                return processCustomGroupExclusion(item)
+            }
+            if (item.entityType == "info_article") {
+                return processInfoArticle(item)
             }
 
             // ---------- Общая ветка для остальных сущностей ----------
@@ -934,6 +1290,9 @@ class SyncWorker @AssistedInject constructor(
             "reading_plan_progress" -> "users/$userId/readingPlanProgress"
             "leader_checklist" -> "users/$userId/leaderChecklists"
             "notification" -> "users/$userId/notifications"
+            "digital_uniform" -> "users/$userId/digitalUniform"
+            "custom_group" -> if (clubId != null) "clubs/$clubId/customGroups" else null
+            "custom_group_exclusion" -> null // обрабатывается в processCustomGroupExclusion
 
             // "comment" обрабатывается в processComment, сюда не доходит
             else -> null
