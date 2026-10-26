@@ -32,6 +32,7 @@ object DatabaseModule {
     @Provides fun provideSettingsDao(db: AppDatabase): SettingsDao = db.settingsDao()
     @Provides fun provideNewspaperDao(db: AppDatabase): NewspaperDao = db.newspaperDao()
     @Provides fun provideInviteDao(db: AppDatabase): InviteDao = db.inviteDao()
+    @Provides fun provideParentChildLinkDao(db: AppDatabase): ParentChildLinkDao = db.parentChildLinkDao()
 
     @Provides fun provideCustomGroupDao(db: AppDatabase): CustomGroupDao = db.customGroupDao()
 

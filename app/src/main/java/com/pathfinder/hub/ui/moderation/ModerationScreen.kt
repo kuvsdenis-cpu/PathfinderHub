@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -103,23 +104,47 @@ fun ModerationContent(
                 }
             }
             else -> {
+                val expandedGroups = remember { mutableStateMapOf<String, Boolean>() }
+                val grouped = remember(state.pendingComments) {
+                    state.pendingComments.groupBy {
+                        Triple(it.comment.authorId, it.comment.targetType, it.comment.targetId)
+                    }
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(state.pendingComments, key = { it.comment.id }) { item ->
-                        ModerationCard(
-                            item = item,
-                            dateFormat = dateFormat,
-                            isProcessing = state.isProcessing,
-                            canArchive = state.canArchive,
-                            onApprove = { viewModel.approveComment(item.comment.id) },
-                            onHide = { viewModel.hideComment(item.comment.id) },
-                            onReject = { viewModel.showRejectDialog(item.comment.id) },
-                            onArchive = { viewModel.archiveComment(item.comment.id) },
-                            onDelete = { viewModel.showDeleteDialog(item.comment.id) }
-                        )
+                    grouped.forEach { (key, groupItems) ->
+                        val (_, _, _) = key
+                        val first = groupItems.first()
+                        val groupTitle = "${first.authorName} · ${first.targetLabel}"
+                        val groupKey = "g_${key.first}_${key.second}_${key.third}"
+                        val defaultExpanded = groupItems.size <= 3
+                        val isExpanded = expandedGroups[groupKey] ?: defaultExpanded
+                        item(key = groupKey) {
+                            ModerationGroupHeader(
+                                title = groupTitle,
+                                count = groupItems.size,
+                                expanded = isExpanded,
+                                onToggle = { expandedGroups[groupKey] = !isExpanded },
+                            )
+                        }
+                        if (isExpanded) {
+                            items(groupItems, key = { it.comment.id }) { item ->
+                                ModerationCard(
+                                    item = item,
+                                    dateFormat = dateFormat,
+                                    isProcessing = state.isProcessing,
+                                    canArchive = state.canArchive,
+                                    onApprove = { viewModel.approveComment(item.comment.id) },
+                                    onHide = { viewModel.hideComment(item.comment.id) },
+                                    onReject = { viewModel.showRejectDialog(item.comment.id) },
+                                    onArchive = { viewModel.archiveComment(item.comment.id) },
+                                    onDelete = { viewModel.showDeleteDialog(item.comment.id) }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -183,6 +208,38 @@ fun ModerationContent(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun ModerationGroupHeader(
+    title: String,
+    count: Int,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onToggle,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Person, contentDescription = null, tint = PathfinderBlue)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+            )
+            AssistChip(onClick = {}, label = { Text("$count") })
+            Spacer(Modifier.width(4.dp))
+            Text(if (expanded) "▾" else "▸", style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 

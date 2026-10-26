@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.domain.permissions.PermissionChecker
+import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.components.ClubTabsRow
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -46,6 +48,7 @@ fun DirectorHomeScreen(
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val user = state.currentUser
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.loggedOut) {
@@ -102,7 +105,7 @@ fun DirectorHomeScreen(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     "Клуб передан другому директору. " +
                             "Вы можете создать новый клуб или выйти.",
@@ -115,7 +118,7 @@ fun DirectorHomeScreen(
                     onClick = onNavigateToCreateClub,
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("Создать клуб") }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
                 OutlinedButton(
                     onClick = { showLogoutDialog = true },
                     modifier = Modifier.fillMaxWidth()
@@ -161,7 +164,7 @@ fun DirectorHomeScreen(
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(Modifier.height(8.dp))
+                            Spacer(Modifier.height(4.dp))
                             Text(
                                 state.clubLocation ?: "",
                                 style = MaterialTheme.typography.bodyMedium
@@ -176,16 +179,20 @@ fun DirectorHomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        SectionTile(
+                        if (TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                            SectionTile(
                             Icons.Default.Groups, "Люди",
                             "Сотрудники, участники, инвайты",
                             onNavigateToPeople, Modifier.weight(1f)
                         )
-                        SectionTile(
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
+                            SectionTile(
                             Icons.Default.School, "Обучение",
                             "Ступени, тесты, задания, домашка",
                             onNavigateToLearning, Modifier.weight(1f)
                         )
+                        } else Spacer(Modifier.weight(1f))
                     }
                 }
 
@@ -194,11 +201,13 @@ fun DirectorHomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        SectionTile(
+                        if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                            SectionTile(
                             Icons.Default.Event, "Планирование",
                             "События, встречи, QR",
                             onNavigateToPlanning, Modifier.weight(1f)
                         )
+                        } else Spacer(Modifier.weight(1f))
                         SectionTile(
                             Icons.Default.Chat, "Коммуникации",
                             "Чат, чаты, модерация",
@@ -212,16 +221,20 @@ fun DirectorHomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        SectionTile(
+                        if (TilePermissions.isVisible(user, TilePermissions.FINANCE)) {
+                            SectionTile(
                             Icons.Default.AccountBalance, "Финансы",
                             "Взносы",
                             onNavigateToFinance, Modifier.weight(1f)
                         )
-                        SectionTile(
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.SETTINGS) || TilePermissions.isVisible(user, TilePermissions.REPORTS) || TilePermissions.isVisible(user, TilePermissions.ARCHIVE)) {
+                            SectionTile(
                             Icons.Default.Settings, "Управление",
                             "О клубе, настройки, отчёты",
                             onNavigateToManagement, Modifier.weight(1f)
                         )
+                        } else Spacer(Modifier.weight(1f))
                     }
                 }
 
@@ -247,13 +260,13 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Библия",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
                                     "Чтение и закладки",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
@@ -283,13 +296,13 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Жемчужины",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                                 Text(
                                     "Стихи недели на 2026 год",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
@@ -319,12 +332,12 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "План чтения",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     "Библия и EGW на 2026",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -333,7 +346,8 @@ fun DirectorHomeScreen(
                 }
 
                 // ---------- Графики жемчужин (админ) ----------
-                item {
+                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
+                    item {
                     Card(
                         onClick = onNavigateToPearlsAdmin,
                         modifier = Modifier.fillMaxWidth(),
@@ -354,22 +368,24 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Графики жемчужин",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 Text(
                                     "Импорт / экспорт JSON",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
                         }
                     }
                 }
+                }
 
                 // ---------- Графики чтения (админ) ----------
-                item {
+                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
+                    item {
                     Card(
                         onClick = onNavigateToReadingPlanAdmin,
                         modifier = Modifier.fillMaxWidth(),
@@ -390,22 +406,24 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Графики чтения",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 Text(
                                     "Импорт / экспорт JSON",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
                         }
                     }
                 }
+                }
 
                 // ---------- Доп. информация ----------
-                item {
+                if (state.currentUser?.isOwnerClub == true || PermissionChecker.isConferenceAdmin(state.currentUser)) {
+                    item {
                     Card(
                         onClick = onNavigateToInfo,
                         modifier = Modifier.fillMaxWidth(),
@@ -426,17 +444,18 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Доп. информация",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     "Форма, безопасность, атрибутика",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
+                }
                 }
 
                 // ---------- Создать ещё один клуб ----------
@@ -461,13 +480,13 @@ fun DirectorHomeScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Создать ещё один клуб",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
                                     "Станете директором нового клуба",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
@@ -498,13 +517,13 @@ fun DirectorHomeScreen(
                                 Column(Modifier.weight(1f)) {
                                     Text(
                                         "Удалённые клубы",
-                                        style = MaterialTheme.typography.titleMedium,
+                                        style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                     Text(
                                         "Восстановить в течение 90 дней",
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                 }
@@ -571,21 +590,21 @@ private fun SectionTile(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(36.dp))
-            Spacer(Modifier.height(8.dp))
+            Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 description,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )

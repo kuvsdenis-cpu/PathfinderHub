@@ -66,6 +66,7 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 fun StaffScreen(
     onBack: () -> Unit,
     onOpenPermissions: (String) -> Unit,
+    onOpenInvites: () -> Unit = {},
     viewModel: StaffViewModel = hiltViewModel(),
     clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
@@ -91,6 +92,7 @@ fun StaffScreen(
             StaffContent(
                 onBack = onBack,
                 onOpenPermissions = onOpenPermissions,
+                onOpenInvites = onOpenInvites,
                 modifier = Modifier.weight(1f),
                 viewModel = viewModel,
                 clubContextViewModel = clubContextViewModel,
@@ -103,6 +105,7 @@ fun StaffScreen(
 fun StaffContent(
     onBack: () -> Unit,
     onOpenPermissions: (String) -> Unit,
+    onOpenInvites: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: StaffViewModel = hiltViewModel(),
     clubContextViewModel: ClubContextViewModel = hiltViewModel(),
@@ -137,11 +140,14 @@ fun StaffContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.directors, key = { it.id }) { d ->
+                    val isOwner = state.currentUser?.isOwnerClub == true
+                    val canEditPermissions = isOwner && !d.isOwnerClub && d.id != state.currentUserId
                     StaffRow(
                         user = d,
                         isMe = d.id == state.currentUserId,
+                        canEditPermissions = canEditPermissions,
                         onClick = {
-                            if (!d.isOwnerClub) onOpenPermissions(d.id)
+                            if (canEditPermissions) onOpenPermissions(d.id)
                         },
                     )
                 }
@@ -483,9 +489,12 @@ fun StaffContent(
             StaffInviteDialog(
                 role = state.staffInviteRole,
                 permissions = state.staffInvitePermissions,
+                children = state.childrenForInvite,
+                selectedChildId = state.staffInviteChildId,
                 error = state.staffInviteError,
                 onRoleSelect = viewModel::selectStaffInviteRole,
                 onTogglePermission = viewModel::toggleStaffPermission,
+                onSelectChild = viewModel::selectStaffInviteChild,
                 onDismiss = viewModel::dismissStaffInviteDialog,
                 onConfirm = viewModel::createStaffInvite,
             )
@@ -493,6 +502,10 @@ fun StaffContent(
             CreatedCodeDialog(
                 code = code,
                 onDismiss = viewModel::dismissStaffInviteDialog,
+                onOpenInvites = {
+                    viewModel.dismissStaffInviteDialog()
+                    onOpenInvites()
+                },
             )
         }
     }
@@ -542,9 +555,12 @@ fun StaffContent(
 private fun StaffInviteDialog(
     role: String,
     permissions: Set<String>,
+    children: List<UserEntity>,
+    selectedChildId: String?,
     error: String?,
     onRoleSelect: (String) -> Unit,
     onTogglePermission: (String) -> Unit,
+    onSelectChild: (String?) -> Unit,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
@@ -560,12 +576,38 @@ private fun StaffInviteDialog(
                         "instructor" to "Наставник",
                         "secretary" to "Секретарь",
                         "director" to "Со-директор",
+                        "parent" to "Родитель",
                     ).forEach { (value, label) ->
                         FilterChip(
                             selected = role == value,
                             onClick = { onRoleSelect(value) },
                             label = { Text(label) },
                         )
+                    }
+                }
+
+                if (role == "parent") {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Ребёнок (для привязки)", style = MaterialTheme.typography.labelLarge)
+                    Spacer(Modifier.height(4.dp))
+                    if (children.isEmpty()) {
+                        Text(
+                            "В клубе нет участников-детей",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            children.forEach { child ->
+                                FilterChip(
+                                    selected = selectedChildId == child.id,
+                                    onClick = {
+                                        onSelectChild(if (selectedChildId == child.id) null else child.id)
+                                    },
+                                    label = { Text("${child.firstName} ${child.lastName}".trim()) },
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -617,6 +659,7 @@ private fun StaffInviteDialog(
 private fun CreatedCodeDialog(
     code: String,
     onDismiss: () -> Unit,
+    onOpenInvites: () -> Unit = {},
 ) {
     val ctx = LocalContext.current
     AlertDialog(
@@ -651,7 +694,10 @@ private fun CreatedCodeDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Готово") }
+            Row {
+                TextButton(onClick = onOpenInvites) { Text("Список инвайтов") }
+                TextButton(onClick = onDismiss) { Text("Готово") }
+            }
         }
     )
 }
@@ -660,13 +706,13 @@ private fun CreatedCodeDialog(
 private fun StaffRow(
     user: UserEntity,
     isMe: Boolean,
+    canEditPermissions: Boolean,
     onClick: () -> Unit,
 ) {
-    val clickable = !user.isOwnerClub
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        enabled = clickable,
+        enabled = canEditPermissions,
     ) {
         Row(
             Modifier.padding(16.dp),
@@ -706,7 +752,7 @@ private fun StaffRow(
                 else -> user.role
             }
             AssistChip(onClick = {}, label = { Text(chipLabel) })
-            if (clickable) {
+            if (canEditPermissions) {
                 Spacer(Modifier.width(4.dp))
                 Icon(Icons.Default.ChevronRight, null)
             }

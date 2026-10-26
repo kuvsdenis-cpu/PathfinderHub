@@ -34,6 +34,17 @@ class HonorRepository @Inject constructor(
     fun observeHonorWithRequirements(id: String): Flow<HonorWithRequirements?> = dao.observeHonorWithRequirements(id)
     fun searchHonors(query: String): Flow<List<HonorEntity>> = dao.searchHonors(query)
     fun observeRequirements(honorId: String): Flow<List<HonorRequirementEntity>> = dao.observeRequirements(honorId)
+
+    fun observeAllProgressByUser(userId: String): Flow<List<HonorProgressEntity>> =
+        dao.observeAllProgressByUser(userId)
+
+    fun observeProgressByClubTeens(clubId: String): Flow<List<HonorProgressEntity>> =
+        dao.observeProgressByClubTeens(clubId)
+
+    fun observeCompletionsByClubTeens(clubId: String): Flow<List<HonorCompletionEntity>> =
+        dao.observeCompletionsByClubTeens(clubId)
+
+    fun observeAllRequirements(): Flow<List<HonorRequirementEntity>> = dao.observeAllRequirements()
     suspend fun getRequirements(honorId: String): List<HonorRequirementEntity> = dao.getRequirements(honorId)
     fun observeProgress(userId: String, honorId: String): Flow<List<HonorProgressEntity>> = dao.observeProgress(userId, honorId)
     suspend fun getProgressSnapshot(userId: String, honorId: String): List<HonorProgressEntity> = dao.getProgressSnapshot(userId, honorId)

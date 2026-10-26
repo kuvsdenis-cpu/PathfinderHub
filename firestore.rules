@@ -100,7 +100,17 @@ service cloud.firestore {
     // ============================================================
     match /users/{userId} {
       match /digitalUniform/{docId} {
-        allow read, write: if isSignedIn() && uid() == userId;
+        allow read: if isSignedIn() && (
+          uid() == userId
+          || isConferenceAdmin()
+          || isStaffOfClub(get(/databases/$(database)/documents/users/$(userId)).data.clubId)
+        );
+        allow write: if isSignedIn() && (
+          uid() == userId
+          || isConferenceAdmin()
+          || (hasPerm("learning.approve")
+              && isOwnClub(get(/databases/$(database)/documents/users/$(userId)).data.clubId))
+        );
       }
 
 
@@ -114,6 +124,17 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && uid() == userId
         && request.resource.data.id == userId;
+
+      // Owner клуба меняет directorPermissions у любого staff своего клуба,
+      // КРОМЕ себя. Роль этой веткой не меняется.
+      allow update: if
+          isOwner()
+          && userId != request.auth.uid
+          && isOwnClub(resource.data.clubId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['directorPermissions', 'syncedAt', 'lastLoginAt'])
+          && request.resource.data.directorPermissions is list
+          && request.resource.data.role == resource.data.role;
 
       // Белый список: что пользователь может менять у себя.
       // Поля взяты из UserEntity.kt.
@@ -230,7 +251,7 @@ service cloud.firestore {
         allow create, update: if isSignedIn() && (
           uid() == userId
           || isConferenceAdmin()
-          || (hasPermOrStaff("learning.approve")
+          || (hasPerm("learning.approve")
               && isOwnClub(get(/databases/$(database)/documents/users/$(userId)).data.clubId))
         );
         allow delete: if isConferenceAdmin();
@@ -353,7 +374,20 @@ service cloud.firestore {
         || isConferenceAdmin()
         || isStaffOfClub(resource.data.clubId)
       );
-      allow create, update: if isSignedIn() && (
+      allow create: if isSignedIn() && (
+        isConferenceAdmin()
+        || (hasPerm("members.edit") && isOwnClub(request.resource.data.clubId))
+        || (request.resource.data.parentId == uid()
+            && request.resource.data.status == 'active'
+            && request.resource.data.inviteCode is string
+            && exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode))
+            && get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.childId == request.resource.data.childId
+            && get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.clubId == request.resource.data.clubId)
+      );
+
+      // Manager (owner/co-director) может привязать/отвязать ребёнка.
+      // Родитель НЕ может «оживить» revoked-связь без явного изменения revokedAt=null.
+      allow update: if isSignedIn() && (
         isConferenceAdmin()
         || (hasPerm("members.edit") && isOwnClub(request.resource.data.clubId))
       );
@@ -856,12 +890,15 @@ service cloud.firestore {
       // клиент вызывает document(code).get() — значит нужен allow get.
       // Перебор коллекции (list) запрещён.
       allow get: if true;
-      allow list: if false;
+      allow list: if isSignedIn() && isStaffOfClub(resource.data.clubId);
 
       allow create: if isSignedIn()
         && (hasPerm("invites.create") || isConferenceAdmin())
         && request.resource.data.createdBy == uid()
-        && request.resource.data.status == 'active';
+        && request.resource.data.status == 'active'
+        // Вариант A: инвайт родителя может содержать childId (привязка ребёнка).
+        && (request.resource.data.childId == null
+            || request.resource.data.role == 'parent');
 
       // Клиент использует runTransaction: active↔claiming→used.
       allow update: if request.resource.data.diff(resource.data).affectedKeys()

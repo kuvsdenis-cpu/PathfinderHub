@@ -41,6 +41,8 @@ data class StaffUiState(
     val showStaffInviteDialog: Boolean = false,
     val staffInviteRole: String = "instructor",
     val staffInvitePermissions: Set<String> = emptySet(),
+    val staffInviteChildId: String? = null,
+    val childrenForInvite: List<UserEntity> = emptyList(),
     val createdStaffInviteCode: String? = null,
     val staffInviteError: String? = null,
     // ---- Передача по email ----
@@ -102,6 +104,11 @@ class StaffViewModel @Inject constructor(
                                     errorMessage = null,
                                 )
                             }
+                        }
+                    userRepository
+                        .observeClubMembersByRoles(clubId, listOf("teen"))
+                        .collect { teens ->
+                            _state.update { it.copy(childrenForInvite = teens) }
                         }
                 }
         }
@@ -167,14 +174,18 @@ class StaffViewModel @Inject constructor(
     fun openStaffInviteDialog() = _state.update {
         it.copy(showStaffInviteDialog = true, staffInviteError = null,
             staffInviteRole = "instructor", staffInvitePermissions = emptySet(),
-            createdStaffInviteCode = null)
+            staffInviteChildId = null, createdStaffInviteCode = null)
     }
     fun dismissStaffInviteDialog() = _state.update {
         it.copy(showStaffInviteDialog = false, staffInviteError = null,
             createdStaffInviteCode = null)
     }
     fun selectStaffInviteRole(role: String) = _state.update {
-        it.copy(staffInviteRole = role, staffInvitePermissions = emptySet())
+        it.copy(staffInviteRole = role, staffInvitePermissions = emptySet(), staffInviteChildId = null)
+    }
+
+    fun selectStaffInviteChild(childId: String?) = _state.update {
+        it.copy(staffInviteChildId = childId)
     }
     fun toggleStaffPermission(perm: String) = _state.update {
         val cur = it.staffInvitePermissions
@@ -187,9 +198,10 @@ class StaffViewModel @Inject constructor(
         val clubId = me.clubId ?: return
         val role = _state.value.staffInviteRole
         val perms = if (role == "director") _state.value.staffInvitePermissions.toList() else emptyList()
+        val childId = if (role == "parent") _state.value.staffInviteChildId else null
 
         viewModelScope.launch {
-            val result = createInvite(role = role, clubId = clubId, permissions = perms)
+            val result = createInvite(role = role, clubId = clubId, permissions = perms, childId = childId)
             result.fold(
                 onSuccess = { invite ->
                     _state.update { it.copy(staffInviteError = null, createdStaffInviteCode = invite.code) }

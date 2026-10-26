@@ -29,6 +29,17 @@ class LevelRepository @Inject constructor(
     suspend fun getSections(levelId: String): List<LevelSectionEntity> = dao.getSections(levelId)
 
     fun observeRequirements(levelId: String): Flow<List<LevelRequirementEntity>> = dao.observeRequirements(levelId)
+
+    fun observeAllProgressByUser(userId: String): Flow<List<LevelProgressEntity>> =
+        dao.observeAllProgressByUser(userId)
+
+    fun observeProgressByClubTeens(clubId: String): Flow<List<LevelProgressEntity>> =
+        dao.observeProgressByClubTeens(clubId)
+
+    fun observeCompletionsByClubTeens(clubId: String): Flow<List<LevelCompletionEntity>> =
+        dao.observeCompletionsByClubTeens(clubId)
+
+    fun observeAllRequirements(): Flow<List<LevelRequirementEntity>> = dao.observeAllRequirements()
     suspend fun getRequirements(levelId: String): List<LevelRequirementEntity> = dao.getRequirements(levelId)
 
     suspend fun getRequirementsBySection(levelId: String, sectionId: String): List<LevelRequirementEntity> =

@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.screens.home.common.HomeHeaderViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -65,6 +66,7 @@ fun SecretaryHomeScreen(
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val user = state.user
 
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLogout()
@@ -179,30 +181,64 @@ fun SecretaryHomeScreen(
                 )
             }
 
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.PersonAdd, "Инвайты", "Создать и управлять", onNavigateToInvites, Modifier.weight(1f))
-                    Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+            if (TilePermissions.isVisible(user, TilePermissions.INVITES) ||
+                TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        if (TilePermissions.isVisible(user, TilePermissions.INVITES)) {
+                            Tile(Icons.Default.PersonAdd, "Инвайты", "Создать и управлять", onNavigateToInvites, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                            Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
-                    Tile(Icons.Default.Assessment, "Отчёты", "История", onNavigateToReports, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.EVENTS) ||
+                TilePermissions.isVisible(user, TilePermissions.REPORTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                            Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) {
+                            Tile(Icons.Default.Assessment, "Отчёты", "История", onNavigateToReports, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
-                    Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.HOMEWORK) ||
+                TilePermissions.isVisible(user, TilePermissions.CHECKLISTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        if (TilePermissions.isVisible(user, TilePermissions.HOMEWORK)) {
+                            Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.CHECKLISTS)) {
+                            Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.Assignment, "Задания", "Назначить", onNavigateToTasks, Modifier.weight(1f))
-                    Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.TASKS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.Assignment, "Задания", "Назначить", onNavigateToTasks, Modifier.weight(1f))
+                        Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+                    }
+                }
+            } else {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
             }
+
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))

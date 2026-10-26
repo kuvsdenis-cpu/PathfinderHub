@@ -268,7 +268,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ReadingPlanDayEntity::class,
         ReadingPlanProgressEntity::class
     ],
-    version = 50,
+    version = 52,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -280,6 +280,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Auth
     abstract fun inviteDao(): InviteDao
+    abstract fun parentChildLinkDao(): com.pathfinder.hub.data.local.dao.ParentChildLinkDao
 
     // Planning
     abstract fun eventDao(): EventDao

@@ -44,6 +44,17 @@ class DirectorInvitesViewModel @Inject constructor(
 
     init {
         observeInvites()
+        pullInvites()
+    }
+
+    /** Pull инвайтов активного клуба из Firestore при открытии экрана. */
+    fun pullInvites() {
+        val userId = sessionManager.getUserId() ?: return
+        viewModelScope.launch {
+            val clubId = userRepository.getUser(userId)?.clubId ?: return@launch
+            if (clubId.isBlank()) return@launch
+            inviteRepository.pullInvites(clubId)
+        }
     }
 
     /**
@@ -107,6 +118,22 @@ class DirectorInvitesViewModel @Inject constructor(
                 onFailure = { error ->
                     _state.update {
                         it.copy(isLoading = false, errorMessage = error.message ?: "Ошибка создания инвайта")
+                    }
+                },
+            )
+        }
+    }
+
+    fun resendInvite(source: InviteEntity) {
+        _state.update { it.copy(isLoading = true, errorMessage = null, lastCreated = null) }
+        viewModelScope.launch {
+            inviteRepository.resendInvite(source).fold(
+                onSuccess = { fresh ->
+                    _state.update { it.copy(isLoading = false, lastCreated = fresh) }
+                },
+                onFailure = { e ->
+                    _state.update {
+                        it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка повторной отправки")
                     }
                 },
             )

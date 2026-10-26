@@ -33,6 +33,8 @@ object Routes {
     const val REVIEW_HOMEWORK = "review_homework"
     const val CREATE_CLUB = "create_club"
     const val STAFF = "staff"
+    const val SCOUT_DETAIL = "scout_detail/{scoutId}"
+    fun scoutDetail(scoutId: String) = "scout_detail/$scoutId"
     const val MANAGE_PERMISSIONS = "manage_permissions/{userId}"
     fun managePermissions(userId: String) = "manage_permissions/$userId"
 

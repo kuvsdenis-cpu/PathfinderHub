@@ -46,7 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.pathfinder.hub.domain.permissions.PermissionChecker
+import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.screens.home.common.HomeHeaderViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -72,6 +72,7 @@ fun InstructorHomeScreen(
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val user = state.user
 
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLogout()
@@ -190,36 +191,68 @@ fun InstructorHomeScreen(
                 )
             }
 
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.CheckCircle, "Проверка ответов", "Открытые задания", onNavigateToApprovals, Modifier.weight(1f))
-                    Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+            if (TilePermissions.isVisible(user, TilePermissions.CHECKLISTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.CheckCircle, "Проверка ответов", "Открытые задания", onNavigateToApprovals, Modifier.weight(1f))
+                        Tile(Icons.Default.FactCheck, "Проверка домашки", "Сданные домашки", onNavigateToReviewHomework, Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.Shield, "Модерация", "Проверка сообщений", onNavigateToModeration, Modifier.weight(1f))
-                    Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.MODERATION) ||
+                TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        if (TilePermissions.isVisible(user, TilePermissions.MODERATION)) {
+                            Tile(Icons.Default.Shield, "Модерация", "Проверка сообщений", onNavigateToModeration, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                            Tile(Icons.Default.Group, "Участники", "Список членов клуба", onNavigateToMembers, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.FactCheck, "Открытые ответы", "Проверка long_text", onNavigateToOpenAnswers, Modifier.weight(1f))
-                    Spacer(Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.CHECKLISTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.FactCheck, "Открытые ответы", "Проверка long_text", onNavigateToOpenAnswers, Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
-                    Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.HOMEWORK) ||
+                TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        if (TilePermissions.isVisible(user, TilePermissions.HOMEWORK)) {
+                            Tile(Icons.Default.Assignment, "Домашка", "Назначить", onNavigateToHomework, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                        if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                            Tile(Icons.Default.Event, "События", "Расписание", onNavigateToEvents, Modifier.weight(1f))
+                        } else Spacer(Modifier.weight(1f))
+                    }
                 }
             }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    Tile(Icons.Default.QrCode, "QR-станции", "Просмотр", onNavigateToQrStations, Modifier.weight(1f))
-                    Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+
+            if (TilePermissions.isVisible(user, TilePermissions.QR)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.QrCode, "QR-станции", "Просмотр", onNavigateToQrStations, Modifier.weight(1f))
+                        Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+                    }
+                }
+            } else {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.Chat, "Чат клуба", "Обсуждение", onNavigateToClubChat, Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
             }
+
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))
@@ -227,7 +260,7 @@ fun InstructorHomeScreen(
                 }
             }
 
-            if (PermissionChecker.hasPerm(state.user, "content.edit")) {
+            if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),

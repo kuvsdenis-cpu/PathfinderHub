@@ -19,8 +19,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -114,20 +117,71 @@ fun ReviewHomeworkScreen(
                     )
                 }
             }
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.items, key = { it.id }) { hw ->
-                    ReviewCard(
-                        hw = hw,
-                        childName = state.childNames[hw.childId] ?: hw.childId,
-                        onApprove = { viewModel.approve(hw) },
-                        onReject = { viewModel.reject(hw) },
-                    )
+            else -> {
+                val expandedGroups = remember { mutableStateMapOf<String, Boolean>() }
+                val grouped = remember(state.items) { state.items.groupBy { it.childId } }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    grouped.forEach { (childId, groupItems) ->
+                        val childName = state.childNames[childId] ?: childId.take(8)
+                        val groupKey = "g_$childId"
+                        val defaultExpanded = groupItems.size <= 3
+                        val isExpanded = expandedGroups[groupKey] ?: defaultExpanded
+                        item(key = groupKey) {
+                            GroupHeader(
+                                title = childName,
+                                count = groupItems.size,
+                                expanded = isExpanded,
+                                onToggle = { expandedGroups[groupKey] = !isExpanded },
+                            )
+                        }
+                        if (isExpanded) {
+                            items(groupItems, key = { it.id }) { hw ->
+                                ReviewCard(
+                                    hw = hw,
+                                    childName = childName,
+                                    onApprove = { viewModel.approve(hw) },
+                                    onReject = { viewModel.reject(hw) },
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun GroupHeader(
+    title: String,
+    count: Int,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onToggle,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.School, contentDescription = null, tint = PathfinderBlue)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+            )
+            AssistChip(onClick = {}, label = { Text("$count") })
+            Spacer(Modifier.width(4.dp))
+            Text(if (expanded) "▾" else "▸", style = MaterialTheme.typography.titleMedium)
         }
     }
 }

@@ -176,6 +176,29 @@ interface LevelDao {
     @Query("SELECT COUNT(*) FROM level_requirements")
     suspend fun getRequirementsCount(): Int
 
+    // ---------- Прогресс следопытов: все тины клуба ----------
+
+    @Query("SELECT * FROM level_progress WHERE userId = :userId")
+    fun observeAllProgressByUser(userId: String): Flow<List<LevelProgressEntity>>
+
+    @Query("""
+        SELECT lp.* FROM level_progress lp
+        JOIN users u ON lp.userId = u.id
+        WHERE u.clubId = :clubId AND u.role = 'teen'
+    """)
+    fun observeProgressByClubTeens(clubId: String): Flow<List<LevelProgressEntity>>
+
+    @Query("""
+        SELECT lc.* FROM level_completions lc
+        JOIN users u ON lc.userId = u.id
+        WHERE u.clubId = :clubId AND u.role = 'teen'
+    """)
+    fun observeCompletionsByClubTeens(clubId: String): Flow<List<LevelCompletionEntity>>
+
+    /** Все требования всех ступеней — для ScoutDetail без suspend в combine. */
+    @Query("SELECT * FROM level_requirements ORDER BY levelId, `order`")
+    fun observeAllRequirements(): Flow<List<LevelRequirementEntity>>
+
     @Query("SELECT COUNT(*) FROM level_sections")
     suspend fun getSectionsCount(): Int
 

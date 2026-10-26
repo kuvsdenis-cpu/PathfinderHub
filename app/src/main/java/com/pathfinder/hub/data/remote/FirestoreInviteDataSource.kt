@@ -68,6 +68,31 @@ class FirestoreInviteDataSource @Inject constructor() {
         false
     }
 
+    // ==================== PULL ====================
+
+    /**
+     * Один запрос: все инвайты клуба из Firestore.
+     * Используется в InviteRepository.pullInvites при открытии DirectorInvitesScreen.
+     *
+     * whereEqualTo("clubId", ...) обязателен — иначе rules.allow list отклонит
+     * (правило проверяет resource.data.clubId по каждому документу).
+     */
+    suspend fun pullByClub(clubId: String): List<InviteEntity> {
+        return try {
+            val snapshot = invitesCollection
+                .whereEqualTo("clubId", clubId)
+                .get()
+                .await()
+            snapshot.documents.mapNotNull { doc ->
+                val data = doc.data ?: return@mapNotNull null
+                mapToEntity(data)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "pullByClub($clubId) FAILED", e)
+            emptyList()
+        }
+    }
+
     // ==================== РЕЗЕРВИРОВАНИЕ (ФАЗА 1) ====================
 
     /**
@@ -250,7 +275,8 @@ class FirestoreInviteDataSource @Inject constructor() {
             expiresAt = parseDate(data["expiresAt"]) ?: Date(),
             status = data["status"] as? String ?: STATUS_ACTIVE,
             usedBy = data["usedBy"] as? String,
-            usedAt = parseDate(data["usedAt"])
+            usedAt = parseDate(data["usedAt"]),
+            childId = data["childId"] as? String
         )
     }
 
@@ -267,7 +293,8 @@ class FirestoreInviteDataSource @Inject constructor() {
             "expiresAt" to Timestamp(invite.expiresAt),
             "status" to invite.status,
             "usedBy" to invite.usedBy,
-            "usedAt" to invite.usedAt?.let { Timestamp(it) }
+            "usedAt" to invite.usedAt?.let { Timestamp(it) },
+            "childId" to invite.childId
         )
     }
 

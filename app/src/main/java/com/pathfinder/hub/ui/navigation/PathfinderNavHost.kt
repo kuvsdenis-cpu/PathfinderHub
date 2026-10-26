@@ -60,6 +60,7 @@ import com.pathfinder.hub.ui.screens.home.director.sections.DirectorCommunicatio
 import com.pathfinder.hub.ui.screens.home.director.sections.DirectorFinanceScreen
 import com.pathfinder.hub.ui.screens.home.director.sections.DirectorManagementScreen
 import com.pathfinder.hub.ui.screens.home.director.staff.ManagePermissionsScreen
+import com.pathfinder.hub.ui.screens.home.director.scout.ScoutDetailScreen
 import com.pathfinder.hub.ui.screens.home.teen.TeenHomeScreen
 import com.pathfinder.hub.ui.screens.home.instructor.InstructorHomeScreen
 import com.pathfinder.hub.ui.screens.home.secretary.SecretaryHomeScreen
@@ -348,6 +349,7 @@ fun PathfinderNavHost(
         composable(Routes.DIRECTOR_PEOPLE) {
             DirectorPeopleScreen(
                 onBack = { navController.popBackStack() },
+                onOpenScout = { scoutId -> navController.navigate(Routes.scoutDetail(scoutId)) },
                 onOpenPermissions = { userId ->
                     navController.navigate(Routes.managePermissions(userId))
                 },
@@ -522,7 +524,8 @@ fun PathfinderNavHost(
         composable(Routes.STAFF) {
             StaffScreen(
                 onBack = { navController.popBackStack() },
-                onOpenPermissions = { userId -> navController.navigate(Routes.managePermissions(userId)) }
+                onOpenPermissions = { userId -> navController.navigate(Routes.managePermissions(userId)) },
+                onOpenInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
             )
         }
         composable(
@@ -530,6 +533,13 @@ fun PathfinderNavHost(
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) {
             ManagePermissionsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            route = Routes.SCOUT_DETAIL,
+            arguments = listOf(navArgument("scoutId") { type = NavType.StringType })
+        ) {
+            ScoutDetailScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.QUEST_MANAGE) {
             ManageQuestsScreen(

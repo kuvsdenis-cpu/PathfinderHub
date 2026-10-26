@@ -8,10 +8,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -121,6 +123,10 @@ fun ApprovalsContent(
                             }
                         }
                     } else {
+                        val expandedGroups = remember { mutableStateMapOf<String, Boolean>() }
+                        val grouped = remember(filtered) {
+                            filtered.groupBy { it.userId to it.userName }
+                        }
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -128,13 +134,29 @@ fun ApprovalsContent(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(vertical = 16.dp)
                         ) {
-                            items(filtered, key = { "${it.userId}_${it.requirementId}" }) { item ->
-                                ApprovalCard(
-                                    item = item,
-                                    isProcessing = state.processingId == "${item.userId}_${item.requirementId}",
-                                    onApprove = { viewModel.approve(item) },
-                                    onReject = { rejectDialogItem = item }
-                                )
+                            grouped.forEach { (key, groupItems) ->
+                                val (_, userName) = key
+                                val groupKey = "g_${key.first}"
+                                val defaultExpanded = groupItems.size <= 3
+                                val isExpanded = expandedGroups[groupKey] ?: defaultExpanded
+                                item(key = groupKey) {
+                                    ApprovalGroupHeader(
+                                        userName = userName.ifBlank { key.first.take(8) },
+                                        count = groupItems.size,
+                                        expanded = isExpanded,
+                                        onToggle = { expandedGroups[groupKey] = !isExpanded },
+                                    )
+                                }
+                                if (isExpanded) {
+                                    items(groupItems, key = { "${it.userId}_${it.requirementId}" }) { item ->
+                                        ApprovalCard(
+                                            item = item,
+                                            isProcessing = state.processingId == "${item.userId}_${item.requirementId}",
+                                            onApprove = { viewModel.approve(item) },
+                                            onReject = { rejectDialogItem = item }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -157,6 +179,39 @@ fun ApprovalsContent(
                 rejectDialogItem = null
             }
         )
+    }
+}
+
+@Composable
+private fun ApprovalGroupHeader(
+    userName: String,
+    count: Int,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onToggle,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Person, contentDescription = null, tint = PathfinderBlue)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = userName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+            )
+            AssistChip(onClick = {}, label = { Text("$count") })
+            Spacer(Modifier.width(4.dp))
+            Text(if (expanded) "▾" else "▸", style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 

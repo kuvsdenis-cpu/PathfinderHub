@@ -3,7 +3,9 @@ package com.pathfinder.hub.ui.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
+import com.pathfinder.hub.data.local.entity.auth.ParentChildLinkEntity
 import com.pathfinder.hub.data.repository.InviteRepository
+import com.pathfinder.hub.data.repository.ParentChildLinkRepository
 import com.pathfinder.hub.domain.usecase.auth.RegisterByInviteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +35,8 @@ data class RegisterUiState(
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterByInviteUseCase,
     private val inviteRepository: InviteRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val parentChildLinkRepo: ParentChildLinkRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterUiState())
@@ -134,13 +137,34 @@ class RegisterViewModel @Inject constructor(
             result.fold(
                 onSuccess = { userId ->
                     sessionManager.saveUserId(userId)
-                    // Роль уже есть в s.role (из инвайта), сохраняем её вместе с userId.
+                    // Вариант A: если инвайт был для parent с childId — сразу привязываем ребёнка.
+                    viewModelScope.launch {
+                        try {
+                            val code = s.inviteCode.trim()
+                            val invite = inviteRepository.getByCode(code)
+                            if (invite != null && invite.role == "parent" && invite.childId != null) {
+                                parentChildLinkRepo.upsert(
+                                    ParentChildLinkEntity(
+                                        parentId = userId,
+                                        childId = invite.childId,
+                                        clubId = invite.clubId,
+                                        relationship = "parent",
+                                        status = "active",
+                                        linkedBy = invite.createdBy,
+                                        linkedAt = Date(),
+                                        revokedAt = null,
+                                        revokedReason = null,
+                                        inviteCode = code,
+                                    )
+                                )
+                            }
+                        } catch (_: Exception) { /* не блокируем регистрацию */ }
+                    }
                     _state.update {
                         it.copy(
                             isLoading = false,
                             registerSuccess = true,
-                            userId = userId
-                            // role остаётся как был
+                            userId = userId,
                         )
                     }
                 },

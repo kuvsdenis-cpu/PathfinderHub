@@ -157,6 +157,29 @@ interface HonorDao {
     @Query("SELECT COUNT(*) FROM book_reports WHERE userId = :userId")
     suspend fun countBookReportsByUser(userId: String): Int
 
+    // ---------- Прогресс специализаций: все тины клуба ----------
+
+    @Query("SELECT * FROM honor_progress WHERE userId = :userId")
+    fun observeAllProgressByUser(userId: String): Flow<List<HonorProgressEntity>>
+
+    @Query("""
+        SELECT hp.* FROM honor_progress hp
+        JOIN users u ON hp.userId = u.id
+        WHERE u.clubId = :clubId AND u.role = 'teen'
+    """)
+    fun observeProgressByClubTeens(clubId: String): Flow<List<HonorProgressEntity>>
+
+    @Query("""
+        SELECT hc.* FROM honor_completions hc
+        JOIN users u ON hc.userId = u.id
+        WHERE u.clubId = :clubId AND u.role = 'teen'
+    """)
+    fun observeCompletionsByClubTeens(clubId: String): Flow<List<HonorCompletionEntity>>
+
+    /** Все требования всех специализаций — для ScoutDetail без suspend в combine. */
+    @Query("SELECT * FROM honor_requirements ORDER BY honorId, `order`")
+    fun observeAllRequirements(): Flow<List<HonorRequirementEntity>>
+
     // ✅ ДОБАВЛЕНО: Для экрана одобрения директора
     @Query("""SELECT hp.* FROM honor_progress hp
               JOIN users u ON hp.userId = u.id

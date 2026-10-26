@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -96,6 +97,8 @@ fun DirectorInvitesContent(
     val state by viewModel.state.collectAsState()
     val clubState by clubContextViewModel.state.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) { viewModel.pullInvites() }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -252,28 +255,37 @@ fun DirectorInvitesContent(
 
             state.invites.forEach { invite ->
                 Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Row(
-                        Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(invite.code, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                            Text("Роль: ${roleLabel(invite.role)}", style = MaterialTheme.typography.bodyLarge)
-                        }
-                        AssistChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    when (invite.status) {
-                                        "active" -> "Активен"
-                                        "used" -> "Использован"
-                                        "expired" -> "Истёк"
-                                        "revoked" -> "Отозван"
-                                        else -> invite.status
-                                    }
-                                )
+                    Column(Modifier.padding(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(invite.code, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                                Text("Роль: ${roleLabel(invite.role)}", style = MaterialTheme.typography.bodyLarge)
                             }
-                        )
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        when (invite.status) {
+                                            "active" -> "Активен"
+                                            "used" -> "Использован"
+                                            "expired" -> "Истёк"
+                                            "revoked" -> "Отозван"
+                                            else -> invite.status
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = { viewModel.resendInvite(invite) },
+                            enabled = !state.isLoading,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Отправить ещё раз")
+                        }
                     }
                 }
             }

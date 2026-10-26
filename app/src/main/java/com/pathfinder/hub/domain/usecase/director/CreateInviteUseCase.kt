@@ -23,6 +23,7 @@ class CreateInviteUseCase @Inject constructor(
         role: String,
         clubId: String? = null,
         permissions: List<String> = emptyList(),
+        childId: String? = null,
     ): Result<InviteEntity> {
         return try {
             val userId = sessionManager.getUserId()
@@ -68,6 +69,7 @@ class CreateInviteUseCase @Inject constructor(
                 role = role,
                 createdBy = userId,
                 permissions = if (role == "director") permissions else emptyList(),
+                childId = if (role == "parent") childId else null,
             )
             Result.success(invite)
         } catch (e: Exception) {

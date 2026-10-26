@@ -49,6 +49,32 @@ class InviteRepository @Inject constructor(
 
     fun observeByClub(clubId: String): Flow<List<InviteEntity>> = dao.observeByClub(clubId)
 
+    /**
+     * Pull инвайтов клуба из Firestore в Room.
+     * Вызывается при открытии DirectorInvitesScreen.
+     *
+     * Мерж: если в Room уже есть более свежий createdAt — не перезаписываем.
+     * (updatedAt у InviteEntity нет, поэтому сравниваем по createdAt + status.)
+     */
+    suspend fun pullInvites(clubId: String) {
+        val remote = remote.pullByClub(clubId)
+        if (remote.isEmpty()) {
+            Log.d(TAG, "pullInvites($clubId): remote пусто")
+            return
+        }
+        remote.forEach { r ->
+            val local = dao.getByCode(r.code)
+            if (local == null || local.createdAt.time <= r.createdAt.time) {
+                try {
+                    dao.upsert(r)
+                } catch (e: Exception) {
+                    Log.w(TAG, "pullInvites: не удалось сохранить ${r.code}", e)
+                }
+            }
+        }
+        Log.d(TAG, "pullInvites($clubId): pulled ${remote.size}")
+    }
+
     suspend fun upsert(invite: InviteEntity) {
         dao.upsert(invite)
         remote.createInvite(invite)
@@ -63,6 +89,7 @@ class InviteRepository @Inject constructor(
         lifetimeDays: Int = 7,
         permissions: List<String> = emptyList(),
         conferenceId: String? = null,
+        childId: String? = null,
     ): InviteEntity {
         val now = Date()
         val expiresAt = Date(now.time + lifetimeDays * 24L * 3600 * 1000)
@@ -78,7 +105,8 @@ class InviteRepository @Inject constructor(
             expiresAt = expiresAt,
             status = "active",
             usedBy = null,
-            usedAt = null
+            usedAt = null,
+            childId = childId,
         )
 
         val ok = remote.createInvite(invite)
@@ -88,6 +116,45 @@ class InviteRepository @Inject constructor(
 
         dao.upsert(invite)
         return invite
+    }
+
+    // ==================== ПОВТОРНАЯ ОТПРАВКА ====================
+
+    /**
+     * Создаёт НОВЫЙ инвайт с теми же параметрами (role, permissions,
+     * clubId, conferenceId, transferOwnership), но с новым code/id/expiresAt.
+     * Старый инвайт не трогаем (он может быть использован/истёк).
+     */
+    suspend fun resendInvite(source: InviteEntity, lifetimeDays: Int = 7): Result<InviteEntity> {
+        return try {
+            val now = Date()
+            val expiresAt = Date(now.time + lifetimeDays * 24L * 3600 * 1000)
+            val fresh = InviteEntity(
+                id = UUID.randomUUID().toString(),
+                code = generateCode(),
+                clubId = source.clubId,
+                conferenceId = source.conferenceId,
+                role = source.role,
+                permissions = source.permissions,
+                createdBy = source.createdBy,
+                createdAt = now,
+                expiresAt = expiresAt,
+                status = "active",
+                usedBy = null,
+                usedAt = null,
+                transferOwnership = source.transferOwnership,
+                childId = source.childId,
+            )
+            val ok = remote.createInvite(fresh)
+            if (!ok) {
+                Log.w(TAG, "resendInvite: Firestore недоступен, только Room")
+            }
+            dao.upsert(fresh)
+            Result.success(fresh)
+        } catch (e: Exception) {
+            Log.e(TAG, "resendInvite failed", e)
+            Result.failure(e)
+        }
     }
 
     // ==================== ПЕРЕДАЧА КЛУБА ЧЕРЕЗ ИНВАЙТ ====================
