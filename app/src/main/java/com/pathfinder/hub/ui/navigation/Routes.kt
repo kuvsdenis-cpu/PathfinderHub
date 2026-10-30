@@ -217,7 +217,14 @@ object Routes {
     fun readingPlanDetail(scheduleId: String) = "reading_plans/${Uri.encode(scheduleId)}"
     fun readingPlanDay(dayId: String) = "reading_plans/day/${Uri.encode(dayId)}"
 
+    // === Sabbath School ===
+    const val SABBATH_SCHOOL_LIST = "sabbath_school_list"
+    const val SABBATH_SCHOOL = "sabbath_school/{lessonId}"
+    const val SABBATH_SCHOOL_SETTINGS = "sabbath_school_settings"
+    fun sabbathSchool(lessonId: String) = "sabbath_school/$lessonId"
+
     // === Helpers ===
+
 
     /**
      * Целевой home-экран для роли.

@@ -5,6 +5,7 @@ import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.AuthRepository
 import com.pathfinder.hub.data.repository.InviteRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.RoleDefaultPermissions
 import com.pathfinder.hub.domain.usecase.club.TransferClubOwnershipUseCase
 import java.util.Date
 import javax.inject.Inject
@@ -101,7 +102,14 @@ class RegisterByInviteUseCase @Inject constructor(
             clubIds = if (isConfSec) emptyList() else listOf(invite.clubId),
             // transferOwnership — owner будет назначен через transferClubOwnership.
             isOwnerClub = !invite.transferOwnership && invite.role !in listOf("director", "conference_secretary"),
-            directorPermissions = if (invite.role == "director") invite.permissions else emptyList(),
+            directorPermissions = when {
+                // director: явные права из инвайта (или пусто — тогда owner выдаст)
+                invite.role == "director" -> invite.permissions
+                // owner явно указал права в инвайте — уважаем
+                invite.permissions.isNotEmpty() -> invite.permissions
+                // staff без явных прав — дефолтный набор по роли
+                else -> RoleDefaultPermissions.forRole(invite.role)
+            },
             conferenceId = if (isConfSec) invite.conferenceId else null,
             birthDate = birthDate,
             avatar = null,

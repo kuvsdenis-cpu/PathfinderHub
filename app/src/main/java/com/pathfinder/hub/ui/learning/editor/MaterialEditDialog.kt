@@ -24,7 +24,7 @@ fun MaterialEditDialog(
     uploadedUrl: String? = null,
     isUploading: Boolean = false,
     onDismiss: () -> Unit,
-    onUploadFile: (Uri) -> Unit = {},
+    onUploadFile: (Uri, String) -> Unit = { _, _ -> },
     onUploadedUrlConsumed: () -> Unit = {},
     onSave: (type: String, title: String, content: String) -> Unit,
 ) {
@@ -43,7 +43,7 @@ fun MaterialEditDialog(
 
     val pickFile = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let(onUploadFile) }
+    ) { uri: Uri? -> uri?.let { onUploadFile(it, title) } }
 
     val types = listOf("text", "link", "file", "image")
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.repository.ChatRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.domain.model.ChatMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +39,7 @@ class DMChatViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val chatRepo: ChatRepository,
+    private val storageRepository: StorageRepository,
 ) : ViewModel() {
 
     private val dmId: String = savedStateHandle.get<String>("dmId") ?: ""
@@ -83,6 +85,11 @@ class DMChatViewModel @Inject constructor(
                 }
         }
     }
+
+    suspend fun refreshAttachmentUrl(url: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            storageRepository.refreshPresignedUrl(url)
+        }
 
     fun onInputChange(text: String) {
         _state.update { it.copy(inputText = text) }

@@ -23,6 +23,7 @@ import com.pathfinder.hub.data.repository.StorageRepository
 import com.pathfinder.hub.data.repository.TestRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import java.util.Date
 
 @HiltWorker
@@ -63,9 +64,17 @@ class SeedDatabaseWorker @AssistedInject constructor(
             var newTestsVersion = current?.testsVersion
             var updated = false
             val forceLevels = inputData.getBoolean("forceLevels", false)
+            // После миграции 55->56 level_requirements может быть пустой —
+            // тогда версия та же, но данные надо залить заново.
+            val hasRequirements = try {
+                levelRepository.observeAllRequirements().first().isNotEmpty()
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось проверить level_requirements", e); true
+            }
+            if (!hasRequirements) Log.w(TAG, "level_requirements пуст — принудительный сид")
 
             // LEVELS
-            if (levelsIndexJson != null && (forceLevels || shouldUpdate(current?.levelsVersion, levelsVersion))) {
+            if (levelsIndexJson != null && (forceLevels || !hasRequirements || shouldUpdate(current?.levelsVersion, levelsVersion))) {
                 seedLevels(levelsIndexJson)
                 newLevelsVersion = levelsVersion
                 updated = true

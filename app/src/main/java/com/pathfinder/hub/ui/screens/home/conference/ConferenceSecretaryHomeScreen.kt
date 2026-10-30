@@ -39,6 +39,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.pathfinder.hub.domain.permissions.TilePermissions
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Info
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
@@ -51,6 +54,7 @@ fun ConferenceSecretaryHomeScreen(
     onNavigateToEvents: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotifications: () -> Unit,
+    onNavigateToInfo: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: ConferenceStaffViewModel = hiltViewModel(),
 ) {
@@ -123,6 +127,41 @@ fun ConferenceSecretaryHomeScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+
+            // ---------- Доп. информация ----------
+            if (TilePermissions.isVisible(state.user, TilePermissions.INFO)) {
+                Card(
+                    onClick = onNavigateToInfo,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Info, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Доп. информация",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Форма, безопасность, атрибутика",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
 

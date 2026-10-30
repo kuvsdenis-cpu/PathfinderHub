@@ -46,6 +46,18 @@ class DirectorHomeViewModel @Inject constructor(
 
     init {
         observeDirector()
+        // Timeout: если через 5 сек состояние не готово — снять spinner
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(5_000)
+            if (_state.value.isLoading) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Синхронизация не завершилась. Проверьте сеть и обновите.",
+                    )
+                }
+            }
+        }
     }
 
     /**
@@ -77,7 +89,15 @@ class DirectorHomeViewModel @Inject constructor(
                     old?.isOwnerClub == new?.isOwnerClub
                 }
                 .collect { user ->
-                    if (user == null) return@collect
+                    if (user == null) {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = "Пользователь не найден локально. Проверьте сеть.",
+                            )
+                        }
+                        return@collect
+                    }
 
                     // Список клубов: clubIds, fallback [clubId]
                     val ids = user.clubIds.ifEmpty {
@@ -90,7 +110,16 @@ class DirectorHomeViewModel @Inject constructor(
                         clubRepository.getClubs(ids).filter { it.deletedAt == null }
                     } catch (_: Exception) { emptyList() }
 
-                    val active = clubs.find { it.id == activeId }
+                    var active = clubs.find { it.id == activeId }
+                    // Fallback: активный клуб не найден (например, demo_club без Firestore) —
+                    // авто-переключение на первый доступный
+                    if (active == null && clubs.isNotEmpty()) {
+                        val first = clubs.first()
+                        active = first
+                        viewModelScope.launch {
+                            try { userRepository.setActiveClub(userId, first.id) } catch (_: Exception) {}
+                        }
+                    }
 
                     _state.update {
                         it.copy(
@@ -99,7 +128,7 @@ class DirectorHomeViewModel @Inject constructor(
                             clubName = active?.name,
                             clubLocation = active?.city,
                             clubs = clubs,
-                            selectedClubId = activeId,
+                            selectedClubId = active?.id ?: activeId,
                             currentUser = user,
                             noClubs = user.clubIds.isEmpty() && user.clubId == null,
                         )

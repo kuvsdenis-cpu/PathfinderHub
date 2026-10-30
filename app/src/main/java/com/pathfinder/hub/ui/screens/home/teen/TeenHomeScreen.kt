@@ -52,11 +52,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.pathfinder.hub.domain.permissions.TilePermissions
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.EmailVerificationBanner
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.compose.material.icons.filled.School
+import androidx.compose.foundation.layout.width
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +88,7 @@ fun TeenHomeScreen(
     onNavigateToReadingPlan: () -> Unit = {},
     onNavigateToBooks: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSabbathSchool: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -223,6 +227,43 @@ fun TeenHomeScreen(
                 }
             }
 
+            // ---------- Доп. информация ----------
+            if (TilePermissions.isVisible(state.user, TilePermissions.INFO)) {
+                item {
+                    Card(
+                        onClick = onNavigateToInfo,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Доп. информация",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Форма, безопасность, атрибутика",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Кнопки разделов - Ряд 1
             item {
                 Row(
@@ -272,7 +313,7 @@ fun TeenHomeScreen(
                 ) {
                     ActionTile(Icons.Default.Bolt, "Активность", onNavigateToActivity, Modifier.weight(1f))
                     ActionTile(Icons.Default.Public, "Межклубные", onNavigateToCrossClub, Modifier.weight(1f))
-                    ActionTile(Icons.Default.Info, "Справка", onNavigateToInfo, Modifier.weight(1f))
+
                 }
             }
 
@@ -305,6 +346,42 @@ fun TeenHomeScreen(
                                 "Чтение и закладки",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ---------- Субботняя школа ----------
+            item {
+                Card(
+                    onClick = onNavigateToSabbathSchool,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.School, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Субботняя школа",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                "Уроки для подростков",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }

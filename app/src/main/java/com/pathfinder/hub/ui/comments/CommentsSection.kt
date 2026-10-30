@@ -92,7 +92,10 @@ fun CommentsSection(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.comments, key = { it.id }) { comment ->
-                    CommentBubble(comment)
+                    CommentBubble(
+                        comment = comment,
+                        refreshUrl = { url -> viewModel.refreshAttachmentUrl(url) },
+                    )
                 }
             }
         }
@@ -129,7 +132,10 @@ fun CommentsSection(
 }
 
 @Composable
-private fun CommentBubble(comment: CommentUiModel) {
+private fun CommentBubble(
+    comment: CommentUiModel,
+    refreshUrl: (suspend (String) -> String?)? = null,
+) {
     val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale.forLanguageTag("ru"))
 
     Row(
@@ -184,7 +190,7 @@ private fun CommentBubble(comment: CommentUiModel) {
                     )
                     comment.attachments.forEach { url ->
                         Spacer(Modifier.height(8.dp))
-                        AttachmentPreview(url = url)
+                        AttachmentPreview(url = url, refreshUrl = refreshUrl)
                     }
                 }
             }

@@ -79,6 +79,25 @@ class FirestoreSyncService @Inject constructor(
         }
     }
 
+    /**
+     * Как pullCollection, но возвращает documentId вместе с данными.
+     * Нужен там, где в документе нет поля "id" (например, clubs/{clubId}/requirements),
+     * но id нужен для дальнейших запросов.
+     */
+    suspend fun pullCollectionWithIds(
+        collection: String
+    ): Result<List<Pair<String, Map<String, Any?>>>> {
+        return try {
+            val snapshot = firestore.collection(collection).get().await()
+            Result.success(snapshot.documents.mapNotNull { doc ->
+                doc.data?.let { doc.id to it }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Pull collection(withIds) FAIL: $collection", e)
+            Result.failure(e)
+        }
+    }
+
     companion object {
         private const val TAG = "FirestoreSync"
     }

@@ -7,6 +7,7 @@ import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.learning.LevelProgressEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelRequirementEntity
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.UserRepository
@@ -42,7 +43,8 @@ class RequirementDetailViewModel @Inject constructor(
     private val levelRepository: LevelRepository,
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val storageRepository: StorageRepository,
 ) : ViewModel() {
 
     private val levelId: String = savedStateHandle.get<String>("levelId") ?: ""
@@ -54,6 +56,12 @@ class RequirementDetailViewModel @Inject constructor(
     init {
         loadRequirement()
     }
+
+    /** Перегенерировать presigned URL вложения (TTL 7 дней). */
+    suspend fun refreshAttachmentUrl(url: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            storageRepository.refreshPresignedUrl(url, ifFreshHours = 24)
+        }
 
     fun getLevelId(): String = levelId
 

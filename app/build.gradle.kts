@@ -115,6 +115,11 @@ ksp {
 }
 
 dependencies {
+    // Sabbath School Moshi
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+    implementation("com.squareup.moshi:moshi-adapters:1.15.1")
+
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Yandex Object Storage (S3-совместимое API)
@@ -147,6 +152,7 @@ dependencies {
 
     // ============ AndroidX Core ============
     implementation("androidx.core:core-ktx:$coreKtxVersion")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("androidx.activity:activity-compose:$activityComposeVersion")

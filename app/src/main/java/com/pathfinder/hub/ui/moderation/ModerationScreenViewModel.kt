@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.planning.CommentEntity
 import com.pathfinder.hub.data.repository.ModerationRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.domain.permissions.PermissionChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +47,8 @@ data class ModerationUiState(
 class ModerationScreenViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
-    private val moderationRepository: ModerationRepository
+    private val moderationRepository: ModerationRepository,
+    private val storageRepository: StorageRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ModerationUiState())
@@ -96,6 +98,12 @@ class ModerationScreenViewModel @Inject constructor(
                 }
         }
     }
+
+    /** Перегенерировать presigned URL вложения (TTL 7 дней). */
+    suspend fun refreshAttachmentUrl(url: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            storageRepository.refreshPresignedUrl(url)
+        }
 
     private fun getTargetLabel(targetType: String, targetId: String): String {
         return when (targetType) {

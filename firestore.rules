@@ -587,17 +587,23 @@ service cloud.firestore {
           && request.resource.data.clubId == clubId
           && isOwnClub(clubId);
 
-        // Автор: только свой, только draft/rejected → draft/submitted.
-        // Staff: только review-поля.
+        // Автор: только свой, только draft/rejected → draft/submitted/auto_approved.
+        // Разрешено менять answer/attachments/status/submittedAt/updatedAt/
+        // pendingSync/autoChecked (автопроверка выставляет autoChecked=true).
+        // Staff: только review-поля и только для status == 'submitted'.
         allow update: if isSignedIn() && (
           (resource.data.userId == uid()
             && request.resource.data.userId == uid()
             && resource.data.status in ['draft', 'rejected']
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['answer', 'attachments', 'status', 'submittedAt',
-                          'updatedAt', 'pendingSync'])
-            && request.resource.data.status in ['draft', 'submitted'])
+                          'updatedAt', 'pendingSync', 'autoChecked'])
+            && request.resource.data.status in ['draft', 'submitted', 'auto_approved']
+            // autoChecked может ставить только true при auto_approved или false
+            && (request.resource.data.autoChecked == false
+                || request.resource.data.status == 'auto_approved'))
           || (isStaffOfClub(clubId)
+              && resource.data.status == 'submitted'
               && request.resource.data.diff(resource.data).affectedKeys()
                   .hasOnly(['status', 'reviewedBy', 'reviewedAt', 'reviewComment',
                             'autoChecked', 'updatedAt', 'pendingSync'])

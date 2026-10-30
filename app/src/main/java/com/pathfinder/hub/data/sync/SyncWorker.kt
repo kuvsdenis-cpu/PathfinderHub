@@ -30,6 +30,8 @@ import com.pathfinder.hub.data.local.entity.gamification.SpecialMarkItem
 import com.pathfinder.hub.data.repository.AchievementRepository
 import java.util.Date
 import com.pathfinder.hub.data.repository.BookRepository
+import com.pathfinder.hub.data.repository.RequirementContentRepository
+import com.pathfinder.hub.data.repository.TaskAnswerRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.data.repository.ClubRepository
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
@@ -68,6 +70,8 @@ class SyncWorker @AssistedInject constructor(
     private val readingPlanDao: ReadingPlanDao,
     private val bookDataSource: FirestoreBookDataSource,
     private val bookRepository: BookRepository,
+    private val contentRepo: RequirementContentRepository,
+    private val answerRepo: TaskAnswerRepository,
     private val userRepository: UserRepository,
     private val clubRepository: ClubRepository,
     private val achievementRepository: AchievementRepository,
@@ -183,6 +187,14 @@ class SyncWorker @AssistedInject constructor(
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
         pullClubBooks(uid)
+        // v10.1 (вариант B): pullRequirements отключён.
+        // list clubs/{clubId}/requirements запрещён rules (нет allow read
+        // на /requirements/{reqId} — только на подколлекции materials/tasks),
+        // поэтому pull стабильно падал с PERMISSION_DENIED.
+        // Материалы и задания тянутся в RequirementContentViewModel.load().
+        // Включить в v11, когда появится RequirementDao (список reqId из Room).
+        // pullRequirements(uid)
+        pullRequirementTaskAnswers(uid)
         pullDigitalUniform(uid)
         pullCustomGroups(uid)
         pullCustomGroupExclusions(uid)
@@ -197,17 +209,101 @@ class SyncWorker @AssistedInject constructor(
             return
         }
         for (clubId in clubIds) {
+            // v10.1: пропускаем удалённые клубы (stale clubIds)
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) {
+                Log.d(TAG, "pullClubBooks: skip deleted $clubId")
+                continue
+            }
             try {
                 val snapshot = bookDataSource.observeClubBooks(clubId).first()
                 if (snapshot.hasError) continue
                 for (remote in snapshot.items) {
                     val local = bookRepository.getById(remote.id)
+                    if (local != null && local.deletedAt != null) continue
                     if (local != null && local.pendingSync) continue
                     if (local != null && (local.createdAt ?: 0L) >= (remote.createdAt ?: 0L)) continue
-                    bookRepository.upsert(remote)
+                    val refreshed = if (remote.contentUrl != null) {
+                        try { bookRepository.refreshContentUrl(remote) }
+                        catch (_: Exception) { remote }
+                    } else remote
+                    bookRepository.upsert(refreshed)
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "pullClubBooks skip $clubId: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Тянет материалы и задания всех требований по всем клубам пользователя.
+     * Список requirementId берём из Firestore (clubs/{clubId}/requirements),
+     * т.к. локального RequirementDao нет.
+     *
+     * ⚠️ В v10.1 НЕ ВЫЗЫВАЕТСЯ из pullUserData (вариант B).
+     * Причины:
+     *   1) rules не содержат allow read на /requirements/{reqId} — list падает
+     *      с PERMISSION_DENIED (allow read есть только на materials/tasks);
+     *   2) даже после фикса rules list может вернуть пусто, если документов-
+     *      «родителей» нет в Firestore (только подколлекции).
+     * Материалы/задания тянутся при открытии требования в
+     * RequirementContentViewModel.load() → contentRepo.pullMaterials/pullTasks.
+     * Включить в v11 вместе с RequirementDao.
+     */
+    private suspend fun pullRequirements(uid: String) {
+        val user = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullRequirements: user failed ${e.message}"); return
+        } ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (clubIds.isEmpty()) return
+
+        for (clubId in clubIds) {
+            try {
+                val reqDocs = firestore
+                    .pullCollectionWithIds("clubs/$clubId/requirements")
+                    .getOrNull() ?: continue
+                for ((reqId, _) in reqDocs) {
+                    try {
+                        contentRepo.pullMaterials(clubId, reqId)
+                        contentRepo.pullTasks(clubId, reqId)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "pullRequirements skip $clubId/$reqId: ${e.message}")
+                    }
+                }
+                Log.d(TAG, "pullRequirements: $clubId -> ${reqDocs.size} req(s)")
+            } catch (e: Exception) {
+                Log.w(TAG, "pullRequirements skip club $clubId: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Тянет ответы на задания по всем клубам пользователя.
+     * Для staff rules вернут все ответы клуба, для тина — только его.
+     */
+    private suspend fun pullRequirementTaskAnswers(uid: String) {
+        val user = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullRequirementTaskAnswers: user failed ${e.message}"); return
+        } ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (clubIds.isEmpty()) return
+
+        for (clubId in clubIds) {
+            // v10.1: пропускаем удалённые клубы (stale clubIds)
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) {
+                Log.d(TAG, "pullRequirementTaskAnswers: skip deleted $clubId")
+                continue
+            }
+            try {
+                answerRepo.pullAnswers(clubId)
+                Log.d(TAG, "pullRequirementTaskAnswers: $clubId OK")
+            } catch (e: Exception) {
+                Log.w(TAG, "pullRequirementTaskAnswers skip $clubId: ${e.message}")
             }
         }
     }
@@ -232,6 +328,11 @@ class SyncWorker @AssistedInject constructor(
             Log.d(TAG, "pullUser: local.clubIds=${local.clubIds}, local.clubId=${local.clubId}")
             Log.d(TAG, "pullUser: remoteClubIds=$remoteClubIds, remoteClubId=$remoteClubId")
 
+            // TODO v11: pullUser merge
+            // (local + remote).distinct() может оставлять stale clubIds,
+            // если пользователя исключили из клуба (remote уменьшился, local — нет).
+            // Cloud Function на удаление клуба это НЕ покрывает — нужен отдельный fix:
+            // remote как источник истины, если поле clubIds присутствует в документе.
             val mergedClubIds = (local.clubIds + remoteClubIds).distinct()
             val mergedClubId = local.clubId
                 ?: remoteClubId
@@ -590,6 +691,12 @@ class SyncWorker @AssistedInject constructor(
         val user = userRepository.getUserLocalOnly(uid) ?: return
         val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
         for (clubId in clubIds) {
+            // v10.1: пропускаем удалённые клубы (stale clubIds)
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) {
+                Log.d(TAG, "pullCustomGroups: skip deleted $clubId")
+                continue
+            }
             try {
                 val docs = firestore.pullCollection("clubs/$clubId/customGroups").getOrNull() ?: continue
                 for (doc in docs) {
@@ -701,6 +808,12 @@ class SyncWorker @AssistedInject constructor(
         val user = userRepository.getUserLocalOnly(uid) ?: return
         val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
         for (clubId in clubIds) {
+            // v10.1: пропускаем удалённые клубы (stale clubIds)
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) {
+                Log.d(TAG, "pullCustomGroupExclusions: skip deleted $clubId")
+                continue
+            }
             try {
                 val groups = customGroupDao.observeActiveByClub(clubId).first()
                 for (g in groups) {
@@ -1194,7 +1307,11 @@ class SyncWorker @AssistedInject constructor(
             }
             "delete" -> {
                 val r = bookDataSource.deleteBook(book.clubId!!, book.id)
-                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+                if (r.isSuccess) {
+                    // Hard delete локально (после успешного удаления из Firestore)
+                    try { bookRepository.deleteById(book.id) } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
             }
             else -> ProcessResult.PERMANENT_FAILURE
         }

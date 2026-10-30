@@ -3,6 +3,7 @@ package com.pathfinder.hub.data.remote
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
 import kotlinx.coroutines.channels.awaitClose
@@ -88,6 +89,11 @@ class FirestoreTaskAnswerDataSource @Inject constructor() {
             .document(docId(userId, taskId))
             .addSnapshotListener { snap, error ->
                 if (error != null) {
+                    if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                        Log.w(TAG, "PERMISSION_DENIED, emit empty (flow continues)", error)
+                        trySend(null)
+                        return@addSnapshotListener
+                    }
                     Log.e(TAG, "myAnswer listener failed", error)
                     trySend(null)
                     close(error)
@@ -161,6 +167,26 @@ class FirestoreTaskAnswerDataSource @Inject constructor() {
     } catch (e: Exception) {
         Log.e(TAG, "reviewAnswer FAIL", e)
         Result.failure(e)
+    }
+
+    /**
+     * Один раз тянет все ответы клуба. Для staff — все (rules разрешают),
+     * для тина — только свои (rules режут на read). Используется в SyncWorker,
+     * чтобы второе устройство staff видело ответы тинов, а тин — статусы
+     * approve/reject, выставленные на другом устройстве.
+     */
+    suspend fun pullAnswers(clubId: String): List<RequirementTaskAnswerEntity> = try {
+        answersRef(clubId).get().await().documents.mapNotNull { doc ->
+            try {
+                map(doc.id, doc.data ?: emptyMap())
+            } catch (e: Exception) {
+                Log.e(TAG, "pullAnswers map failed ${doc.id}", e)
+                null
+            }
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "pullAnswers FAIL: $clubId", e)
+        emptyList()
     }
 
     // ==================== МАППИНГ ====================

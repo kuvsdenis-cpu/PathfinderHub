@@ -110,7 +110,10 @@ fun HonorRequirementDetailScreen(
                 )
                 Spacer(Modifier.height(8.dp))
                 state.mediaUrls.forEach { url ->
-                    AttachmentPreview(url = url)
+                    AttachmentPreview(
+                        url = url,
+                        refreshUrl = { u -> viewModel.refreshAttachmentUrl(u) },
+                    )
                     Spacer(Modifier.height(8.dp))
                 }
             }

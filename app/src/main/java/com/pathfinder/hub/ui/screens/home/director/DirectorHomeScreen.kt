@@ -24,6 +24,9 @@ import com.pathfinder.hub.domain.permissions.PermissionChecker
 import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.components.ClubTabsRow
 import com.pathfinder.hub.ui.theme.PathfinderBlue
+import androidx.compose.material.icons.filled.School
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CardDefaults
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +47,8 @@ fun DirectorHomeScreen(
     onNavigateToReadingPlan: () -> Unit = {},
     onNavigateToReadingPlanAdmin: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSabbathSchool: () -> Unit = {},
+    onNavigateToSabbathSchoolSettings: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
@@ -160,7 +165,7 @@ fun DirectorHomeScreen(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                state.clubName ?: "Загрузка...",
+                                state.clubName ?: if (state.isLoading) "Загрузка..." else "Клуб не найден",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -171,6 +176,43 @@ fun DirectorHomeScreen(
                             )
                         }
                     }
+                }
+
+                // ---------- Доп. информация ----------
+                if (TilePermissions.isVisible(state.currentUser, TilePermissions.INFO)) {
+                    item {
+                    Card(
+                        onClick = onNavigateToInfo,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Доп. информация",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Форма, безопасность, атрибутика",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
                 }
 
                 // ---------- 6 плиток разделов ----------
@@ -269,6 +311,79 @@ fun DirectorHomeScreen(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Субботняя школа ----------
+                item {
+                    Card(
+                        onClick = onNavigateToSabbathSchool,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.School, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Субботняя школа",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    "Уроки для подростков",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ---------- Настройки Субботней школы ----------
+                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
+                    item {
+                        Card(
+                            onClick = onNavigateToSabbathSchoolSettings,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Row(
+                                Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Settings, null,
+                                    tint = PathfinderBlue,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        "Настройки Субботней школы",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "Год, квартал, текущий урок",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -414,43 +529,6 @@ fun DirectorHomeScreen(
                                     "Импорт / экспорт JSON",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
-                        }
-                    }
-                }
-                }
-
-                // ---------- Доп. информация ----------
-                if (state.currentUser?.isOwnerClub == true || PermissionChecker.isConferenceAdmin(state.currentUser)) {
-                    item {
-                    Card(
-                        onClick = onNavigateToInfo,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Info, null,
-                                tint = PathfinderBlue,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "Доп. информация",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    "Форма, безопасность, атрибутика",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

@@ -60,4 +60,6 @@ object DatabaseModule {
 
     // ---------- Books ----------
     @Provides fun provideBookDao(db: AppDatabase): BookDao = db.bookDao()
+    // ---------- Sabbath School ----------
+    @Provides fun provideSabbathAnswerDao(db: AppDatabase): SabbathAnswerDao = db.sabbathAnswerDao()
 }

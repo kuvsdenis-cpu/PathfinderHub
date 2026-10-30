@@ -72,16 +72,13 @@ class FileUploadViewModel @Inject constructor(
                 val tempFile = copyUriToTempFile(uri, fileName)
                 _state.update { it.copy(progress = 0.2f) }
 
-                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-                val safeName = fileName.replace(Regex("[^A-Za-z0-9._-]"), "_")
-                val objectKey = buildString {
-                    append(uploadContext.storagePrefix).append("/")
-                    append(userId).append("/")
-                    if (contextIdArg.isNotBlank()) {
-                        append(contextIdArg).append("/")
-                    }
-                    append("${timestamp}_$safeName")
+                val basePrefix = buildString {
+                    append(uploadContext.storagePrefix).append("/").append(userId)
+                    if (contextIdArg.isNotBlank()) append("/").append(contextIdArg)
                 }
+                val ext = fileName.substringAfterLast('.', "")
+                val nameNoExt = fileName.substringBeforeLast('.', fileName)
+                val objectKey = storageRepository.buildObjectKey(basePrefix, nameNoExt, ext.ifBlank { null })
 
                 val result = storageRepository.uploadFile(tempFile, objectKey) { p ->
                     _state.update { it.copy(progress = 0.2f + p * 0.8f) }

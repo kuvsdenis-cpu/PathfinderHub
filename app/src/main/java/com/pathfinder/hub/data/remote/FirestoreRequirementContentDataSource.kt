@@ -3,6 +3,7 @@ package com.pathfinder.hub.data.remote
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.pathfinder.hub.data.local.entity.learning.RequirementMaterialEntity
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
@@ -242,6 +243,50 @@ class FirestoreRequirementContentDataSource @Inject constructor() {
     } catch (e: Exception) {
         Log.e(TAG, "unflagTask FAIL", e)
         Result.failure(e)
+    }
+
+    // ==================== PULL (для SyncWorker) ====================
+
+    /**
+     * Один раз тянет все материалы требования. Используется в SyncWorker
+     * для прогрева Room у других участников клуба (listener в observeMaterials
+     * работает только пока экран открыт).
+     */
+    suspend fun pullMaterials(
+        clubId: String,
+        requirementId: String,
+    ): List<RequirementMaterialEntity> = try {
+        materialsRef(clubId, requirementId).get().await().documents.mapNotNull { doc ->
+            try {
+                mapMaterial(doc.id, doc.data ?: emptyMap())
+            } catch (e: Exception) {
+                Log.e(TAG, "pullMaterials map failed ${doc.id}", e)
+                null
+            }
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "pullMaterials FAIL: $clubId/$requirementId", e)
+        emptyList()
+    }
+
+    /**
+     * Аналог pullMaterials для заданий.
+     */
+    suspend fun pullTasks(
+        clubId: String,
+        requirementId: String,
+    ): List<RequirementTaskEntity> = try {
+        tasksRef(clubId, requirementId).get().await().documents.mapNotNull { doc ->
+            try {
+                mapTask(doc.id, doc.data ?: emptyMap())
+            } catch (e: Exception) {
+                Log.e(TAG, "pullTasks map failed ${doc.id}", e)
+                null
+            }
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "pullTasks FAIL: $clubId/$requirementId", e)
+        emptyList()
     }
 
     // ==================== МАППИНГ ====================

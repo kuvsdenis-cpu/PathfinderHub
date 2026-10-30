@@ -116,7 +116,8 @@ object RepositoryModule {
         taskDao: com.pathfinder.hub.data.local.dao.RequirementTaskDao,
         firestore: FirestoreRequirementContentDataSource,
         syncQueue: SyncQueueManager,
-    ) = RequirementContentRepository(materialDao, taskDao, firestore, syncQueue)
+        storage: StorageRepository,
+    ) = RequirementContentRepository(materialDao, taskDao, firestore, syncQueue, storage)
 
     @Provides @Singleton
     fun provideTaskAnswerRepo(

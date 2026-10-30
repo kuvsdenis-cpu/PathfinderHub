@@ -73,6 +73,27 @@ class StorageRepository @Inject constructor() {
 
     private val bucketName = BuildConfig.YANDEX_BUCKET_NAME
 
+    fun buildBookKey(clubId: String, bookId: String, title: String): String {
+        val slug = slugify(title)
+        val shortId = bookId.replace("-", "").take(8)
+        return "clubs/$clubId/books/${slug}_${shortId}.txt"
+    }
+    fun buildLegacyBookKey(clubId: String, bookId: String): String =
+        "clubs/$clubId/books/$bookId.txt"
+    fun slugify(s: String): String {
+        val c = s.trim().replace(Regex("[^\\p{L}\\p{N}]+"), "_").trim('_').take(60)
+        return c.ifBlank { "book" }
+    }
+    fun sanitizeFileName(raw: String, fallback: String = "file"): String {
+        val c = raw.trim().replace(Regex("[^\\p{L}\\p{N}._-]+"), "_").trim('_', '.').take(80)
+        return c.ifBlank { fallback }
+    }
+    fun buildObjectKey(prefix: String, readableName: String, ext: String? = null): String {
+        val safe = sanitizeFileName(readableName, "file")
+        val suffix = java.util.UUID.randomUUID().toString().replace("-", "").take(8)
+        return if (ext.isNullOrBlank()) "$prefix/${safe}_$suffix"
+               else "$prefix/${safe}_$suffix.$ext"
+    }
     companion object {
         private const val TAG = "StorageRepository"
 
@@ -247,6 +268,24 @@ class StorageRepository @Inject constructor() {
         return s3Presigner.presignGetObject(presignRequest).url().toString()
     }
 
+    suspend fun uploadBookText(
+        clubId: String,
+        bookId: String,
+        title: String,
+        text: String,
+        cacheDir: File,
+    ): String? {
+        val key = buildBookKey(clubId, bookId, title)
+        val tmp = File(cacheDir, "${bookId}.txt")
+        tmp.writeText(text)
+        return try {
+            uploadFile(tmp, key).getOrNull()
+        } catch (e: Exception) {
+            Log.e(TAG, "uploadBookText failed: $key", e)
+            null
+        } finally { tmp.delete() }
+    }
+
     fun buildLevelImageUrl(relativePath: String): String {
         if (relativePath.startsWith("http://") ||
             relativePath.startsWith("https://") ||
@@ -264,6 +303,62 @@ class StorageRepository @Inject constructor() {
 
     fun getPublicUrl(objectKey: String): String =
         "https://storage.yandexcloud.net/$bucketName/$objectKey"
+
+    /**
+     * Перегенерировать presigned URL по существующему URL.
+     * Извлекает key из URL и подписывает заново (TTL 365 дней).
+     * Возвращает null, если URL не от этого бакета.
+     */
+    fun refreshPresignedUrl(
+        url: String,
+        duration: Duration = Duration.ofDays(7),
+        ifFreshHours: Long = 0,
+    ): String? {
+        val key = extractKeyFromUrl(url) ?: return null
+        if (ifFreshHours > 0 && isUrlFresh(url, ifFreshHours)) return null
+        return try {
+            generatePresignedUrl(key, duration)
+        } catch (e: Exception) {
+            Log.w(TAG, "refreshPresignedUrl failed: $key", e)
+            null
+        }
+    }
+
+    /** URL (SigV4) не протухнет в ближайшие [minHours] часов. */
+    fun isUrlFresh(url: String, minHours: Long = 24): Boolean {
+        return try {
+            val q = URI.create(url).query ?: return false
+            var dateStr: String? = null
+            var expiresStr: String? = null
+            for (pair in q.split("&")) {
+                val kv = pair.split("=", limit = 2)
+                when (kv[0]) {
+                    "X-Amz-Date" -> dateStr = kv.getOrNull(1)
+                    "X-Amz-Expires" -> expiresStr = kv.getOrNull(1)
+                }
+            }
+            if (dateStr == null || expiresStr == null) return false
+            val fmt = java.text.SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", java.util.Locale.US)
+            fmt.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            val issued = fmt.parse(dateStr)?.time ?: return false
+            val expiresMs = expiresStr.toLongOrNull()?.times(1000) ?: return false
+            val deadline = issued + expiresMs
+            val threshold = System.currentTimeMillis() + minHours * 3_600_000L
+            deadline > threshold
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /** Извлечь objectKey из https://storage.yandexcloud.net/<bucket>/<key>?... */
+    fun extractKeyFromUrl(url: String): String? {
+        return try {
+            val uri = URI.create(url)
+            val path = uri.path ?: return null
+            val parts = path.removePrefix("/").split("/", limit = 2)
+            if (parts.size < 2) null else parts[1]
+        } catch (_: Exception) { null }
+    }
 
     // ============================================================
     // MIME-TYPE

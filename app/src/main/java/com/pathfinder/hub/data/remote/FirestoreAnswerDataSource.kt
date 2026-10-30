@@ -3,6 +3,7 @@ package com.pathfinder.hub.data.remote
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

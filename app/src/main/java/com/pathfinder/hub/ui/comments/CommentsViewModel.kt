@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.planning.CommentEntity
 import com.pathfinder.hub.data.repository.ModerationRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.domain.service.AutoModerationService
 import com.pathfinder.hub.ui.storage.FileUploadResult
@@ -49,6 +50,7 @@ class CommentsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val moderationRepository: ModerationRepository,
     private val autoModerationService: AutoModerationService,
+    private val storageRepository: StorageRepository,
 ) : ViewModel() {
 
     companion object {
@@ -148,6 +150,12 @@ class CommentsViewModel @Inject constructor(
             }
         }
     }
+
+    /** Перегенерировать presigned URL вложения (TTL 7 дней). */
+    suspend fun refreshAttachmentUrl(url: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            storageRepository.refreshPresignedUrl(url)
+        }
 
     fun onInputChange(text: String) {
         _state.update { it.copy(inputText = text) }

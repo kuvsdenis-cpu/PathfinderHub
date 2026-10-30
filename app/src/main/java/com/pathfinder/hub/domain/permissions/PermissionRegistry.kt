@@ -55,6 +55,9 @@ object PermissionRegistry {
             Permission("finance.create", "Создание платежей"),
             Permission("finance.confirm", "Подтверждение оплат"),
         )),
+        Group("Уведомления", listOf(
+            Permission("notifications.broadcast", "Массовая рассылка по клубу"),
+        )),
         Group("Пользовательские группы", listOf(
             Permission("groups.manage", "Управление группами"),
         )),

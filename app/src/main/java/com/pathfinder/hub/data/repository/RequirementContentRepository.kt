@@ -30,6 +30,7 @@ class RequirementContentRepository @Inject constructor(
     private val taskDao: RequirementTaskDao,
     private val firestore: FirestoreRequirementContentDataSource,
     private val syncQueue: SyncQueueManager,
+    private val storage: StorageRepository,
 ) {
 
     companion object {
@@ -44,7 +45,10 @@ class RequirementContentRepository @Inject constructor(
         firestore.observeMaterials(clubId, requirementId)
             .onEach { list ->
                 if (list.isNotEmpty()) {
-                    try { materialDao.upsertAll(list.map { it.copy(pendingSync = false) }) }
+                    try {
+                        val refreshed = list.map { refreshMaterialUrl(it).copy(pendingSync = false) }
+                        materialDao.upsertAll(refreshed)
+                    }
                     catch (e: Exception) { Log.w(TAG, "materialDao.upsertAll failed", e) }
                 }
             }
@@ -66,6 +70,51 @@ class RequirementContentRepository @Inject constructor(
 
     suspend fun getTasksFromRoom(clubId: String, requirementId: String): List<RequirementTaskEntity> =
         taskDao.getByRequirement(requirementId).filter { it.clubId == clubId }
+
+    // ==================== PULL (для SyncWorker) ====================
+
+    /**
+     * Тянет материалы требования из Firestore в Room.
+     * Merge: локальные pendingSync не трогаем, более свежие локальные — не перезаписываем.
+     */
+    suspend fun pullMaterials(clubId: String, requirementId: String) {
+        val remote = firestore.pullMaterials(clubId, requirementId)
+        for (r in remote) {
+            try {
+                val local = materialDao.getById(r.id)
+                if (local != null && local.pendingSync) continue
+                if (local != null && local.updatedAt.time >= r.updatedAt.time) continue
+                materialDao.upsert(refreshMaterialUrl(r).copy(pendingSync = false))
+            } catch (e: Exception) {
+                Log.w(TAG, "pullMaterials skip ${r.id}: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Аналог pullMaterials для заданий.
+     */
+    suspend fun pullTasks(clubId: String, requirementId: String) {
+        val remote = firestore.pullTasks(clubId, requirementId)
+        for (r in remote) {
+            try {
+                val local = taskDao.getById(r.id)
+                if (local != null && local.pendingSync) continue
+                if (local != null && local.updatedAt.time >= r.updatedAt.time) continue
+                taskDao.upsert(r.copy(pendingSync = false))
+            } catch (e: Exception) {
+                Log.w(TAG, "pullTasks skip ${r.id}: ${e.message}")
+            }
+        }
+    }
+
+    /** Перегенерировать presigned URL у material.type in ["file","image"]. */
+    private fun refreshMaterialUrl(m: RequirementMaterialEntity): RequirementMaterialEntity {
+        if (m.type != "file" && m.type != "image") return m
+        if (m.content.isBlank()) return m
+        val fresh = storage.refreshPresignedUrl(m.content) ?: return m
+        return m.copy(content = fresh)
+    }
 
     // ==================== CRUD: MATERIALS ====================
 

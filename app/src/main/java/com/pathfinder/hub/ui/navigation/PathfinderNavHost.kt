@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pathfinder.hub.ui.info.InfoHubScreen
 import com.pathfinder.hub.ui.info.InfoCategoryScreen
 import com.pathfinder.hub.ui.info.InfoArticleScreen
@@ -130,6 +131,16 @@ import com.pathfinder.hub.ui.storage.FileUploadScreen
 import com.pathfinder.hub.ui.learning.content.TestEditorScreen
 import com.pathfinder.hub.ui.learning.content.TestQuestionEditorScreen
 
+// === Импорты для Субботней школы ===
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.pathfinder.hub.ui.sabbath.SabbathLessonScreen
+import com.pathfinder.hub.ui.sabbath.SabbathSchoolListScreen
+import com.pathfinder.hub.ui.sabbath.SabbathSchoolListViewModel
+import com.pathfinder.hub.ui.sabbath.SabbathSchoolSettingsScreen
+import com.pathfinder.hub.ui.sabbath.SabbathSchoolViewModel
+
+
 @Composable
 fun PathfinderNavHost(
     navController: NavHostController,
@@ -213,6 +224,7 @@ fun PathfinderNavHost(
                 onNavigateToContentManager = { navController.navigate(Routes.CONTENT_MANAGER) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -230,6 +242,8 @@ fun PathfinderNavHost(
                 onNavigateToHomework = { navController.navigate(Routes.CREATE_HOMEWORK) },
                 onNavigateToReviewHomework = { navController.navigate(Routes.REVIEW_HOMEWORK) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -244,6 +258,7 @@ fun PathfinderNavHost(
                 onNavigateToMessages = { navController.navigate(Routes.PARENT_MESSAGES) },
                 onNavigateToMeetings = { navController.navigate(Routes.PARENT_MEETINGS) },
                 onNavigateToConsents = { navController.navigate(Routes.PARENT_CONSENTS) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -284,6 +299,7 @@ fun PathfinderNavHost(
                 onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -294,6 +310,7 @@ fun PathfinderNavHost(
                 onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -343,6 +360,8 @@ fun PathfinderNavHost(
                 onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
                 onNavigateToReadingPlanAdmin = { navController.navigate(Routes.READING_PLANS_ADMIN) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
+                onNavigateToSabbathSchoolSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -752,7 +771,10 @@ fun PathfinderNavHost(
             route = Routes.BOOK_READER,
             arguments = listOf(navArgument("bookId") { type = NavType.StringType })
         ) {
-            BookReaderScreen(onBack = { navController.popBackStack() })
+            BookReaderScreen(
+                onBack = { navController.popBackStack() },
+                onDeleteBook = { navController.popBackStack() },
+            )
         }
 
         // ===== Teen Home =====
@@ -782,7 +804,8 @@ fun PathfinderNavHost(
                 onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
                 onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
                 onNavigateToBooks = { navController.navigate(Routes.BOOKS) },
-                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) }
+                onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) } // <-- ДОБАВЛЕНО
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
@@ -1221,7 +1244,7 @@ fun PathfinderNavHost(
         ) {
             InfoEditorScreen(onBack = { navController.popBackStack() })
         }
-        
+
         composable(
             route = Routes.INFO_ARTICLE,
             arguments = listOf(
@@ -1264,6 +1287,35 @@ fun PathfinderNavHost(
             CreateCustomGroupScreen(
                 onBack = { navController.popBackStack() },
                 onSaved = { navController.popBackStack() },
+            )
+        }
+
+        // ===== Sabbath School =====
+        composable(Routes.SABBATH_SCHOOL_LIST) {
+            val vm: SabbathSchoolListViewModel = hiltViewModel()
+            val state by vm.state.collectAsState()
+            SabbathSchoolListScreen(
+                year = state.year,
+                quarter = state.quarter,
+                currentLesson = state.currentLesson,
+                onLessonClick = { lessonId ->
+                    navController.navigate(Routes.sabbathSchool(lessonId))
+                },
+                onOpenSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.SABBATH_SCHOOL,
+            arguments = listOf(navArgument("lessonId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val lessonId = backStackEntry.arguments?.getString("lessonId") ?: ""
+            val vm: SabbathSchoolViewModel = hiltViewModel()
+            SabbathLessonScreen(viewModel = vm, lessonId = lessonId)
+        }
+        composable(Routes.SABBATH_SCHOOL_SETTINGS) {
+            SabbathSchoolSettingsScreen(
+                onBack = { navController.popBackStack() },
             )
         }
     }

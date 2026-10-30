@@ -20,6 +20,8 @@ object PermissionChecker {
 
     fun hasPerm(user: UserEntity?, perm: String): Boolean {
         if (user == null) return false
+        // Conference admin — все права (Firestore rules: isConferenceAdmin).
+        if (user.role == "conference_admin") return true
         // Owner — все права.
         if (user.role == "director" && user.isOwnerClub) return true
         // Staff-роли читают индивидуальный набор.

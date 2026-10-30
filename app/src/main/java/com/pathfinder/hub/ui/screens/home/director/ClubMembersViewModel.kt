@@ -8,6 +8,7 @@ import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.repository.ChatRepository
 import com.pathfinder.hub.data.repository.ParentRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.domain.permissions.RoleDefaultPermissions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,7 +93,21 @@ class ClubMembersViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val user = userRepository.getUser(userId) ?: return@launch
-                userRepository.update(user.copy(role = newRole))
+                if (user.role == newRole) return@launch
+
+                // При смене роли — ставим дефолтный набор прав.
+                // Owner клуба (isOwnerClub=true) — права не важны, у него всё.
+                // Если owner уже выдал права вручную — они перезапишутся дефолтом.
+                // Это ожидаемое поведение: смена роли = новый набор по умолчанию.
+                val newPerms = if (user.isOwnerClub) {
+                    user.directorPermissions
+                } else {
+                    RoleDefaultPermissions.forRole(newRole)
+                }
+                userRepository.update(user.copy(
+                    role = newRole,
+                    directorPermissions = newPerms,
+                ))
             } catch (e: Exception) {
                 _state.update { it.copy(errorMessage = e.message ?: "Ошибка смены роли") }
             }

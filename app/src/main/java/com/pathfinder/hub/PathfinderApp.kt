@@ -29,10 +29,12 @@ import com.pathfinder.hub.data.local.worker.BookSeedWorker
 import com.pathfinder.hub.data.local.worker.PearlSeedWorker
 import com.pathfinder.hub.data.local.worker.ReadingPlanSeedWorker
 import com.pathfinder.hub.data.local.worker.SeedDatabaseWorker
+import com.pathfinder.hub.data.local.worker.UploadLocalBooksWorker
 import com.pathfinder.hub.data.archive.PurgeScheduler
 import com.pathfinder.hub.data.sync.SyncScheduler
 import com.pathfinder.hub.domain.usecase.gamification.SeedAchievementsUseCase
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -58,7 +60,11 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
     @Inject
     lateinit var userClubSeeder: UserClubSeeder
 
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val appScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "Uncaught in appScope", e)
+        }
+    )
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
@@ -96,9 +102,13 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             initFirestore()
 
             // Планировщики WorkManager — тоже фоновая история.
-            syncScheduler.schedulePeriodic()
-            syncScheduler.syncNow()
-            purgeScheduler.schedule()
+            try {
+                syncScheduler.schedulePeriodic()
+                syncScheduler.syncNow()
+                purgeScheduler.schedule()
+            } catch (e: Exception) {
+                Log.e(TAG, "Schedulers упали", e)
+            }
 
             // Демо-данные — только в debug (d-1).
             if (BuildConfig.DEBUG) {
@@ -106,19 +116,36 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             }
 
             // B1: досид user_clubs из users.clubIds
-            userClubSeeder.seedIfNeeded()
+            try {
+                try {
+                userClubSeeder.seedIfNeeded()
+            } catch (e: Exception) {
+                Log.e(TAG, "UserClubSeeder упал", e)
+            }
+            } catch (e: Exception) {
+                Log.e(TAG, "UserClubSeeder упал", e)
+            }
 
             // Загрузка контента и наблюдение за воркером — как было.
-            seedAchievements()
-            scheduleContentUpdate()
-            scheduleBibleSeed()
-            schedulePearlSeed()
-            scheduleReadingPlanSeed()
-            scheduleBookSeed()
-            observeSeedCompletion()  // suspend, не возвращается до конца воркера
-            observeBibleSeedCompletion()
-            observePearlSeedCompletion()
-            observeReadingPlanSeedCompletion()
+            try {
+                seedAchievements()
+                scheduleContentUpdate()
+                scheduleBibleSeed()
+                schedulePearlSeed()
+                scheduleReadingPlanSeed()
+                scheduleBookSeed()
+                scheduleUploadLocalBooks()
+            } catch (e: Exception) {
+                Log.e(TAG, "schedule* упали", e)
+            }
+            try {
+                observeSeedCompletion()
+                observeBibleSeedCompletion()
+                observePearlSeedCompletion()
+                observeReadingPlanSeedCompletion()
+            } catch (e: Exception) {
+                Log.e(TAG, "observe* упали", e)
+            }
         }
     }
 
@@ -356,6 +383,14 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
 
     // ==================== БИБЛИЯ ====================
 
+    private fun scheduleUploadLocalBooks() {
+        val r = OneTimeWorkRequestBuilder<UploadLocalBooksWorker>()
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            UploadLocalBooksWorker.WORK_NAME, ExistingWorkPolicy.KEEP, r)
+        Log.d(TAG, "UploadLocalBooksWorker → KEEP")
+    }
     private fun scheduleBibleSeed() {
         val request = OneTimeWorkRequestBuilder<BibleSeedWorker>()
             .setConstraints(

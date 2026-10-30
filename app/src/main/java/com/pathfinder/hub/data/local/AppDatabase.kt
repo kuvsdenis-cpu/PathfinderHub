@@ -40,6 +40,8 @@ import com.pathfinder.hub.data.local.entity.gamification.TeamChallengeProgressEn
 import com.pathfinder.hub.data.local.entity.groups.CustomGroupEntity
 import com.pathfinder.hub.data.local.entity.core.UserClubEntity
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
+import com.pathfinder.hub.data.local.entity.sabbath.SabbathAnswerEntity
+import com.pathfinder.hub.data.local.dao.SabbathAnswerDao
 import com.pathfinder.hub.data.local.entity.learning.BookReportEntity
 import com.pathfinder.hub.data.local.entity.learning.ContentVersionEntity
 import com.pathfinder.hub.data.local.entity.learning.HonorCategoryEntity
@@ -118,8 +120,7 @@ import com.pathfinder.hub.data.local.entity.settings.UserSettingsEntity
 import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
 
 @Database(
-    entities = [
-        // Core
+    entities = [// Core
         ConferenceEntity::class,
         ClubEntity::class,
         UserEntity::class,
@@ -266,9 +267,9 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         PearlProgressEntity::class,
         ReadingPlanScheduleEntity::class,
         ReadingPlanDayEntity::class,
-        ReadingPlanProgressEntity::class
-    ],
-    version = 52,
+        ReadingPlanProgressEntity::class,
+        SabbathAnswerEntity::class],
+    version = 57,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -293,6 +294,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun testDao(): TestDao
     abstract fun bookReportDao(): BookReportDao
     abstract fun bookDao(): BookDao
+    abstract fun sabbathAnswerDao(): SabbathAnswerDao
     abstract fun verseProgressDao(): VerseProgressDao
 
     // Learning — материалы и задания

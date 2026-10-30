@@ -29,6 +29,8 @@ data class RequirementContentUiState(
     val materials: List<RequirementMaterialEntity> = emptyList(),
     val tasks: List<RequirementTaskEntity> = emptyList(),
     val answers: Map<String, RequirementTaskAnswerEntity> = emptyMap(),
+    val currentUserId: String = "",
+    val currentClubId: String = "",
     val errorMessage: String? = null,
     val infoMessage: String? = null,
 ) {
@@ -87,6 +89,28 @@ class RequirementContentViewModel @Inject constructor(
                 return@launch
             }
             clubId = cid
+            _state.update { it.copy(currentUserId = uid, currentClubId = cid) }
+
+            // Материалы
+            clubId = cid
+
+            // Прогрев Room перед observe*: listener'ы живут только пока экран открыт,
+            // pull нужен для офлайн-кэша и «второго устройства».
+            launch {
+                try {
+                    contentRepo.pullMaterials(cid, requirementId)
+                    contentRepo.pullTasks(cid, requirementId)
+                } catch (e: Exception) {
+                    Log.w(TAG, "pull content failed", e)
+                }
+            }
+            launch {
+                try {
+                    answerRepo.pullAnswers(cid)
+                } catch (e: Exception) {
+                    Log.w(TAG, "pull answers failed", e)
+                }
+            }
 
             // Материалы
             launch {

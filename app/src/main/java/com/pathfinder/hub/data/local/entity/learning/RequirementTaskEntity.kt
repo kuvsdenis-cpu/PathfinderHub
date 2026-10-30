@@ -10,11 +10,9 @@ import java.util.Date
  *
  * Типы:
  *   Автопроверка (autoCheck = true):
- *     "single_choice" | "multi_choice" | "number" | "cipher" | "crossword"
+ *     "single_choice" | "multi_choice" | "number" | "cipher" | "crossword" | "fill_blank" | "grouping" | "match"
  *   Ручная проверка (autoCheck = false):
  *     "short_text" | "long_text" | "file" | "date" | "checkbox"
- *
- * Флаг flaggedForEdit ставит наставник клуба. Редактирует только директор.
  */
 @Entity(
     tableName = "requirement_tasks",
@@ -48,7 +46,8 @@ data class RequirementTaskEntity(
 ) {
     companion object {
         private val AUTO_CHECK_TYPES = setOf(
-            "single_choice", "multi_choice", "number", "cipher", "crossword"
+            "single_choice", "multi_choice", "number", "cipher", "crossword",
+            "fill_blank", "grouping", "match"
         )
 
         fun isAutoCheckType(type: String): Boolean = type in AUTO_CHECK_TYPES

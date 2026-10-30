@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.ui.common.AttachmentPreview
 import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import com.pathfinder.hub.ui.theme.PathfinderGreen
@@ -137,6 +138,7 @@ fun ModerationContent(
                                     dateFormat = dateFormat,
                                     isProcessing = state.isProcessing,
                                     canArchive = state.canArchive,
+                                    refreshUrl = { url -> viewModel.refreshAttachmentUrl(url) },
                                     onApprove = { viewModel.approveComment(item.comment.id) },
                                     onHide = { viewModel.hideComment(item.comment.id) },
                                     onReject = { viewModel.showRejectDialog(item.comment.id) },
@@ -249,6 +251,7 @@ private fun ModerationCard(
     dateFormat: SimpleDateFormat,
     isProcessing: Boolean,
     canArchive: Boolean,
+    refreshUrl: (suspend (String) -> String?)? = null,
     onApprove: () -> Unit,
     onHide: () -> Unit,
     onReject: () -> Unit,
@@ -309,6 +312,17 @@ private fun ModerationCard(
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(12.dp)
                 )
+            }
+
+            if (item.comment.attachments.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                item.comment.attachments.forEach { url ->
+                    AttachmentPreview(
+                        url = url,
+                        refreshUrl = refreshUrl,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                }
             }
 
             Spacer(Modifier.height(12.dp))

@@ -9,6 +9,7 @@ import com.pathfinder.hub.data.local.entity.learning.HonorRequirementEntity
 import com.pathfinder.hub.data.local.entity.learning.BookEntity
 import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.HonorRepository
+import com.pathfinder.hub.data.repository.StorageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +37,8 @@ class HonorRequirementDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val honorRepository: HonorRepository,
     private val sessionManager: SessionManager,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val storageRepository: StorageRepository,
 ) : ViewModel() {
 
     private val honorId: String = savedStateHandle.get<String>("honorId") ?: ""
@@ -48,6 +50,12 @@ class HonorRequirementDetailViewModel @Inject constructor(
     init {
         loadRequirement()
     }
+
+    /** Перегенерировать presigned URL вложения (TTL 7 дней). */
+    suspend fun refreshAttachmentUrl(url: String): String? =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            storageRepository.refreshPresignedUrl(url, ifFreshHours = 24)
+        }
 
     private fun loadRequirement() {
         val userId = sessionManager.getUserId()

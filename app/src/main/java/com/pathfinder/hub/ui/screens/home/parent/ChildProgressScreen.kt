@@ -106,9 +106,11 @@ fun ChildProgressScreen(
                 EmptyText("Пока нет завершённых ступеней")
             } else {
                 state.levelCompletions.forEach { lc ->
+                    val title = state.levelTitles[lc.levelId]
+                        ?: "Ступень ${lc.levelId}"
                     RowItem(
                         icon = Icons.Default.CheckCircle,
-                        title = "Ступень " + lc.levelId,
+                        title = title,
                         subtitle = "Завершено: " + fmt.format(lc.completedAt),
                     )
                 }
@@ -120,9 +122,11 @@ fun ChildProgressScreen(
                 EmptyText("Пока нет завершённых специализаций")
             } else {
                 state.honorCompletions.forEach { hc ->
+                    val title = state.honorTitles[hc.honorId]
+                        ?: "Специализация ${hc.honorId}"
                     RowItem(
                         icon = Icons.Default.EmojiEvents,
-                        title = "Специализация " + hc.honorId,
+                        title = title,
                         subtitle = "Завершено: " + fmt.format(hc.completedAt),
                     )
                 }
@@ -134,9 +138,11 @@ fun ChildProgressScreen(
                 EmptyText("Пока нет достижений")
             } else {
                 state.achievements.take(20).forEach { a ->
+                    val title = state.achievementTitles[a.achievementId]
+                        ?: a.achievementId
                     RowItem(
                         icon = Icons.Default.Star,
-                        title = a.achievementId,
+                        title = title,
                         subtitle = a.earnedAt?.let { "Получено: " + fmt.format(it) } ?: "",
                     )
                 }

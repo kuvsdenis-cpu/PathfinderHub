@@ -79,7 +79,6 @@ class RequirementEditorViewModel @Inject constructor(
             // #14: как в ContentManagerViewModel и TestEditorViewModel —
             // director (owner / co-director с content.edit) или instructor.
             val canEdit = PermissionChecker.hasPerm(user, "content.edit")
-                    || role == "instructor"
                     || user.isOwnerClub
             // Флаг «надо поправить» — только для тех, кто не может редактировать.
             val canFlag = !canEdit && role in listOf("instructor", "secretary")
@@ -145,17 +144,34 @@ class RequirementEditorViewModel @Inject constructor(
         val uid = userId ?: return
         if (!_state.value.canEdit) return
 
+        val correctSerialized: String? = when {
+            type == "fill_blank" && !correctAnswer.isNullOrBlank() -> {
+                try {
+                    val list = correctAnswer.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                    com.google.gson.Gson().toJson(list)
+                } catch (_: Exception) { correctAnswer }
+            }
+            type == "match" -> {
+                try {
+                    val flat = options
+                    val pairs = flat.chunked(2).mapIndexed { i, _ -> listOf(i * 2, i * 2 + 1) }
+                    com.google.gson.Gson().toJson(pairs)
+                } catch (_: Exception) { null }
+            }
+            else -> correctAnswer
+        }
+
         viewModelScope.launch {
             val r = if (existing == null) {
                 contentRepo.createTask(
                     cid, requirementId, uid, type, title, description,
-                    options, correctAnswer, isRequired, orderIndex
+                    options, correctSerialized, isRequired, orderIndex
                 )
             } else {
                 contentRepo.saveTask(
                     existing.copy(
                         type = type, title = title, description = description,
-                        options = options, correctAnswer = correctAnswer,
+                        options = options, correctAnswer = correctSerialized,
                         isRequired = isRequired, orderIndex = orderIndex,
                         autoCheck = RequirementTaskEntity.isAutoCheckType(type)
                     )
@@ -206,7 +222,7 @@ class RequirementEditorViewModel @Inject constructor(
 
     // ==================== ЗАГРУЗКА ФАЙЛА МАТЕРИАЛА ====================
 
-    fun uploadMaterialFile(uri: Uri) {
+    fun uploadMaterialFile(uri: Uri, title: String) {
         if (!_state.value.canEdit) return
         viewModelScope.launch {
             _state.update { it.copy(isUploading = true, errorMessage = null) }
@@ -217,7 +233,7 @@ class RequirementEditorViewModel @Inject constructor(
                     return@launch
                 }
                 val ext = file.extension.ifBlank { "bin" }
-                val key = "requirements/$requirementId/materials/${UUID.randomUUID()}.$ext"
+                val key = storage.buildObjectKey("requirements/$requirementId/materials", title.ifBlank { "material" }, ext)
                 val r = storage.uploadFile(file, key) { /* progress */ }
                 r.fold(
                     onSuccess = { url ->

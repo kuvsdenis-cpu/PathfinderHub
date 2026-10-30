@@ -46,6 +46,27 @@ class TaskAnswerRepository @Inject constructor(
     suspend fun countApproved(requirementId: String, userId: String): Int =
         dao.countApprovedForRequirement(requirementId, userId)
 
+    // ==================== PULL (для SyncWorker) ====================
+
+    /**
+     * Тянет ответы клуба из Firestore в Room.
+     * Идемпотентно по (taskId, userId) — совпадает с Firestore docId.
+     * Локальные pendingSync и более свежие локальные не перезаписываем.
+     */
+    suspend fun pullAnswers(clubId: String) {
+        val remote = firestore.pullAnswers(clubId)
+        for (r in remote) {
+            try {
+                val local = dao.getByTaskAndUser(r.taskId, r.userId)
+                if (local != null && local.pendingSync) continue
+                if (local != null && local.updatedAt.time >= r.updatedAt.time) continue
+                dao.upsert(r.copy(pendingSync = false))
+            } catch (e: Exception) {
+                Log.w(TAG, "pullAnswers skip ${r.userId}_${r.taskId}: ${e.message}")
+            }
+        }
+    }
+
     // ==================== ЗАПИСЬ (следопыт) ====================
 
     /**

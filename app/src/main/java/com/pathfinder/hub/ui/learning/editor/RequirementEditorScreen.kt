@@ -114,7 +114,7 @@ fun RequirementEditorScreen(
             uploadedUrl = state.uploadedMaterialUrl,
             isUploading = state.isUploading,
             onDismiss = { creatingMaterial = false; viewModel.clearUploadedUrl() },
-            onUploadFile = { uri -> viewModel.uploadMaterialFile(uri) },
+            onUploadFile = { uri, t -> viewModel.uploadMaterialFile(uri, t) },
             onUploadedUrlConsumed = { viewModel.clearUploadedUrl() },
             onSave = { type, title, content ->
                 viewModel.saveMaterial(null, type, title, content, state.materials.size)
@@ -129,7 +129,7 @@ fun RequirementEditorScreen(
             uploadedUrl = state.uploadedMaterialUrl,
             isUploading = state.isUploading,
             onDismiss = { editingMaterial = null; viewModel.clearUploadedUrl() },
-            onUploadFile = { uri -> viewModel.uploadMaterialFile(uri) },
+            onUploadFile = { uri, t -> viewModel.uploadMaterialFile(uri, t) },
             onUploadedUrlConsumed = { viewModel.clearUploadedUrl() },
             onSave = { type, title, content ->
                 viewModel.saveMaterial(m, type, title, content, m.orderIndex)
@@ -218,7 +218,7 @@ private fun RowItemTask(
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("[${t.type}] ${t.title}", style = MaterialTheme.typography.titleMedium)
+                Text("[${com.pathfinder.hub.ui.learning.editor.TaskTypeLabels.humanLabel(t.type)}] ${t.title}", style = MaterialTheme.typography.titleMedium)
                 if (!t.isRequired) Text("Необязательное", style = MaterialTheme.typography.labelSmall)
                 if (t.flaggedForEdit) {
                     Text("Помечено: ${t.flagComment ?: "без комментария"}",

@@ -49,6 +49,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.screens.home.common.HomeHeaderViewModel
 import com.pathfinder.hub.ui.theme.PathfinderBlue
+import androidx.compose.material.icons.filled.School
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CardDefaults
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +71,7 @@ fun InstructorHomeScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSabbathSchool: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -183,6 +187,43 @@ fun InstructorHomeScreen(
                 }
             }
 
+            // ---------- Доп. информация ----------
+            if (TilePermissions.isVisible(user, TilePermissions.INFO)) {
+                item {
+                    Card(
+                        onClick = onNavigateToInfo,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = PathfinderBlue,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Доп. информация",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Форма, безопасность, атрибутика",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 Text(
                     "Работа с клубом",
@@ -256,7 +297,43 @@ fun InstructorHomeScreen(
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Tile(Icons.Default.Email, "Чаты", "Личные и группы", onNavigateToChats, Modifier.weight(1f))
-                    Tile(Icons.Default.Info, "Справка", "Форма и безопасность", onNavigateToInfo, Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+
+            // ---------- Субботняя школа ----------
+            item {
+                Card(
+                    onClick = onNavigateToSabbathSchool,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.School, null,
+                            tint = PathfinderBlue,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Субботняя школа",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                "Уроки для подростков",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
                 }
             }
 

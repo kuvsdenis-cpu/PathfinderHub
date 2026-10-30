@@ -92,6 +92,7 @@ fun DMChatScreen(
                             isOwn = msg.authorId == state.currentUserId,
                             onLongPress = if (msg.authorId == state.currentUserId)
                                 ({ viewModel.startEdit(msg) }) else null,
+                            refreshUrl = { url -> viewModel.refreshAttachmentUrl(url) },
                         )
                     }
                 }
@@ -161,6 +162,7 @@ private fun MessageBubble(
     msg: com.pathfinder.hub.domain.model.ChatMessage,
     isOwn: Boolean,
     onLongPress: (() -> Unit)? = null,
+    refreshUrl: (suspend (String) -> String?)? = null,
 ) {
     val dateFormat = SimpleDateFormat("HH:mm, d MMM", Locale.forLanguageTag("ru"))
     Row(
@@ -182,7 +184,7 @@ private fun MessageBubble(
                 Text(msg.text, style = MaterialTheme.typography.bodyMedium)
                 msg.attachments.forEach { url ->
                     Spacer(Modifier.height(6.dp))
-                    AttachmentPreview(url = url)
+                    AttachmentPreview(url = url, refreshUrl = refreshUrl)
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(

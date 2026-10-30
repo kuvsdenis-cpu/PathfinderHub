@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +30,9 @@ data class ChildProgressUiState(
     val achievements: List<AchievementProgressEntity> = emptyList(),
     val testAttempts: List<TestAttemptEntity> = emptyList(),
     val testTitles: Map<String, String> = emptyMap(),
+    val levelTitles: Map<String, String> = emptyMap(),
+    val honorTitles: Map<String, String> = emptyMap(),
+    val achievementTitles: Map<String, String> = emptyMap(),
     val pendingAttemptIds: Set<String> = emptySet(),
     val errorMessage: String? = null,
 )
@@ -64,16 +68,19 @@ class ChildProgressViewModel @Inject constructor(
         viewModelScope.launch {
             levelRepository.observeCompletions(childId).collect { list ->
                 _state.update { it.copy(levelCompletions = list) }
+                resolveLevelTitles(list)
             }
         }
         viewModelScope.launch {
             honorRepository.observeCompletions(childId).collect { list ->
                 _state.update { it.copy(honorCompletions = list) }
+                resolveHonorTitles(list)
             }
         }
         viewModelScope.launch {
             achievementRepository.observeEarned(childId).collect { list ->
                 _state.update { it.copy(achievements = list) }
+                resolveAchievementTitles(list)
             }
         }
         viewModelScope.launch {
@@ -87,6 +94,53 @@ class ChildProgressViewModel @Inject constructor(
             // lifecycle pull: подписка живёт пока живёт ViewModel
             testRepository.pullTestAttempts(childId)
         }
+    }
+
+    // ==================== РЕЗОЛВ НАЗВАНИЙ ====================
+
+    private suspend fun resolveLevelTitles(items: List<LevelCompletionEntity>) {
+        val ids = items.map { it.levelId }.filter { it.isNotBlank() }.distinct()
+        if (ids.isEmpty()) {
+            _state.update { it.copy(levelTitles = emptyMap()) }
+            return
+        }
+        val map = mutableMapOf<String, String>()
+        ids.forEach { id ->
+            val name = levelRepository.getLevel(id)?.name
+            if (!name.isNullOrBlank()) map[id] = name
+        }
+        _state.update { it.copy(levelTitles = map) }
+    }
+
+    private suspend fun resolveHonorTitles(items: List<HonorCompletionEntity>) {
+        val ids = items.map { it.honorId }.filter { it.isNotBlank() }.distinct()
+        if (ids.isEmpty()) {
+            _state.update { it.copy(honorTitles = emptyMap()) }
+            return
+        }
+        val map = mutableMapOf<String, String>()
+        ids.forEach { id ->
+            val name = honorRepository.getHonor(id)?.name
+            if (!name.isNullOrBlank()) map[id] = name
+        }
+        _state.update { it.copy(honorTitles = map) }
+    }
+
+    private suspend fun resolveAchievementTitles(items: List<AchievementProgressEntity>) {
+        val ids = items.map { it.achievementId }.filter { it.isNotBlank() }.distinct()
+        if (ids.isEmpty()) {
+            _state.update { it.copy(achievementTitles = emptyMap()) }
+            return
+        }
+        // У AchievementRepository нет getById — грузим один раз всё.
+        val all = achievementRepository.observeAll().first()
+        val byId = all.associateBy { it.id }
+        val map = mutableMapOf<String, String>()
+        ids.forEach { id ->
+            val name = byId[id]?.name
+            if (!name.isNullOrBlank()) map[id] = name
+        }
+        _state.update { it.copy(achievementTitles = map) }
     }
 
     /**

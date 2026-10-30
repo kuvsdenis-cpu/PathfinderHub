@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
+import com.pathfinder.hub.ui.learning.GroupingTaskView
 
 /**
  * Секция «Материалы и задания» для экрана требования.
@@ -108,6 +109,25 @@ fun RequirementContentSection(
     }
 
     openTask?.let { t ->
+        if (t.type == "match") {
+            MatchTaskView(
+                task = t,
+                userId = state.currentUserId,
+                clubId = state.currentClubId,
+                existingAnswer = state.answers[t.id],
+                onSave = { entity ->
+                    viewModel.submit(t, entity.answer, emptyList())
+                    openTask = null
+                },
+            )
+        } else if (t.type == "grouping") {
+            GroupingTaskView(
+                task = t,
+                existingAnswer = state.answers[t.id]?.answer,
+                onSaveDraft = { json -> viewModel.saveDraft(t, json, emptyList()); openTask = null },
+                onSubmit = { json -> viewModel.submit(t, json, emptyList()); openTask = null },
+            )
+        } else {
         TaskAnswerSheet(
             task = t,
             existingAnswer = state.answers[t.id],
@@ -122,5 +142,6 @@ fun RequirementContentSection(
             },
             onAttachFile = { onAttachFile(t.id) }
         )
+        }
     }
 }
