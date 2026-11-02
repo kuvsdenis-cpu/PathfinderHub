@@ -59,7 +59,6 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun DirectorManagementScreen(
     onBack: () -> Unit,
-    onOpenClubInfo: (clubId: String) -> Unit = {},
     onCreateReport: () -> Unit = {},
     onOpenReport: (String) -> Unit = {},
     onNavigateToSync: () -> Unit = {},
@@ -70,7 +69,6 @@ fun DirectorManagementScreen(
     var tab by remember { mutableIntStateOf(0) }
 
     val tabs = buildList {
-        if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("О клубе")
         if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("Настройки")
     if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("Аудит")
         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Отчёты")
@@ -130,20 +128,6 @@ fun DirectorManagementScreen(
 
             Column(Modifier.fillMaxSize()) {
                 when (tabs.getOrNull(tab)) {
-                    "О клубе" -> {
-                        val cid = clubState.selectedClubId
-                        Box(
-                            Modifier.fillMaxSize().padding(24.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Button(
-                                onClick = { if (cid != null) onOpenClubInfo(cid) },
-                                enabled = cid != null,
-                            ) {
-                                Text("Открыть «О клубе»")
-                            }
-                        }
-                    }
                     "Настройки" -> ClubSettingsContent(
                         onBack = onBack,
                     )

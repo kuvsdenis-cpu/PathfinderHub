@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.pathfinder.hub.ui.screens.home.director.sections.EnumLabels
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 
 private const val EMPTY = "Не указано"
@@ -144,7 +145,7 @@ fun ClubInfoScreen(
                     InfoRow(
                         icon = Icons.Default.AccessTime,
                         label = "День",
-                        value = c.meetingDay.ifBlank { EMPTY },
+                        value = EnumLabels.labelForMeetingDay(c.meetingDay).ifBlank { EMPTY },
                     )
                     InfoRow(
                         icon = Icons.Default.AccessTime,
@@ -162,7 +163,7 @@ fun ClubInfoScreen(
                     InfoRow(
                         icon = Icons.Default.AccessTime,
                         label = "Частота",
-                        value = c.frequency.ifBlank { EMPTY },
+                        value = EnumLabels.labelForFrequency(c.frequency).ifBlank { EMPTY },
                     )
 
                     // Контакты

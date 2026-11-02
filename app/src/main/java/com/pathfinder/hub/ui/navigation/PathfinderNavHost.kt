@@ -362,6 +362,7 @@ fun PathfinderNavHost(
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onNavigateToSabbathSchoolSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
+                onOpenClubInfo = { clubId -> navController.navigate(Routes.clubInfo(clubId)) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -468,9 +469,6 @@ fun PathfinderNavHost(
         composable(Routes.DIRECTOR_MANAGEMENT) {
             DirectorManagementScreen(
                 onBack = { navController.popBackStack() },
-                onOpenClubInfo = { clubId ->
-                    navController.navigate(Routes.clubInfo(clubId))
-                },
                 onCreateReport = {
                     navController.navigate(Routes.CREATE_REPORT)
                 },

@@ -25,6 +25,7 @@ data class AuditUiState(
     val filterAction: String? = null,
     val filterUser: String = "",
     val errorMessage: String? = null,
+    val userNames: Map<String, String> = emptyMap(),
 )
 
 @HiltViewModel
@@ -67,6 +68,15 @@ class AuditViewModel @Inject constructor(
                                 entries = list,
                                 filtered = applyFilters(list, s.filterType, s.filterAction, s.filterUser),
                             )
+                        }
+                        val ids = list.map { it.userId }.distinct()
+                        if (ids.isNotEmpty()) {
+                            val names = try {
+                                userRepository.getUsersByIds(ids).associate { u ->
+                                    u.id to "${u.firstName} ${u.lastName}".trim().ifBlank { u.id.take(8) }
+                                }
+                            } catch (_: Exception) { emptyMap() }
+                            _state.update { it.copy(userNames = names) }
                         }
                     }
                 }

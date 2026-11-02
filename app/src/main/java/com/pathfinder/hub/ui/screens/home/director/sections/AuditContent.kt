@@ -98,7 +98,7 @@ fun AuditContent(
                         onClick = { viewModel.setFilterType(null) },
                         label = { Text("Все") },
                     )
-                    TYPE_OPTIONS.forEach { (key, label) ->
+                    EnumLabels.TYPE_LABELS.forEach { (key, label) ->
                         FilterChip(
                             selected = state.filterType == key,
                             onClick = { viewModel.setFilterType(key) },
@@ -115,7 +115,7 @@ fun AuditContent(
                         onClick = { viewModel.setFilterAction(null) },
                         label = { Text("Все") },
                     )
-                    ACTION_OPTIONS.forEach { (key, label) ->
+                    EnumLabels.ACTION_LABELS.forEach { (key, label) ->
                         FilterChip(
                             selected = state.filterAction == key,
                             onClick = { viewModel.setFilterAction(key) },
@@ -163,7 +163,7 @@ fun AuditContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(state.filtered, key = { it.id }) { entry ->
-                    AuditCard(entry = entry, fmt = fmt)
+                    AuditCard(entry = entry, fmt = fmt, userNames = state.userNames)
                 }
             }
         }
@@ -171,19 +171,19 @@ fun AuditContent(
 }
 
 @Composable
-private fun AuditCard(entry: AuditLogEntity, fmt: SimpleDateFormat) {
+private fun AuditCard(entry: AuditLogEntity, fmt: SimpleDateFormat, userNames: Map<String, String>) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    actionLabel(entry.action),
+                    EnumLabels.labelForAction(entry.action),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.width(6.dp))
                 AssistChip(
                     onClick = {},
-                    label = { Text(typeLabel(entry.targetType)) },
+                    label = { Text(EnumLabels.labelForType(entry.targetType)) },
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -246,7 +246,11 @@ private fun summarizeJson(raw: String): String? = try {
     val o = org.json.JSONObject(raw)
     val parts = buildList {
         listOf("title", "name", "action", "status", "level", "type").forEach { k ->
-            if (o.has(k) && !o.isNull(k)) add("$k: ${o.getString(k)}")
+            if (o.has(k) && !o.isNull(k)) {
+                val field = EnumLabels.labelForField(k)
+                val value = EnumLabels.labelForValue(o.getString(k))
+                add("$field: $value")
+            }
         }
     }
     if (parts.isEmpty()) null else parts.joinToString(" · ")
@@ -255,30 +259,3 @@ private fun summarizeJson(raw: String): String? = try {
 private fun prettyPrintJson(raw: String): String = try {
     org.json.JSONObject(raw).toString(2)
 } catch (_: Exception) { raw }
-
-private val TYPE_OPTIONS: List<Pair<String, String>> = listOf(
-    "user" to "Пользователь",
-    "event" to "Событие",
-    "comment" to "Комментарий",
-    "task" to "Задача",
-    "progress" to "Прогресс",
-    "report" to "Отчёт",
-    "settings" to "Настройки",
-)
-
-private val ACTION_OPTIONS: List<Pair<String, String>> = listOf(
-    "create" to "Создано",
-    "update" to "Обновлено",
-    "delete" to "Удалено",
-    "approve" to "Одобрено",
-    "reject" to "Отклонено",
-    "hide" to "Скрыто",
-    "restore" to "Восстановлено",
-    "role_change" to "Смена роли",
-)
-
-private fun typeLabel(type: String): String =
-    TYPE_OPTIONS.firstOrNull { it.first == type }?.second ?: type
-
-private fun actionLabel(action: String): String =
-    ACTION_OPTIONS.firstOrNull { it.first == action }?.second ?: action

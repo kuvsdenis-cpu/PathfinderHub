@@ -49,6 +49,7 @@ fun DirectorHomeScreen(
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSabbathSchool: () -> Unit = {},
     onNavigateToSabbathSchoolSettings: () -> Unit = {},
+    onOpenClubInfo: (String) -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
@@ -156,7 +157,11 @@ fun DirectorHomeScreen(
                 }
 
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        onClick = { state.selectedClubId?.let(onOpenClubInfo) },
+                        enabled = state.selectedClubId != null,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Column(Modifier.padding(16.dp)) {
                             Text(
                                 "Активный клуб",
