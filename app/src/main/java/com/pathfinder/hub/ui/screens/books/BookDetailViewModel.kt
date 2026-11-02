@@ -123,6 +123,17 @@ class BookDetailViewModel @Inject constructor(
         }
     }
 
+    fun deleteBook(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                bookRepository.deleteById(bookId)
+                onSuccess()
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Ошибка удаления") }
+            }
+        }
+    }
+
     fun clearMessages() {
         _state.update { it.copy(error = null, success = null) }
     }

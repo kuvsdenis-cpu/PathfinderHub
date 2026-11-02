@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -217,6 +218,9 @@ private fun TaskCard(
                     }
                 }) {
                     Icon(Icons.Default.QrCode, "Показать QR", tint = PathfinderBlue)
+                }
+                IconButton(onClick = { vm.archiveTask(task.id) }) {
+                    Icon(Icons.Default.Archive, "В архив", tint = PathfinderBlue)
                 }
                 IconButton(onClick = {
                     scope.launch {

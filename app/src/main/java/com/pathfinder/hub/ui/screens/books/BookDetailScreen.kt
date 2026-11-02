@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,7 @@ fun BookDetailScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -59,6 +61,13 @@ fun BookDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    if (viewModel.canCreateTest) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Удалить книгу")
+                        }
                     }
                 }
             )
@@ -167,6 +176,23 @@ fun BookDetailScreen(
                     },
                     dismissButton = {
                         TextButton(onClick = { viewModel.closeReportDialog() }) { Text("Отмена") }
+                    }
+                )
+            }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Удалить книгу?") },
+                    text = { Text("Книга будет удалена. Это действие нельзя отменить.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDeleteDialog = false
+                            viewModel.deleteBook { onBack() }
+                        }) { Text("Удалить", color = MaterialTheme.colorScheme.error) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) { Text("Отмена") }
                     }
                 )
             }

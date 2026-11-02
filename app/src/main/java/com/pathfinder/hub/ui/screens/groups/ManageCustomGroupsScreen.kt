@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -171,6 +172,7 @@ fun ManageCustomGroupsContent(
                                 ActiveGroupCard(
                                     group = g,
                                     onClick = { if (state.canEdit) onOpenGroup(g.id) },
+                                    onArchive = { archiveConfirmId = g.id },
                                 )
                             } else {
                                 ArchivedGroupCard(
@@ -228,6 +230,7 @@ fun ManageCustomGroupsContent(
 private fun ActiveGroupCard(
     group: CustomGroupEntity,
     onClick: () -> Unit,
+    onArchive: () -> Unit,
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -251,6 +254,13 @@ private fun ActiveGroupCard(
                         maxLines = 2
                     )
                 }
+            }
+            IconButton(onClick = onArchive) {
+                Icon(
+                    Icons.Default.Archive,
+                    contentDescription = "В архив",
+                    tint = PathfinderBlue,
+                )
             }
         }
     }
