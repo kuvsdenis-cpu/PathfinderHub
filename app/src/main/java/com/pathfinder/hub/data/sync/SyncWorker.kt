@@ -241,6 +241,7 @@ class SyncWorker @AssistedInject constructor(
         pullUser(uid)
         val missingClubIds = pullClubs(uid)
         cleanupStaleClubIds(uid, missingClubIds)
+        pullClubMembers(uid)
         pullBibleBookmarks(uid)
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
@@ -523,6 +524,79 @@ class SyncWorker @AssistedInject constructor(
         is Long -> java.util.Date(v)
         is Number -> java.util.Date(v.toLong())
         else -> null
+    }
+
+    private suspend fun pullClubMembers(uid: String) {
+        val user = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullClubMembers: user failed " + e.message); return
+        } ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (clubIds.isEmpty()) return
+        val docsById = linkedMapOf<String, Map<String, Any?>>()
+        for (clubId in clubIds) {
+            val byClubId = try {
+                firestore.pullCollectionWhere("users", "clubId", clubId).getOrNull()
+            } catch (e: Exception) {
+                Log.w(TAG, "pullClubMembers by clubId=" + clubId + " failed " + e.message); null
+            }
+            byClubId?.forEach { doc -> (doc["id"] as? String)?.let { docsById[it] = doc } }
+            val byClubIds = try {
+                emptyList<Map<String, Any?>>()
+            } catch (e: Exception) {
+                Log.w(TAG, "pullClubMembers by clubIds=" + clubId + " failed " + e.message); null
+            }
+            byClubIds?.forEach { doc -> (doc["id"] as? String)?.let { docsById[it] = doc } }
+        }
+        var inserted = 0
+        for (doc in docsById.values) {
+            try {
+                val remoteId = doc["id"] as? String ?: continue
+                if (remoteId == uid) continue
+                val mapped = mapRemoteUserToEntity(remoteId, doc)
+                userRepository.upsertFromRemote(mapped)
+                inserted++
+            } catch (e: Exception) {
+                Log.w(TAG, "pullClubMembers skip: " + e.message)
+            }
+        }
+        Log.d(TAG, "pullClubMembers: clubs=" + clubIds + ", inserted=" + inserted + ", total=" + docsById.size)
+    }
+
+    private fun mapRemoteUserToEntity(id: String, d: Map<String, Any?>): com.pathfinder.hub.data.local.entity.core.UserEntity {
+        fun s(k: String, def: String = ""): String = (d[k] as? String) ?: def
+        fun b(k: String, def: Boolean = false): Boolean = (d[k] as? Boolean) ?: def
+        fun sl(k: String): List<String> = (d[k] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        return com.pathfinder.hub.data.local.entity.core.UserEntity(
+            id = id,
+            email = s("email").trim().lowercase(),
+            emailVerified = b("emailVerified"),
+            firstName = s("firstName"),
+            lastName = s("lastName"),
+            role = s("role", "teen"),
+            clubId = d["clubId"] as? String,
+            clubIds = sl("clubIds"),
+            isOwnerClub = b("isOwnerClub"),
+            directorPermissions = sl("directorPermissions"),
+            conferenceId = d["conferenceId"] as? String,
+            birthDate = parseDate(d["birthDate"]) ?: java.util.Date(),
+            avatar = d["avatar"] as? String,
+            parentEmail = d["parentEmail"] as? String,
+            parentalConsentStatus = s("parentalConsentStatus", "pending"),
+            parentalConsentRequestedAt = parseDate(d["parentalConsentRequestedAt"]),
+            parentalConsentApprovedAt = parseDate(d["parentalConsentApprovedAt"]),
+            accessLevel = s("accessLevel", "limited"),
+            status = s("status", "active"),
+            deletionRequestedBy = d["deletionRequestedBy"] as? String,
+            deletionRequestedAt = parseDate(d["deletionRequestedAt"]),
+            anonymizedAt = parseDate(d["anonymizedAt"]),
+            permanentDeletionAt = parseDate(d["permanentDeletionAt"]),
+            onboardingCompleted = b("onboardingCompleted"),
+            createdAt = parseDate(d["createdAt"]) ?: java.util.Date(),
+            lastLoginAt = parseDate(d["lastLoginAt"]),
+            syncedAt = parseDate(d["syncedAt"]),
+        )
     }
 
     private suspend fun pullBibleBookmarks(uid: String) {

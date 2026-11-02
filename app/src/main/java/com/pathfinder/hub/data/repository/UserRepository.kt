@@ -238,6 +238,14 @@ class UserRepository @Inject constructor(
         Log.d(TAG, "removeClubFromUser: $userId -= $clubId (total=${newList.size})")
     }
 
+    suspend fun upsertFromRemote(u: UserEntity) {
+        val normalized = u.copy(email = normalizeEmail(u.email))
+        db.withTransaction {
+            dao.upsert(normalized)
+            syncUserClubs(normalized)
+        }
+    }
+
     // ---------- Передача клуба ----------
 
     /**

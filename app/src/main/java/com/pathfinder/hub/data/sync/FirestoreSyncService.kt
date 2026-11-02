@@ -98,6 +98,40 @@ class FirestoreSyncService @Inject constructor(
         }
     }
 
+    suspend fun pullCollectionWhere(
+        collection: String,
+        field: String,
+        value: Any
+    ): Result<List<Map<String, Any?>>> {
+        return try {
+            val snapshot = firestore.collection(collection)
+                .whereEqualTo(field, value)
+                .get()
+                .await()
+            Result.success(snapshot.documents.mapNotNull { it.data })
+        } catch (e: Exception) {
+            Log.e(TAG, "Pull collection where FAIL: $collection.$field=$value", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun pullCollectionWhereArrayContains(
+        collection: String,
+        field: String,
+        value: Any
+    ): Result<List<Map<String, Any?>>> {
+        return try {
+            val snapshot = firestore.collection(collection)
+                .whereArrayContains(field, value)
+                .get()
+                .await()
+            Result.success(snapshot.documents.mapNotNull { it.data })
+        } catch (e: Exception) {
+            Log.e(TAG, "Pull collection whereArrayContains FAIL: $collection.$field=[$value]", e)
+            Result.failure(e)
+        }
+    }
+
     companion object {
         private const val TAG = "FirestoreSync"
     }
