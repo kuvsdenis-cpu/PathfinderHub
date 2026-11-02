@@ -1,0 +1,29 @@
+{
+  "name": "pathfinderhub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:rules": "firebase emulators:exec --only firestore \"jest test/ --runInBand\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuvsdenis-cpu/PathfinderHub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kuvsdenis-cpu/PathfinderHub/issues"
+  },
+  "homepage": "https://github.com/kuvsdenis-cpu/PathfinderHub#readme",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0",
+    "jest": "^30.5.2"
+  }
+}
