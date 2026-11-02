@@ -112,7 +112,9 @@ object Routes {
     const val EVENTS = "events"
     const val EVENT_DETAIL = "event_detail/{eventId}"
     const val EVENT_CONSENTS = "event_consents/{eventId}"
+    const val EDIT_EVENT = "edit_event/{eventId}"
     fun eventConsents(eventId: String) = "event_consents/$eventId"
+    fun editEvent(eventId: String) = "edit_event/$eventId"
     const val MY_TASKS = "my_tasks"
 
     // === Teen - Profile ===

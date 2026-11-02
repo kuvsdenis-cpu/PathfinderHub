@@ -10,6 +10,10 @@ import com.pathfinder.hub.data.local.dao.EventParticipantDao
 import com.pathfinder.hub.data.local.dao.EventConsentDao
 import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
 import com.pathfinder.hub.data.sync.SyncQueueManager
+import com.pathfinder.hub.data.repository.AuditRepository
+import com.pathfinder.hub.data.local.entity.audit.AuditLogEntity
+import com.google.gson.Gson
+import java.util.UUID
 import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -19,8 +23,11 @@ class EventRepository @Inject constructor(
     private val dao: EventDao,
     private val participantDao: EventParticipantDao,
     private val consentDao: EventConsentDao,
-    private val syncQueueManager: SyncQueueManager
+    private val syncQueueManager: SyncQueueManager,
+    private val auditRepo: AuditRepository
 ) {
+    private val gson = Gson()
+
     fun observeEvent(id: String): Flow<EventEntity?> = dao.observeEvent(id)
     suspend fun getEvent(id: String): EventEntity? = dao.getEvent(id)
 
@@ -71,6 +78,13 @@ class EventRepository @Inject constructor(
         db.withTransaction {
             dao.upsert(event)
             syncQueueManager.enqueue("event", event.id, "CREATE", event)
+            auditRepo.log(AuditLogEntity(
+                id = UUID.randomUUID().toString(), targetType = "event", targetId = event.id,
+                action = "create", userId = event.createdBy, userRole = "",
+                clubId = event.clubId, conferenceId = null, timestamp = Date(),
+                oldValue = null, newValue = gson.toJson(event), reason = null,
+                visibleToAuthor = true, ipHash = null, userAgent = null
+            ))
         }
     }
 
@@ -85,6 +99,13 @@ class EventRepository @Inject constructor(
         db.withTransaction {
             dao.update(event)
             syncQueueManager.enqueue("event", event.id, "UPDATE", event)
+            auditRepo.log(AuditLogEntity(
+                id = UUID.randomUUID().toString(), targetType = "event", targetId = event.id,
+                action = "update", userId = event.createdBy, userRole = "",
+                clubId = event.clubId, conferenceId = null, timestamp = Date(),
+                oldValue = null, newValue = gson.toJson(event), reason = null,
+                visibleToAuthor = true, ipHash = null, userAgent = null
+            ))
         }
     }
 
@@ -99,6 +120,13 @@ class EventRepository @Inject constructor(
         db.withTransaction {
             dao.delete(event)
             syncQueueManager.enqueue("event", event.id, "DELETE", event)
+            auditRepo.log(AuditLogEntity(
+                id = UUID.randomUUID().toString(), targetType = "event", targetId = event.id,
+                action = "delete", userId = event.createdBy, userRole = "",
+                clubId = event.clubId, conferenceId = null, timestamp = Date(),
+                oldValue = gson.toJson(event), newValue = null, reason = null,
+                visibleToAuthor = true, ipHash = null, userAgent = null
+            ))
         }
     }
 
@@ -146,7 +174,10 @@ class EventRepository @Inject constructor(
         db.withTransaction {
             dao.upsert(event)
             val now = Date(System.currentTimeMillis())
-            val participants = memberIds.map { uid ->
+            // Создатель всегда в участниках — иначе он не увидит своё событие
+            // (observeActiveInRangeForUser фильтрует по event_participants).
+            val allMemberIds = (memberIds + event.createdBy).distinct()
+            val participants = allMemberIds.map { uid ->
                 EventParticipantEntity(
                     id = "${event.id}:$uid",
                     eventId = event.id,
@@ -159,8 +190,38 @@ class EventRepository @Inject constructor(
             }
             participantDao.upsertAll(participants)
             syncQueueManager.enqueue("event", event.id, "CREATE", event)
-            participants.forEach {
-                syncQueueManager.enqueue("event_participant", it.id, "CREATE", it)
+            // B: enqueue participant-ов отдельно  clubId нет в entity, передаём map
+            participants.forEach { p ->
+                syncQueueManager.enqueue(
+                    "event_participant", p.id, "CREATE",
+                    mapOf(
+                        "id" to p.id,
+                        "eventId" to p.eventId,
+                        "userId" to p.userId,
+                        "status" to p.status,
+                        "invitedAt" to p.invitedAt.time,
+                        "respondedAt" to p.respondedAt?.time,
+                        "attendedAt" to p.attendedAt?.time,
+                        "clubId" to event.clubId,
+                        "pendingSync" to false,
+                    )
+                )
+            }
+            auditRepo.log(AuditLogEntity(
+                id = UUID.randomUUID().toString(), targetType = "event", targetId = event.id,
+                action = "create", userId = event.createdBy, userRole = "",
+                clubId = event.clubId, conferenceId = null, timestamp = Date(),
+                oldValue = null, newValue = gson.toJson(event), reason = null,
+                visibleToAuthor = true, ipHash = null, userAgent = null
+            ))
+            memberIds.forEach { uid ->
+                auditRepo.log(AuditLogEntity(
+                    id = UUID.randomUUID().toString(), targetType = "event_participant",
+                    targetId = "${event.id}:$uid", action = "invite", userId = uid, userRole = "",
+                    clubId = event.clubId, conferenceId = null, timestamp = Date(),
+                    oldValue = null, newValue = null, reason = null,
+                    visibleToAuthor = true, ipHash = null, userAgent = null
+                ))
             }
         }
     }
@@ -191,8 +252,25 @@ class EventRepository @Inject constructor(
             } else {
                 participantDao.updateStatus(eventId, userId, status, respondedAt, attendedAt)
             }
-            participantDao.getParticipant(eventId, userId)?.let {
-                syncQueueManager.enqueue("event_participant", it.id, "UPDATE", it)
+            // B: enqueue UPDATE participant
+            val ev = dao.getEvent(eventId)
+            participantDao.getParticipant(eventId, userId)?.let { p ->
+                if (ev != null && !ev.clubId.isNullOrBlank()) {
+                    syncQueueManager.enqueue(
+                        "event_participant", p.id, "UPDATE",
+                        mapOf(
+                            "id" to p.id,
+                            "eventId" to p.eventId,
+                            "userId" to p.userId,
+                            "status" to p.status,
+                            "invitedAt" to p.invitedAt.time,
+                            "respondedAt" to p.respondedAt?.time,
+                            "attendedAt" to p.attendedAt?.time,
+                            "clubId" to ev.clubId,
+                            "pendingSync" to false,
+                        )
+                    )
+                }
             }
         }
     }
@@ -202,9 +280,6 @@ class EventRepository @Inject constructor(
     ) {
         db.withTransaction {
             participantDao.updateQuestions(eventId, userId, questions)
-            participantDao.getParticipant(eventId, userId)?.let {
-                syncQueueManager.enqueue("event_participant", it.id, "UPDATE", it)
-            }
         }
     }
 }

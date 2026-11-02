@@ -512,6 +512,12 @@ fun PathfinderNavHost(
         composable(Routes.CREATE_EVENT) {
             CreateEventScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
         }
+        composable(
+            route = Routes.EDIT_EVENT,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) {
+            CreateEventScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
+        }
         composable(Routes.CLUB_SETTINGS) { ClubSettingsScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.CREATE_TASK) {
             CreateTaskScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
@@ -1108,6 +1114,9 @@ fun PathfinderNavHost(
                 },
                 onOpenTest = { testId ->
                     navController.navigate(Routes.test(testId))
+                },
+                onEdit = { eventId ->
+                    navController.navigate(Routes.editEvent(eventId))
                 }
             )
         }

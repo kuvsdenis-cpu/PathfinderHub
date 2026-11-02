@@ -301,6 +301,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun requirementMaterialDao(): RequirementMaterialDao
     abstract fun requirementTaskDao(): RequirementTaskDao
     abstract fun requirementTaskAnswerDao(): RequirementTaskAnswerDao
+    abstract fun requirementDao(): RequirementDao
 
     // Gamification
     abstract fun achievementDao(): AchievementDao

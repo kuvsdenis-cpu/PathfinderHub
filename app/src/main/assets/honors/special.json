@@ -1,0 +1,1045 @@
+[
+  {
+    "id": "honor_master_001",
+    "name": "Мастер-водник",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/0/04/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B2%D0%BE%D0%B4%D0%BD%D0%B8%D0%BA.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B2%D0%BE%D0%B4%D0%BD%D0%B8%D0%BA.png",
+    "img": "https://wiki.sledopit.club/images/thumb/d/dd/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B2%D0%BE%D0%B4%D0%BD%D0%B8%D0%BA_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B2%D0%BE%D0%B4%D0%BD%D0%B8%D0%BA_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B2%D0%BE%D0%B4%D0%BD%D0%B8%D0%BA",
+    "requirements": [
+      {
+        "id": "honor_master_001_req_01",
+        "honorId": "honor_master_001",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_001_req_02",
+        "honorId": "honor_master_001",
+        "text": "• Гребля на каноэ;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_001_req_03",
+        "honorId": "honor_master_001",
+        "text": "• Пловец;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_001_req_04",
+        "honorId": "honor_master_001",
+        "text": "• Навигация;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_001_req_05",
+        "honorId": "honor_master_001",
+        "text": "• Езда на моторной лодке;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_001_req_06",
+        "honorId": "honor_master_001",
+        "text": "• Гребля;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_001_req_07",
+        "honorId": "honor_master_001",
+        "text": "• Управление парусным судном;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_001_req_08",
+        "honorId": "honor_master_001",
+        "text": "• Дайвинг и/или Дайвинг (повышенной сложности);",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_001_req_09",
+        "honorId": "honor_master_001",
+        "text": "• Плавание с трубкой и маской;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_001_req_10",
+        "honorId": "honor_master_001",
+        "text": "• Прыжки в воду;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_001_req_11",
+        "honorId": "honor_master_001",
+        "text": "• Отличный пловец и/или Отличный пловец (повышенной сложности);",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_001_req_12",
+        "honorId": "honor_master_001",
+        "text": "• Спасработы на воде;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_001_req_13",
+        "honorId": "honor_master_001",
+        "text": "• Водные лыжи;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_master_001_req_14",
+        "honorId": "honor_master_001",
+        "text": "• Виндсерфинг.",
+        "type": "theory",
+        "order": 14
+      }
+    ]
+  },
+  {
+    "id": "honor_master_002",
+    "name": "Мастер искусств и ремесел",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/1/1c/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B8%D1%81%D0%BA%D1%83%D1%81%D1%81%D1%82%D0%B2_%D0%B8_%D1%80%D0%B5%D0%BC%D0%B5%D1%81%D0%B5%D0%BB.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B8%D1%81%D0%BA%D1%83%D1%81%D1%81%D1%82%D0%B2_%D0%B8_%D1%80%D0%B5%D0%BC%D0%B5%D1%81%D0%B5%D0%BB.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/f0/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B8%D1%81%D0%BA%D1%83%D1%81%D1%81%D1%82%D0%B2_%D0%B8_%D1%80%D0%B5%D0%BC%D0%B5%D1%81%D0%B5%D0%BB_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B8%D1%81%D0%BA%D1%83%D1%81%D1%81%D1%82%D0%B2_%D0%B8_%D1%80%D0%B5%D0%BC%D0%B5%D1%81%D0%B5%D0%BB_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B8%D1%81%D0%BA%D1%83%D1%81%D1%81%D1%82%D0%B2_%D0%B8_%D1%80%D0%B5%D0%BC%D0%B5%D1%81%D0%B5%D0%BB",
+    "requirements": [
+      {
+        "id": "honor_master_002_req_01",
+        "honorId": "honor_master_002",
+        "text": "Заработайте семь нашивок из специализации «Искусство и ремесла».",
+        "type": "theory",
+        "order": 1
+      }
+    ]
+  },
+  {
+    "id": "honor_master_003",
+    "name": "Мастер-эколог",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/e/e0/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%8D%D0%BA%D0%BE%D0%BB%D0%BE%D0%B3.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%8D%D0%BA%D0%BE%D0%BB%D0%BE%D0%B3.png",
+    "img": "https://wiki.sledopit.club/images/thumb/9/9c/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%8D%D0%BA%D0%BE%D0%BB%D0%BE%D0%B3_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%8D%D0%BA%D0%BE%D0%BB%D0%BE%D0%B3_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%8D%D0%BA%D0%BE%D0%BB%D0%BE%D0%B3",
+    "requirements": [
+      {
+        "id": "honor_master_003_req_01",
+        "honorId": "honor_master_003",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_003_req_02",
+        "honorId": "honor_master_003",
+        "text": "• Экология;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_003_req_03",
+        "honorId": "honor_master_003",
+        "text": "• Охрана окружающей среды;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_003_req_04",
+        "honorId": "honor_master_003",
+        "text": "• Ископаемые;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_003_req_05",
+        "honorId": "honor_master_003",
+        "text": "• Геология;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_003_req_06",
+        "honorId": "honor_master_003",
+        "text": "• Камни и минералы и/или Камни и минералы (повышенной сложности);",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_003_req_07",
+        "honorId": "honor_master_003",
+        "text": "• Песок.",
+        "type": "theory",
+        "order": 7
+      }
+    ]
+  },
+  {
+    "id": "honor_master_004",
+    "name": "Мастер сельского хозяйства",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/0/03/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B0.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/fa/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_master_004_req_01",
+        "honorId": "honor_master_004",
+        "text": "Заработайте семь нашивок из специализации «Сельскохозяйственные навыки».",
+        "type": "theory",
+        "order": 1
+      }
+    ]
+  },
+  {
+    "id": "honor_master_005",
+    "name": "Мастер здоровья",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/e/ed/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D1%8F.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/2a/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D1%8F_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D1%8F_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_master_005_req_01",
+        "honorId": "honor_master_005",
+        "text": "Заработайте любые семь нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_005_req_02",
+        "honorId": "honor_master_005",
+        "text": "• Основы спасательных работ;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_005_req_03",
+        "honorId": "honor_master_005",
+        "text": "• Кровь и защитные силы организма;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_005_req_04",
+        "honorId": "honor_master_005",
+        "text": "• Опорно-двигательная система;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_005_req_05",
+        "honorId": "honor_master_005",
+        "text": "• Мозг и поведение;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_005_req_06",
+        "honorId": "honor_master_005",
+        "text": "• Сердечно-легочная реанимация (СЛР);",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_005_req_07",
+        "honorId": "honor_master_005",
+        "text": "• Химия;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_005_req_08",
+        "honorId": "honor_master_005",
+        "text": "• Уход за ребенком;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_005_req_09",
+        "honorId": "honor_master_005",
+        "text": "• Пищеварение;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_005_req_10",
+        "honorId": "honor_master_005",
+        "text": "• Первая медицинская помощь (базовый уровень);",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_005_req_11",
+        "honorId": "honor_master_005",
+        "text": "• Первая медицинская помощь и/или Первая медицинская помощь (повышенной сложности);",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_005_req_12",
+        "honorId": "honor_master_005",
+        "text": "• Здоровье и исцеление;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_005_req_13",
+        "honorId": "honor_master_005",
+        "text": "• Сердце и кровообращение;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_master_005_req_14",
+        "honorId": "honor_master_005",
+        "text": "• Наследственность;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_master_005_req_15",
+        "honorId": "honor_master_005",
+        "text": "• Уход на дому;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_master_005_req_16",
+        "honorId": "honor_master_005",
+        "text": "• Оптика;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_master_005_req_17",
+        "honorId": "honor_master_005",
+        "text": "• Физика;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_master_005_req_18",
+        "honorId": "honor_master_005",
+        "text": "• Основы безопасности жизнедеятельности.",
+        "type": "theory",
+        "order": 18
+      }
+    ]
+  },
+  {
+    "id": "honor_master_006",
+    "name": "Мастер домоводства",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/2/27/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B4%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B0.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B4%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/4/43/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B4%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B4%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B4%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_master_006_req_01",
+        "honorId": "honor_master_006",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_006_req_02",
+        "honorId": "honor_master_006",
+        "text": "• Выпечка;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_006_req_03",
+        "honorId": "honor_master_006",
+        "text": "• Приготовление пищи и/или Приготовление пищи (повышенной сложности);",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_006_req_04",
+        "honorId": "honor_master_006",
+        "text": "• Пошив одежды;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_006_req_05",
+        "honorId": "honor_master_006",
+        "text": "• Консервирование;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_006_req_06",
+        "honorId": "honor_master_006",
+        "text": "• Замораживание продуктов;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_006_req_07",
+        "honorId": "honor_master_006",
+        "text": "• Домохозяйство;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_006_req_08",
+        "honorId": "honor_master_006",
+        "text": "• Стирка и глажка одежды;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_006_req_09",
+        "honorId": "honor_master_006",
+        "text": "• Здоровое питание;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_006_req_10",
+        "honorId": "honor_master_006",
+        "text": "• Пошив одежды.",
+        "type": "theory",
+        "order": 10
+      }
+    ]
+  },
+  {
+    "id": "honor_master_007",
+    "name": "Мастер-натуралист",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/9/99/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%BD%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D0%B8%D1%81%D1%82.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%BD%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D0%B8%D1%81%D1%82.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c7/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%BD%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D0%B8%D1%81%D1%82_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%BD%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D0%B8%D1%81%D1%82_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%BD%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D0%B8%D1%81%D1%82",
+    "requirements": [
+      {
+        "id": "honor_master_007_req_01",
+        "honorId": "honor_master_007",
+        "text": "Заработайте шесть из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_007_req_02",
+        "honorId": "honor_master_007",
+        "text": "• Земноводные;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_007_req_03",
+        "honorId": "honor_master_007",
+        "text": "• Птицы и / или Птицы (повышенной сложности);",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_007_req_04",
+        "honorId": "honor_master_007",
+        "text": "• Папоротники;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_007_req_05",
+        "honorId": "honor_master_007",
+        "text": "• Грибы;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_007_req_06",
+        "honorId": "honor_master_007",
+        "text": "• Насекомые;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_007_req_07",
+        "honorId": "honor_master_007",
+        "text": "• Млекопитающие;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_007_req_08",
+        "honorId": "honor_master_007",
+        "text": "• Мотыльки и бабочки;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_007_req_09",
+        "honorId": "honor_master_007",
+        "text": "• Кустарники;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_007_req_10",
+        "honorId": "honor_master_007",
+        "text": "• Звезды;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_007_req_11",
+        "honorId": "honor_master_007",
+        "text": "• Деревья;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_007_req_12",
+        "honorId": "honor_master_007",
+        "text": "• Погода;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_007_req_13",
+        "honorId": "honor_master_007",
+        "text": "И одну из следующих нашивок:",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_master_007_req_14",
+        "honorId": "honor_master_007",
+        "text": "• Комнатные птицы;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_master_007_req_15",
+        "honorId": "honor_master_007",
+        "text": "• Кошки;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_master_007_req_16",
+        "honorId": "honor_master_007",
+        "text": "• Собаки;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_master_007_req_17",
+        "honorId": "honor_master_007",
+        "text": "• Рыбы;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_master_007_req_18",
+        "honorId": "honor_master_007",
+        "text": "• Домашняя птица;",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_master_007_req_19",
+        "honorId": "honor_master_007",
+        "text": "• Маленькие млекопитающие домашние любимцы.",
+        "type": "theory",
+        "order": 19
+      }
+    ]
+  },
+  {
+    "id": "honor_master_008",
+    "name": "Мастер отдыха и досуга",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/a/ab/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0_%D0%B8_%D0%B4%D0%BE%D1%81%D1%83%D0%B3%D0%B0.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0_%D0%B8_%D0%B4%D0%BE%D1%81%D1%83%D0%B3%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c6/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0_%D0%B8_%D0%B4%D0%BE%D1%81%D1%83%D0%B3%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0_%D0%B8_%D0%B4%D0%BE%D1%81%D1%83%D0%B3%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0_%D0%B8_%D0%B4%D0%BE%D1%81%D1%83%D0%B3%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_master_008_req_01",
+        "honorId": "honor_master_008",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_008_req_02",
+        "honorId": "honor_master_008",
+        "text": "• Пеший туризм;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_008_req_03",
+        "honorId": "honor_master_008",
+        "text": "• Баскетбол;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_008_req_04",
+        "honorId": "honor_master_008",
+        "text": "• Езда на велосипеде;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_008_req_05",
+        "honorId": "honor_master_008",
+        "text": "• Строевая подготовка и маршировка;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_008_req_06",
+        "honorId": "honor_master_008",
+        "text": "• Походы;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_008_req_07",
+        "honorId": "honor_master_008",
+        "text": "• Узлы;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_008_req_08",
+        "honorId": "honor_master_008",
+        "text": "• Ориентирование;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_008_req_09",
+        "honorId": "honor_master_008",
+        "text": "• Инструктор отдыха на природе;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_008_req_10",
+        "honorId": "honor_master_008",
+        "text": "• Физическая культура;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_008_req_11",
+        "honorId": "honor_master_008",
+        "text": "• Софтбол «медленная подача»;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_008_req_12",
+        "honorId": "honor_master_008",
+        "text": "• Футбол;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_008_req_13",
+        "honorId": "honor_master_008",
+        "text": "• Легкая атлетика;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_master_008_req_14",
+        "honorId": "honor_master_008",
+        "text": "• Акробатика.",
+        "type": "theory",
+        "order": 14
+      }
+    ]
+  },
+  {
+    "id": "honor_master_009",
+    "name": "Мастер-спортсмен",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/6/62/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%81%D0%BF%D0%BE%D1%80%D1%82%D1%81%D0%BC%D0%B5%D0%BD.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%81%D0%BF%D0%BE%D1%80%D1%82%D1%81%D0%BC%D0%B5%D0%BD.png",
+    "img": "https://wiki.sledopit.club/images/thumb/9/92/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%81%D0%BF%D0%BE%D1%80%D1%82%D1%81%D0%BC%D0%B5%D0%BD_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%81%D0%BF%D0%BE%D1%80%D1%82%D1%81%D0%BC%D0%B5%D0%BD_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%81%D0%BF%D0%BE%D1%80%D1%82%D1%81%D0%BC%D0%B5%D0%BD",
+    "requirements": [
+      {
+        "id": "honor_master_009_req_01",
+        "honorId": "honor_master_009",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_009_req_02",
+        "honorId": "honor_master_009",
+        "text": "• Стрельба из лука;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_009_req_03",
+        "honorId": "honor_master_009",
+        "text": "• Баскетбол;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_009_req_04",
+        "honorId": "honor_master_009",
+        "text": "• Спелеология;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_009_req_05",
+        "honorId": "honor_master_009",
+        "text": "• Ходьба на лыжах;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_009_req_06",
+        "honorId": "honor_master_009",
+        "text": "• Езда на велосипеде;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_009_req_07",
+        "honorId": "honor_master_009",
+        "text": "• Горные лыжи;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_009_req_08",
+        "honorId": "honor_master_009",
+        "text": "• Искусство верховой езды;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_009_req_09",
+        "honorId": "honor_master_009",
+        "text": "• Физическая культура;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_009_req_10",
+        "honorId": "honor_master_009",
+        "text": "• Скалолазание;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_009_req_11",
+        "honorId": "honor_master_009",
+        "text": "• Футбол;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_009_req_12",
+        "honorId": "honor_master_009",
+        "text": "• Легкая атлетика;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_009_req_13",
+        "honorId": "honor_master_009",
+        "text": "• Акробатика.",
+        "type": "theory",
+        "order": 13
+      }
+    ]
+  },
+  {
+    "id": "honor_master_010",
+    "name": "Мастер-техник",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/4/4c/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D0%BA.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D0%BA.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/24/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D0%BA_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D0%BA_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D0%BA",
+    "requirements": [
+      {
+        "id": "honor_master_010_req_01",
+        "honorId": "honor_master_010",
+        "text": "Заработайте любые семь нашивок из специализации «Профессиональные навыки».",
+        "type": "theory",
+        "order": 1
+      }
+    ]
+  },
+  {
+    "id": "honor_master_011",
+    "name": "Мастер выживания в дикой местности",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/0/08/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B2%D1%8B%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_%D0%B2_%D0%B4%D0%B8%D0%BA%D0%BE%D0%B9_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B2%D1%8B%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_%D0%B2_%D0%B4%D0%B8%D0%BA%D0%BE%D0%B9_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8.png",
+    "img": "https://wiki.sledopit.club/images/thumb/1/1c/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B2%D1%8B%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_%D0%B2_%D0%B4%D0%B8%D0%BA%D0%BE%D0%B9_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B2%D1%8B%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_%D0%B2_%D0%B4%D0%B8%D0%BA%D0%BE%D0%B9_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80_%D0%B2%D1%8B%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_%D0%B2_%D0%B4%D0%B8%D0%BA%D0%BE%D0%B9_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8",
+    "requirements": [
+      {
+        "id": "honor_master_011_req_01",
+        "honorId": "honor_master_011",
+        "text": "Заработайте семь из перечисленных ниже нашивок:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_master_011_req_02",
+        "honorId": "honor_master_011",
+        "text": "• Пеший туризм;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_master_011_req_03",
+        "honorId": "honor_master_011",
+        "text": "• Лагерное ремесло;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_master_011_req_04",
+        "honorId": "honor_master_011",
+        "text": "• Лагерные умения IV;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_master_011_req_05",
+        "honorId": "honor_master_011",
+        "text": "• Съедобные дикорастущие растения;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_master_011_req_06",
+        "honorId": "honor_master_011",
+        "text": "• Приготовление пищи на костре;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_master_011_req_07",
+        "honorId": "honor_master_011",
+        "text": "• Походы;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_master_011_req_08",
+        "honorId": "honor_master_011",
+        "text": "• Узлы;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_master_011_req_09",
+        "honorId": "honor_master_011",
+        "text": "• Ориентирование;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_master_011_req_10",
+        "honorId": "honor_master_011",
+        "text": "• Инструктор отдыха на природе;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_master_011_req_11",
+        "honorId": "honor_master_011",
+        "text": "• Первопроходцы;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_master_011_req_12",
+        "honorId": "honor_master_011",
+        "text": "• Инструктор по выживанию в дикой местности;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_master_011_req_13",
+        "honorId": "honor_master_011",
+        "text": "• Жизнь среди дикой природы;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_master_011_req_14",
+        "honorId": "honor_master_011",
+        "text": "• Зимний лагерь.",
+        "type": "theory",
+        "order": 14
+      }
+    ]
+  },
+  {
+    "id": "honor_master_012",
+    "name": "Мастер-евангелист",
+    "categoryId": "master",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/9/9e/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B5%D0%B2%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D0%B8%D1%81%D1%82.png/200px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B5%D0%B2%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D0%B8%D1%81%D1%82.png",
+    "img": "https://wiki.sledopit.club/images/thumb/3/37/%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B5%D0%B2%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D0%B8%D1%81%D1%82_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B5%D0%B2%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D0%B8%D1%81%D1%82_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%B0%D1%81%D1%82%D0%B5%D1%80-%D0%B5%D0%B2%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D0%B8%D1%81%D1%82",
+    "requirements": [
+      {
+        "id": "honor_master_012_req_01",
+        "honorId": "honor_master_012",
+        "text": "Заработайте семь нашивок из специализации «Служение окружающим».",
+        "type": "theory",
+        "order": 1
+      }
+    ]
+  }
+]

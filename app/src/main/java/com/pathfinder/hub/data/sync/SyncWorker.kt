@@ -14,6 +14,7 @@ import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
 import com.pathfinder.hub.data.local.dao.RequirementMaterialDao
 import com.pathfinder.hub.data.local.dao.RequirementTaskDao
 import com.pathfinder.hub.data.local.dao.RequirementTaskAnswerDao
+import com.pathfinder.hub.data.local.dao.RequirementDao
 import com.pathfinder.hub.data.local.entity.learning.RequirementMaterialEntity
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskEntity
 import com.pathfinder.hub.data.local.entity.learning.RequirementTaskAnswerEntity
@@ -33,6 +34,9 @@ import com.pathfinder.hub.data.repository.BookRepository
 import com.pathfinder.hub.data.repository.RequirementContentRepository
 import com.pathfinder.hub.data.repository.TaskAnswerRepository
 import com.pathfinder.hub.data.repository.UserRepository
+import com.pathfinder.hub.data.repository.EventRepository
+import com.pathfinder.hub.data.local.dao.EventParticipantDao
+import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.repository.ClubRepository
 import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import kotlinx.coroutines.flow.first
@@ -60,6 +64,7 @@ class SyncWorker @AssistedInject constructor(
     private val materialDao: RequirementMaterialDao,
     private val taskDao: RequirementTaskDao,
     private val answerDao: RequirementTaskAnswerDao,
+    private val requirementDao: RequirementDao,
     private val contentDataSource: FirestoreRequirementContentDataSource,
     private val answerDataSource: FirestoreTaskAnswerDataSource,
     private val qrDataSource: FirestoreQrDataSource,
@@ -79,6 +84,8 @@ class SyncWorker @AssistedInject constructor(
     private val exclusionDao: com.pathfinder.hub.data.local.dao.CustomGroupExclusionDao,
     private val infoArticleDao: com.pathfinder.hub.data.local.dao.InfoArticleDao,
     private val infoDataSource: com.pathfinder.hub.data.remote.FirestoreInfoDataSource,
+    private val eventRepository: EventRepository,
+    private val participantDao: EventParticipantDao,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -179,26 +186,74 @@ class SyncWorker @AssistedInject constructor(
         return Result.success()
     }
 
+
+    /**
+     * Клиентская очистка stale clubIds (v13, задача D+F).
+     *
+     * Удаляет из user.clubIds клубы:
+     *   - которых нет в Firestore (missingIds из pullClubs);
+     *   - у которых в Room deletedAt != null.
+     *
+     * Использует UserRepository.removeClubFromUser — он пересчитывает
+     * активный clubId и синкает user_clubs. Cloud Function не нужна
+     * (Blaze недоступен).
+     */
+    private suspend fun cleanupStaleClubIds(uid: String, missingIds: Set<String>) {
+        val local = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "cleanupStaleClubIds: user failed ${e.message}"); return
+        } ?: return
+
+        val allIds = (local.clubIds + listOfNotNull(local.clubId)).distinct()
+        if (allIds.isEmpty()) return
+
+        // Мёртвые из Room (deletedAt != null)
+        val deadFromRoom = try {
+            clubRepository.getClubs(allIds)
+                .filter { it.deletedAt != null }
+                .map { it.id }
+                .toSet()
+        } catch (e: Exception) {
+            Log.w(TAG, "cleanupStaleClubIds: getClubs failed ${e.message}")
+            emptySet()
+        }
+
+        // Объединяем с missing из Firestore, но только те, что реально есть у юзера
+        val dead = (deadFromRoom + missingIds).intersect(allIds.toSet())
+        if (dead.isEmpty()) {
+            Log.d(TAG, "cleanupStaleClubIds: мёртвых нет")
+            return
+        }
+
+        Log.d(TAG, "cleanupStaleClubIds: удаляем $dead (из $allIds)")
+        for (clubId in dead) {
+            try {
+                userRepository.removeClubFromUser(uid, clubId)
+            } catch (e: Exception) {
+                Log.w(TAG, "cleanupStaleClubIds: remove $clubId failed ${e.message}")
+            }
+        }
+    }
+
     private suspend fun pullUserData() {
         val uid = syncQueue.getCurrentUserId() ?: return
         pullUser(uid)
-        pullClubs(uid)
+        val missingClubIds = pullClubs(uid)
+        cleanupStaleClubIds(uid, missingClubIds)
         pullBibleBookmarks(uid)
         pullPearlProgress(uid)
         pullReadingPlanProgress(uid)
         pullClubBooks(uid)
-        // v10.1 (вариант B): pullRequirements отключён.
-        // list clubs/{clubId}/requirements запрещён rules (нет allow read
-        // на /requirements/{reqId} — только на подколлекции materials/tasks),
-        // поэтому pull стабильно падал с PERMISSION_DENIED.
-        // Материалы и задания тянутся в RequirementContentViewModel.load().
-        // Включить в v11, когда появится RequirementDao (список reqId из Room).
-        // pullRequirements(uid)
+        // v13 (задача E): pullRequirements включён.
+        // requirementId берётся из Room (RequirementDao), не из Firestore list.
+        pullRequirements(uid)
         pullRequirementTaskAnswers(uid)
         pullDigitalUniform(uid)
         pullCustomGroups(uid)
         pullCustomGroupExclusions(uid)
         pullInfoArticles()
+        pullParticipants(uid)
     }
 
     private suspend fun pullClubBooks(uid: String) {
@@ -251,6 +306,9 @@ class SyncWorker @AssistedInject constructor(
      * Включить в v11 вместе с RequirementDao.
      */
     private suspend fun pullRequirements(uid: String) {
+        // v13 (задача E): берём requirementId из ЛОКАЛЬНОЙ Room
+        // (level_requirements — сидовые данные), а не list
+        // clubs/{clubId}/requirements (падает с PERMISSION_DENIED).
         val user = try {
             userRepository.getUserLocalOnly(uid)
         } catch (e: Exception) {
@@ -259,23 +317,34 @@ class SyncWorker @AssistedInject constructor(
         val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
         if (clubIds.isEmpty()) return
 
+        val requirementIds = try {
+            requirementDao.getAllRequirementIds()
+        } catch (e: Exception) {
+            Log.w(TAG, "pullRequirements: requirementDao failed ${e.message}"); return
+        }
+        if (requirementIds.isEmpty()) {
+            Log.d(TAG, "pullRequirements: level_requirements пуст, skip")
+            return
+        }
+
         for (clubId in clubIds) {
-            try {
-                val reqDocs = firestore
-                    .pullCollectionWithIds("clubs/$clubId/requirements")
-                    .getOrNull() ?: continue
-                for ((reqId, _) in reqDocs) {
-                    try {
-                        contentRepo.pullMaterials(clubId, reqId)
-                        contentRepo.pullTasks(clubId, reqId)
-                    } catch (e: Exception) {
-                        Log.w(TAG, "pullRequirements skip $clubId/$reqId: ${e.message}")
-                    }
-                }
-                Log.d(TAG, "pullRequirements: $clubId -> ${reqDocs.size} req(s)")
-            } catch (e: Exception) {
-                Log.w(TAG, "pullRequirements skip club $clubId: ${e.message}")
+            // v10.1: пропускаем удалённые клубы
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) {
+                Log.d(TAG, "pullRequirements: skip deleted $clubId")
+                continue
             }
+            var ok = 0
+            for (reqId in requirementIds) {
+                try {
+                    contentRepo.pullMaterials(clubId, reqId)
+                    contentRepo.pullTasks(clubId, reqId)
+                    ok++
+                } catch (e: Exception) {
+                    Log.w(TAG, "pullRequirements skip $clubId/$reqId: ${e.message}")
+                }
+            }
+            Log.d(TAG, "pullRequirements: $clubId -> $ok/${requirementIds.size} req(s)")
         }
     }
 
@@ -366,12 +435,13 @@ class SyncWorker @AssistedInject constructor(
      * Берёт clubIds из user (после pullUser), для каждого делает
      * pullDocument("clubs", clubId), маппит в ClubEntity и upsert.
      */
-    private suspend fun pullClubs(uid: String) {
-        val user = userRepository.getUserLocalOnly(uid) ?: return
+    private suspend fun pullClubs(uid: String): Set<String> {
+        val missing = mutableSetOf<String>()
+        val user = userRepository.getUserLocalOnly(uid) ?: return missing
         val ids = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
         if (ids.isEmpty()) {
             Log.d(TAG, "pullClubs: у $uid нет клубов")
-            return
+            return missing
         }
         for (clubId in ids) {
             try {
@@ -379,6 +449,7 @@ class SyncWorker @AssistedInject constructor(
                 val r = firestore.pullDocument("clubs", clubId)
                 val doc = r.getOrNull() ?: run {
                     Log.d(TAG, "pullClubs: clubs/$clubId не найден в Firestore")
+                    missing.add(clubId)
                     continue
                 }
                 // Не перезаписываем, если локально свежее (по updatedAt)
@@ -394,6 +465,7 @@ class SyncWorker @AssistedInject constructor(
                 Log.w(TAG, "pullClubs skip $clubId: ${e.message}")
             }
         }
+        return missing
     }
 
     private fun mapToClubEntity(id: String, d: Map<String, Any?>): ClubEntity {
@@ -895,6 +967,121 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+    // ==================== EVENT PARTICIPANTS (B) ====================
+
+    /**
+     * Отправка участника события в Firestore.
+     *
+     * Особенность: clubId в EventParticipantEntity нет, поэтому payload
+     * сериализуется как map (clubId + поля участника). userId используется
+     * как documentId: clubs/{clubId}/events/{eventId}/participants/{userId}.
+     */
+    private suspend fun processEventParticipant(item: SyncQueueItemEntity): ProcessResult {
+        @Suppress("UNCHECKED_CAST")
+        val map = try {
+            gson.fromJson(item.payload, Map::class.java) as? Map<String, Any?>
+        } catch (e: Exception) {
+            Log.e(TAG, "event_participant deserialize failed", e); return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+
+        val eventId = map["eventId"] as? String
+        val userId = map["userId"] as? String
+        val clubId = map["clubId"] as? String
+        if (eventId.isNullOrBlank() || userId.isNullOrBlank() || clubId.isNullOrBlank()) {
+            Log.w(TAG, "event_participant: пустые eventId/userId/clubId  skip")
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        val collection = "clubs/$clubId/events/$eventId/participants"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "eventId" to eventId,
+                    "userId" to userId,
+                    "status" to (map["status"] as? String ?: "invited"),
+                    "invitedAt" to map["invitedAt"],
+                    "respondedAt" to map["respondedAt"],
+                    "attendedAt" to map["attendedAt"],
+                    "questions" to (map["questions"] ?: emptyList<String>()),
+                )
+                val r = firestore.pushDocument(collection, userId, payload)
+                if (r.isSuccess) {
+                    try {
+                        participantDao.getParticipant(eventId, userId)?.let {
+                            participantDao.upsert(it.copy(pendingSync = false))
+                        }
+                    } catch (_: Exception) {}
+                    ProcessResult.SUCCESS
+                } else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, userId)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    /**
+     * Тянет участников последних событий (год назад  год вперёд).
+     * Merge по (eventId, userId): LWW по status, локальные pendingSync не сбрасываем.
+     */
+    private suspend fun pullParticipants(uid: String) {
+        val user = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullParticipants: user failed ${e.message}"); return
+        } ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (clubIds.isEmpty()) return
+
+        val now = System.currentTimeMillis()
+        val from = now - 365L * 24 * 3600 * 1000
+        val to = now + 365L * 24 * 3600 * 1000
+
+        for (clubId in clubIds) {
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) continue
+            val events = try {
+                eventRepository.getPublishedInPeriod(clubId, from, to)
+            } catch (e: Exception) {
+                Log.w(TAG, "pullParticipants: events failed $clubId: ${e.message}"); continue
+            }
+            for (e in events) {
+                try {
+                    val docs = firestore
+                        .pullCollection("clubs/$clubId/events/${e.id}/participants")
+                        .getOrNull() ?: continue
+                    for (doc in docs) {
+                        val pUserId = doc["userId"] as? String ?: continue
+                        val status = doc["status"] as? String ?: continue
+                        val local = participantDao.getParticipant(e.id, pUserId)
+                        if (local != null && local.pendingSync) continue
+                        if (local != null && local.status == status) continue
+                        if (local == null) {
+                            participantDao.upsert(
+                                EventParticipantEntity(
+                                    id = "${e.id}:$pUserId",
+                                    eventId = e.id,
+                                    userId = pUserId,
+                                    status = status,
+                                    invitedAt = parseDate(doc["invitedAt"]) ?: java.util.Date(),
+                                    respondedAt = parseDate(doc["respondedAt"]),
+                                    attendedAt = parseDate(doc["attendedAt"]),
+                                    pendingSync = false,
+                                )
+                            )
+                        } else {
+                            participantDao.upsert(local.copy(status = status, pendingSync = false))
+                        }
+                    }
+                } catch (e2: Exception) {
+                    Log.w(TAG, "pullParticipants skip ${e.id}: ${e2.message}")
+                }
+            }
+        }
+    }
+
     private enum class ProcessResult {
         SUCCESS,
         RETRY,
@@ -945,6 +1132,9 @@ class SyncWorker @AssistedInject constructor(
             }
             if (item.entityType == "custom_group") {
                 return processCustomGroup(item)
+            }
+            if (item.entityType == "event_participant") {
+                return processEventParticipant(item)
             }
             if (item.entityType == "custom_group_exclusion") {
                 return processCustomGroupExclusion(item)
@@ -1375,6 +1565,12 @@ class SyncWorker @AssistedInject constructor(
 
             // ---------- Клубные ----------
             "event" -> if (clubId != null) "clubs/$clubId/events" else null
+            "event_participant" -> {
+                val eventId = payload["eventId"] as? String
+                if (clubId != null && eventId != null)
+                    "clubs/$clubId/events/$eventId/participants"
+                else null
+            }
             "task" -> if (clubId != null) "clubs/$clubId/tasks" else null
             "assignment" -> if (clubId != null) "clubs/$clubId/assignments" else null
             "moderation_request" -> if (clubId != null) "clubs/$clubId/moderationRequests" else null

@@ -8,6 +8,15 @@ interface AuditDao {
     @Query("""SELECT * FROM audit_log WHERE clubId = :clubId
         ORDER BY timestamp DESC LIMIT :limit""")
     fun observeClubAudit(clubId: String, limit: Int = 200): Flow<List<AuditLogEntity>>
+
+    /**
+     * Как observeClubAudit, но дополнительно включает записи с clubId = null.
+     * Нужно для старых записей, созданных до появления clubId в LogAction
+     * (например, ApproveRequirementUseCase до патча).
+     */
+    @Query("""SELECT * FROM audit_log WHERE clubId = :clubId OR clubId IS NULL
+        ORDER BY timestamp DESC LIMIT :limit""")
+    fun observeClubAuditIncludingNull(clubId: String, limit: Int = 200): Flow<List<AuditLogEntity>>
     @Query("""SELECT * FROM audit_log WHERE targetType = :type AND targetId = :targetId
         ORDER BY timestamp DESC""")
     fun observeTargetHistory(type: String, targetId: String): Flow<List<AuditLogEntity>>

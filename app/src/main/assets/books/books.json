@@ -1,0 +1,46 @@
+[
+  {
+    "id": "book_pp_ru",
+    "title": "Патриархи и пророки",
+    "author": "Елена Уайт",
+    "level": 1,
+    "description": "Книга о ветхозаветных патриархах и пророках. Часть серии «Конфликт веков».",
+    "externalUrl": "https://egwwritings.org/read?panels=p130.1&lang=ru",
+    "contentPath": "books/Patriarhi_i_proroki_ru.json",
+    "coverUrl": null,
+    "clubId": null
+  },
+  {
+    "id": "book_da_ru",
+    "title": "Желание веков",
+    "author": "Елена Уайт",
+    "level": 1,
+    "description": "Жизнь и служение Иисуса Христа. Часть серии «Конфликт веков».",
+    "externalUrl": "https://egwwritings.org/read?panels=p130.1&lang=ru",
+    "contentPath": null,
+    "coverUrl": null,
+    "clubId": null
+  },
+  {
+    "id": "book_sc_ru",
+    "title": "Путь ко Христу",
+    "author": "Елена Уайт",
+    "level": 1,
+    "description": "Классическая книга о спасении и личных отношениях с Богом.",
+    "externalUrl": "https://egwwritings.org/read?panels=p130.1&lang=ru",
+    "contentPath": "books/Put_ko_Hristu_ru.json",
+    "coverUrl": null,
+    "clubId": null
+  },
+  {
+    "id": "velikaya_borba_ru",
+    "title": "Великая борьба",
+    "author": "Елена Уайт",
+    "level": 1,
+    "description": "История борьбы добра и зла от разрушения Иерусалима до конца времени.",
+    "externalUrl": null,
+    "contentPath": "books/velikaya_borba_ru.json",
+    "coverUrl": null,
+    "clubId": null
+  }
+]

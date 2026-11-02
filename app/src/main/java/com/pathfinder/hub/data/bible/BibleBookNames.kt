@@ -1,0 +1,82 @@
+package com.pathfinder.hub.data.bible
+
+/**
+ * Маппинг: код книги (book_id из rst.json) → (русское название, сокращение, порядок).
+ * 66 канонических книг Синодального перевода.
+ */
+data class BibleBookInfo(
+    val name: String,
+    val shortName: String,
+    val order: Int
+)
+
+object BibleBookNames {
+    val RU: Map<String, BibleBookInfo> = mapOf(
+        "Gen" to BibleBookInfo("Бытие", "Быт", 1),
+        "Exod" to BibleBookInfo("Исход", "Исх", 2),
+        "Lev" to BibleBookInfo("Левит", "Лев", 3),
+        "Num" to BibleBookInfo("Числа", "Чис", 4),
+        "Deut" to BibleBookInfo("Второзаконие", "Втор", 5),
+        "Josh" to BibleBookInfo("Иисус Навин", "Нав", 6),
+        "Judg" to BibleBookInfo("Судьи", "Суд", 7),
+        "Ruth" to BibleBookInfo("Руфь", "Руф", 8),
+        "1Sam" to BibleBookInfo("1-я Царств", "1Цар", 9),
+        "2Sam" to BibleBookInfo("2-я Царств", "2Цар", 10),
+        "1Kgs" to BibleBookInfo("3-я Царств", "3Цар", 11),
+        "2Kgs" to BibleBookInfo("4-я Царств", "4Цар", 12),
+        "1Chr" to BibleBookInfo("1-я Паралипоменон", "1Пар", 13),
+        "2Chr" to BibleBookInfo("2-я Паралипоменон", "2Пар", 14),
+        "Ezra" to BibleBookInfo("Ездра", "Езд", 15),
+        "Neh" to BibleBookInfo("Неемия", "Неем", 16),
+        "Esth" to BibleBookInfo("Есфирь", "Есф", 17),
+        "Job" to BibleBookInfo("Иов", "Иов", 18),
+        "Ps" to BibleBookInfo("Псалтирь", "Пс", 19),
+        "Prov" to BibleBookInfo("Притчи", "Притч", 20),
+        "Eccl" to BibleBookInfo("Екклесиаст", "Еккл", 21),
+        "Song" to BibleBookInfo("Песнь Песней", "Песн", 22),
+        "Isa" to BibleBookInfo("Исаия", "Ис", 23),
+        "Jer" to BibleBookInfo("Иеремия", "Иер", 24),
+        "Lam" to BibleBookInfo("Плач Иеремии", "Плач", 25),
+        "Ezek" to BibleBookInfo("Иезекииль", "Иез", 26),
+        "Dan" to BibleBookInfo("Даниил", "Дан", 27),
+        "Hos" to BibleBookInfo("Осия", "Ос", 28),
+        "Joel" to BibleBookInfo("Иоиль", "Иоил", 29),
+        "Amos" to BibleBookInfo("Амос", "Ам", 30),
+        "Obad" to BibleBookInfo("Авдий", "Авд", 31),
+        "Jonah" to BibleBookInfo("Иона", "Ион", 32),
+        "Mic" to BibleBookInfo("Михей", "Мих", 33),
+        "Nah" to BibleBookInfo("Наум", "Наум", 34),
+        "Hab" to BibleBookInfo("Аввакум", "Авв", 35),
+        "Zeph" to BibleBookInfo("Софония", "Соф", 36),
+        "Hag" to BibleBookInfo("Аггей", "Агг", 37),
+        "Zech" to BibleBookInfo("Захария", "Зах", 38),
+        "Mal" to BibleBookInfo("Малахия", "Мал", 39),
+        "Matt" to BibleBookInfo("От Матфея", "Мф", 40),
+        "Mark" to BibleBookInfo("От Марка", "Мк", 41),
+        "Luke" to BibleBookInfo("От Луки", "Лк", 42),
+        "John" to BibleBookInfo("От Иоанна", "Ин", 43),
+        "Acts" to BibleBookInfo("Деяния", "Деян", 44),
+        "Rom" to BibleBookInfo("К Римлянам", "Рим", 45),
+        "1Cor" to BibleBookInfo("1-е Коринфянам", "1Кор", 46),
+        "2Cor" to BibleBookInfo("2-е Коринфянам", "2Кор", 47),
+        "Gal" to BibleBookInfo("К Галатам", "Гал", 48),
+        "Eph" to BibleBookInfo("К Ефесянам", "Еф", 49),
+        "Phil" to BibleBookInfo("К Филиппийцам", "Флп", 50),
+        "Col" to BibleBookInfo("К Колоссянам", "Кол", 51),
+        "1Thess" to BibleBookInfo("1-е Фессалоникийцам", "1Фес", 52),
+        "2Thess" to BibleBookInfo("2-е Фессалоникийцам", "2Фес", 53),
+        "1Tim" to BibleBookInfo("1-е Тимофею", "1Тим", 54),
+        "2Tim" to BibleBookInfo("2-е Тимофею", "2Тим", 55),
+        "Titus" to BibleBookInfo("К Титу", "Тит", 56),
+        "Phlm" to BibleBookInfo("К Филимону", "Флм", 57),
+        "Heb" to BibleBookInfo("К Евреям", "Евр", 58),
+        "Jas" to BibleBookInfo("Иакова", "Иак", 59),
+        "1Pet" to BibleBookInfo("1-е Петра", "1Пет", 60),
+        "2Pet" to BibleBookInfo("2-е Петра", "2Пет", 61),
+        "1John" to BibleBookInfo("1-е Иоанна", "1Ин", 62),
+        "2John" to BibleBookInfo("2-е Иоанна", "2Ин", 63),
+        "3John" to BibleBookInfo("3-е Иоанна", "3Ин", 64),
+        "Jude" to BibleBookInfo("Иуды", "Иуд", 65),
+        "Rev" to BibleBookInfo("Откровение", "Откр", 66)
+    )
+}

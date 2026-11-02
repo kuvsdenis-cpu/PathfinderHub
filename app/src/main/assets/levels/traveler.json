@@ -1,0 +1,335 @@
+{
+  "level": {
+    "id": "traveler",
+    "name": "Путешественник",
+    "order": 5,
+    "ageMin": 14,
+    "grade": 9,
+    "icon": null,
+    "contentVersion": "2026.10.23.0001"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "traveler",
+      "name": "Общие",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "traveler_general_req_01",
+          "sectionId": "general",
+          "levelId": "traveler",
+          "text": "Возраст: не младше 14 лет.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_general_req_02",
+          "sectionId": "general",
+          "levelId": "traveler",
+          "text": "Быть активным членом в клубе «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_general_req_03",
+          "sectionId": "general",
+          "levelId": "traveler",
+          "text": "Знать на память и обсудить обещание Служения Адвентистской Молодежи.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_general_req_04",
+          "sectionId": "general",
+          "levelId": "traveler",
+          "text": "Прочитать три книги на выбор из списка книжного клуба.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "traveler",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "traveler_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "traveler",
+          "text": "Исследовать влияние личности Святого Духа на людей и обсудить Его участие в процессе духовного роста человека.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "traveler",
+          "text": "Через изучение и обсуждение в клубе расширить свои знания о событиях последнего времени, которые подготавливают нас ко Второму пришествию.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "traveler",
+          "text": "Через личное изучение и обсуждение библейских доказательств найти истинные значения соблюдения субботы.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "traveler",
+          "text": "Получить действующее свидетельство «Памятные жемчужины».",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "traveler",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "traveler_service_req_01",
+          "sectionId": "service",
+          "levelId": "traveler",
+          "text": "Совместно с группой или лично пригласить друга, по крайней мере, на одно подростковое или молодежное мероприятие, проводимое вашей церковью или конференцией.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_service_req_02",
+          "sectionId": "service",
+          "levelId": "traveler",
+          "text": "Совместно с группой или лично помочь организовать и принять участие в проекте служения людям.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_service_req_03",
+          "sectionId": "service",
+          "levelId": "traveler",
+          "text": "Обсудить, как адвентистская молодежь относится к людям в различных ситуациях повседневной жизни, в отношениях с друзьями и в обществе.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "traveler",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "traveler_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "traveler",
+          "text": "В групповом обсуждении и личном исследовании рассмотреть свою жизненную позицию по двум из следующих направлений: понимание себя; взаимоотношения с людьми: родителями, семьей, другими людьми; заработок и трата денег; влияние сверстников.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_friendship_req_02",
+          "sectionId": "friendship",
+          "levelId": "traveler",
+          "text": "Составить список и обсудить потребности людей с ограниченными возможностями. Помочь в планировании мероприятий для таких людей и принять в них участие.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "traveler",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "traveler_health_req_01",
+          "sectionId": "health",
+          "levelId": "traveler",
+          "text": "Выполнить любые два требования из специализации «Воздержание».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_health_req_02",
+          "sectionId": "health",
+          "levelId": "traveler",
+          "text": "Организовать программу о здоровье, включив в нее рассказ и обсуждение принципов здоровья с использованием наглядных пособий.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "traveler",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 6,
+      "requirements": [
+        {
+          "id": "traveler_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "traveler",
+          "text": "Обсудить и подготовить схему структуры местной общины с указанием функций церковных отделов.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_leadership_req_02",
+          "sectionId": "leadership",
+          "levelId": "traveler",
+          "text": "Принять участие в программах двух отделов местной общины по два раза в каждом.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_leadership_req_03",
+          "sectionId": "leadership",
+          "levelId": "traveler",
+          "text": "Выполнить требования 3, 5 и 6 специализации «Управление ресурсами».",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_leadership_req_04",
+          "sectionId": "leadership",
+          "levelId": "traveler",
+          "text": "Получить нашивку «Строевая подготовка и маршировка».",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "levelId": "traveler",
+      "name": "Исследование природы",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "traveler_nature_req_01",
+          "sectionId": "nature",
+          "levelId": "traveler",
+          "text": "Сделать обзор истории Никодима и сравнить процесс рождения свыше с жизненным циклом бабочки, или начертить схему жизненного цикла «гусеница-бабочка» и придать этой схеме духовное значение.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_nature_req_02",
+          "sectionId": "nature",
+          "levelId": "traveler",
+          "text": "Получить нашивку из раздела «Природа», не полученную ранее.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "traveler",
+      "name": "Лагерные и походные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "traveler_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "traveler",
+          "text": "С группой, состоящей не менее чем из четырех человек, включая взрослого опытного наставника, совершить 25-километровый поход в дикую местность, включая одну ночевку под открытым небом или в палатках. Планирование похода должно осуществляться совместными усилиями группы. Все необходимые продукты питания разделить между участниками. После похода на основании записей о характере местности, флоре и фауне, наблюдаемых во время похода, принять участие в групповом обсуждении, проводимом вашим наставником.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "traveler",
+          "text": "Получить одну новую нашивку из раздела «Активный отдых».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "traveler_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "traveler",
+          "text": "Сдать зачёт ступени «Путешественник» по оказанию первой медицинской помощи.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "traveler",
+      "name": "Жизненные навыки",
+      "order": 9,
+      "requirements": [
+        {
+          "id": "traveler_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "traveler",
+          "text": "Получить одну новую нашивку из любого предложенного раздела: «Духовный рост, служение обществу и наследие», «Здоровье и наука», «Домоводство», «Сельскохозяйственные навыки», «Профессиональные навыки».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

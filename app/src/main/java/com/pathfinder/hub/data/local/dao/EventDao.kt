@@ -87,7 +87,7 @@ interface EventDao {
           AND e.archivedAt IS NULL
           AND e.dateStart >= :from
           AND e.dateStart <= :to
-          AND (e.targetGroup IS NULL OR p.userId IS NOT NULL)
+          AND (e.targetGroup IS NULL OR e.createdBy = :userId OR p.userId IS NOT NULL)
         ORDER BY e.dateStart
     """)
     fun observeActiveInRangeForUser(
@@ -100,7 +100,7 @@ interface EventDao {
           ON p.eventId = e.id AND p.userId = :userId
         WHERE (e.clubId = :clubId OR e.clubId IS NULL)
           AND e.archivedAt IS NULL
-          AND (e.targetGroup IS NULL OR p.userId IS NOT NULL)
+          AND (e.targetGroup IS NULL OR e.createdBy = :userId OR p.userId IS NOT NULL)
         ORDER BY e.dateStart
     """)
     fun observeActiveByClubForUser(

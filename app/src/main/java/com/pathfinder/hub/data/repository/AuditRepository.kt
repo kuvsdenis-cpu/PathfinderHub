@@ -6,9 +6,21 @@ import javax.inject.Inject
 
 class AuditRepository @Inject constructor(private val dao: AuditDao) {
     fun observeClubAudit(c: String, l: Int = 200): Flow<List<AuditLogEntity>> = dao.observeClubAudit(c, l)
+
+    fun observeClubAuditIncludingNull(c: String, l: Int = 200): Flow<List<AuditLogEntity>> =
+        dao.observeClubAuditIncludingNull(c, l)
     fun observeTargetHistory(t: String, id: String): Flow<List<AuditLogEntity>> = dao.observeTargetHistory(t, id)
     fun observeAuthorAudit(u: String, l: Int = 100): Flow<List<AuditLogEntity>> = dao.observeAuthorAudit(u, l)
-    suspend fun log(e: AuditLogEntity) = dao.log(e)
+    suspend fun log(e: AuditLogEntity) {
+        android.util.Log.d("AuditRepo", "log: id=${e.id}, clubId=${e.clubId}, action=${e.action}, type=${e.targetType}")
+        try {
+            dao.log(e)
+            android.util.Log.d("AuditRepo", "log OK: ${e.id}")
+        } catch (ex: Exception) {
+            android.util.Log.e("AuditRepo", "log FAILED: ${e.id}", ex)
+            throw ex
+        }
+    }
     suspend fun purgeOld(b: Long) = dao.purgeOld(b)
     suspend fun logSecurity(e: SecurityLogEntity) = dao.logSecurity(e)
     fun observeUserSecurity(u: String, l: Int = 50): Flow<List<SecurityLogEntity>> = dao.observeUserSecurity(u, l)

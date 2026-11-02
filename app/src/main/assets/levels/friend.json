@@ -1,0 +1,347 @@
+{
+  "level": {
+    "id": "friend",
+    "name": "Друг",
+    "order": 1,
+    "ageMin": 10,
+    "grade": 5,
+    "icon": null,
+    "contentVersion": "2026.10.05.1239"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "friend",
+      "name": "Общие требования",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "friend_general_req_01",
+          "sectionId": "general",
+          "levelId": "friend",
+          "text": "Возраст: не младше 10 лет",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_general_req_02",
+          "sectionId": "general",
+          "levelId": "friend",
+          "text": "Быть активным членом в клубе «Следопыт»",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_general_req_03",
+          "sectionId": "general",
+          "levelId": "friend",
+          "text": "Знать на память и объяснить Обещание и Закон следопытов",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_general_req_04",
+          "sectionId": "general",
+          "levelId": "friend",
+          "text": "Прочитать книгу «Путь к победе» или другую рекомендованную книгу об Обещании и Законе следопытов",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_general_req_05",
+          "sectionId": "general",
+          "levelId": "friend",
+          "text": "Иметь свидетельство «Книжный клуб»",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "friend",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "friend_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Знать книги Ветхого Завета и пять разделов, в которые они группируются. Уметь находить каждую из этих книг",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Получить действующее свидетельство «Памятные жемчужины»",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Знать на память и объяснить духовный смысл 22-го и 45-го Псалмов",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Прочитать на семейных богослужениях исторический пролог книги Эллен Уайт «Ранние произведения» и перечислить основные события в истории церкви",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_05",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Разгадать кроссворд по прологу книги «Ранние произведения»",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_06",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Выбрать вместе с наставником историю жизни одного из ветхозаветных героев: Иосифа, Ионы, Есфири или Руфи и представить её в клубе, показав в истории проявление любви и заботы Христа",
+          "type": "boolean",
+          "order": 6,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_spiritual_req_07",
+          "sectionId": "spiritual",
+          "levelId": "friend",
+          "text": "Знать, спеть или сыграть и объяснить духовное значение гимна клуба «Следопыт»",
+          "type": "boolean",
+          "order": 7,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "friend",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "friend_service_req_01",
+          "sectionId": "service",
+          "levelId": "friend",
+          "text": "Обсудить с наставником и составить план вашего служения ближним. Посвятить не меньше 2-х часов для его осуществления, проявив дружелюбие к кому-нибудь из своего окружения, например: посетите человека, нуждающегося в дружбе; помогите человеку, испытывающему нужду; примите участие в социальной акции или в проекте, полезном обществу, школе, церкви",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_service_req_02",
+          "sectionId": "service",
+          "levelId": "friend",
+          "text": "Подтвердить свою хорошую репутацию в семье и школе",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "friend",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "friend_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "friend",
+          "text": "Перечислить десять качеств настоящего друга. Обсудить четыре ситуации, в которых ты применил «Золотое правило» Иисуса",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_friendship_req_02",
+          "sectionId": "friendship",
+          "levelId": "friend",
+          "text": "Знать государственный гимн своей страны и объяснить его значение",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "friend",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "friend_health_req_01",
+          "sectionId": "health",
+          "levelId": "friend",
+          "text": "Выполнить следующее: обсудить принципы воздержания в жизни Даниила или принять участие в инсценировке 1-ой главы книги Даниила; выучить наизусть и объяснить Дан.1:8, изготовить карточку с личным обещанием быть верным принципам истинного воздержания",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_health_req_02",
+          "sectionId": "health",
+          "levelId": "friend",
+          "text": "Изучить принципы здорового питания и изготовить схему основных групп продуктов",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_health_req_03",
+          "sectionId": "health",
+          "levelId": "friend",
+          "text": "Получить нашивку «Плавание — Начинающий уровень»",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "friend",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 6,
+      "requirements": [
+        {
+          "id": "friend_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "friend",
+          "text": "Принять участие в планировании и прохождении трехчасового или 8-километрового похода. Во время похода получить одну нашивку из разделов «Природа» или «Активный отдых»",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "friend",
+      "name": "Лагерные и походные навыки",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "friend_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Знать, как изготовлена веревка, и показать, как правильно её бухтовать и хранить. Уметь завязывать узлы: простой, прямой, скользящий, развязывающийся бегущий простой, простой штык, выбленочный, булинь. Знать их применение",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Принять участие в лагере с ночевкой",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Сдать тест по основным правилам безопасности",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_camping_req_04",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Уметь поставить и сложить палатку, устроить лагерную постель",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_camping_req_05",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Знать десять правил туриста и план действий, если ты потерялся",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "friend_camping_req_06",
+          "sectionId": "camping",
+          "levelId": "friend",
+          "text": "Знать знаки следопытского ориентирования. Выложить знаками 2-километровый маршрут для другой группы, а также, руководствуясь знаками, пройти по 2-километровому маршруту, проложенному другими следопытами",
+          "type": "boolean",
+          "order": 6,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "friend",
+      "name": "Жизненные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "friend_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "friend",
+          "text": "Получить одну нашивку из раздела «Искусства и ремесла»",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

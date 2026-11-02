@@ -10,15 +10,17 @@ import javax.inject.Inject
 class ApproveRequirementUseCase @Inject constructor(
     private val levelRepo: LevelRepository,
     private val honorRepo: HonorRepository,
-    private val auditRepo: AuditRepository
+    private val auditRepo: AuditRepository,
+    private val userRepo: com.pathfinder.hub.data.repository.UserRepository,
 ) {
     suspend fun level(u: String, r: String, b: String, approve: Boolean, comment: String? = null): Result<Unit> = try {
         val s = if (approve) "approved" else "rejected"
         levelRepo.approveRequirement(u, r, s, b, System.currentTimeMillis())
+        val clubId = runCatching { userRepo.getUser(b)?.clubId }.getOrNull()
         auditRepo.log(AuditLogEntity(
             id = UUID.randomUUID().toString(), targetType = "level_requirement",
             targetId = r, action = s, userId = b, userRole = "instructor",
-            clubId = null, conferenceId = null, timestamp = Date(),
+            clubId = clubId, conferenceId = null, timestamp = Date(),
             oldValue = "submitted", newValue = s, reason = comment,
             visibleToAuthor = true, ipHash = null, userAgent = null
         ))
@@ -28,10 +30,11 @@ class ApproveRequirementUseCase @Inject constructor(
     suspend fun honor(u: String, r: String, b: String, approve: Boolean, comment: String? = null): Result<Unit> = try {
         val s = if (approve) "approved" else "rejected"
         honorRepo.approveRequirement(u, r, s, b, System.currentTimeMillis())
+        val clubId = runCatching { userRepo.getUser(b)?.clubId }.getOrNull()
         auditRepo.log(AuditLogEntity(
             id = UUID.randomUUID().toString(), targetType = "honor_requirement",
             targetId = r, action = s, userId = b, userRole = "instructor",
-            clubId = null, conferenceId = null, timestamp = Date(),
+            clubId = clubId, conferenceId = null, timestamp = Date(),
             oldValue = "submitted", newValue = s, reason = comment,
             visibleToAuthor = true, ipHash = null, userAgent = null
         ))

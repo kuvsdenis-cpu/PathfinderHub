@@ -68,6 +68,7 @@ fun TaskEditDialog(
     val isFillBlank = type == "fill_blank"
     val isGrouping = type == "grouping"
     val isMatch = type == "match"
+    val isOrdering = type == "ordering"
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -203,6 +204,23 @@ fun TaskEditDialog(
                     )
                 }
 
+                if (isOrdering) {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = options, onValueChange = { options = it },
+                        label = { Text("Элементы (перемешанные, по одному в строке)") },
+                        minLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = correctAnswer, onValueChange = { correctAnswer = it },
+                        label = { Text("Правильный порядок (по одному в строке)") },
+                        minLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 if (isAuto && !isFillBlank && !isGrouping && !isMatch) {
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -232,6 +250,10 @@ fun TaskEditDialog(
                     !isGrouping || (groupsText.isNotBlank() && correctText.isNotBlank())
                 ) && (
                     !isMatch || parseMatchPairs(matchPairsText).isNotEmpty()
+                ) && (
+                    !isOrdering || (options.isNotBlank() && correctAnswer.isNotBlank()
+                        && options.lines().count { it.isNotBlank() } ==
+                           correctAnswer.lines().count { it.isNotBlank() })
                 ),
                 onClick = {
                     val gson = Gson()
@@ -239,9 +261,15 @@ fun TaskEditDialog(
                         isGrouping -> listOf(gson.toJson(parseGroups(groupsText)))
                         isFillBlank -> options.split(",").map { it.trim() }.filter { it.isNotBlank() }
                         isMatch -> parseMatchPairs(matchPairsText).flatten()
+                        isOrdering -> options.split("\n").map { it.trim() }.filter { it.isNotBlank() }
                         else -> options.split("\n").map { it.trim() }.filter { it.isNotBlank() }
                     }
                     val correct: String? = when {
+                        isOrdering -> {
+                            val order = correctAnswer.lines()
+                                .map { it.trim() }.filter { it.isNotBlank() }
+                            gson.toJson(order)
+                        }
                         isMatch -> {
                             val pairs = parseMatchPairs(matchPairsText)
                             gson.toJson(pairs.mapIndexed { i, _ -> listOf(i * 2, i * 2 + 1) })

@@ -1,5 +1,6 @@
 package com.pathfinder.hub.ui.screens.events
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
@@ -46,10 +47,13 @@ data class CreateEventUiState(
     val showCustomGroupDialog: Boolean = false,
     val customSelectedRoles: Set<String> = emptySet(),
     val customGroups: List<CustomGroupEntity> = emptyList(),
+    val isEditMode: Boolean = false,
+    val originalTargetGroup: String? = null,
 )
 
 @HiltViewModel
 class CreateEventViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val sessionManager: SessionManager,
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
@@ -67,9 +71,37 @@ class CreateEventViewModel @Inject constructor(
         QuickGroup("all_members", "Все участники",  listOf("teen", "parent", "director", "instructor", "secretary")),
     )
 
+    private val editEventId: String? = savedStateHandle.get<String>("eventId")
+
     init {
         loadClubMembers()
         loadCustomGroups()
+        if (editEventId != null) {
+            _state.update { it.copy(isEditMode = true) }
+            loadEvent(editEventId)
+        }
+    }
+
+    private fun loadEvent(eventId: String) {
+        viewModelScope.launch {
+            val e = eventRepository.getEvent(eventId) ?: run {
+                _state.update { it.copy(errorMessage = "Событие не найдено") }
+                return@launch
+            }
+            _state.update {
+                it.copy(
+                    title = e.title,
+                    description = e.description,
+                    location = e.location,
+                    dateStart = e.dateStart,
+                    dateEnd = e.dateEnd,
+                    latitude = e.latitude?.toString() ?: "",
+                    longitude = e.longitude?.toString() ?: "",
+                    targetGroup = e.targetGroup,
+                    originalTargetGroup = e.targetGroup,
+                )
+            }
+        }
     }
 
     private fun loadClubMembers() {
@@ -179,6 +211,46 @@ class CreateEventViewModel @Inject constructor(
     fun onDateEndChange(v: Date) = _state.update { it.copy(dateEnd = v) }
     fun onLatitudeChange(v: String) = _state.update { it.copy(latitude = v) }
     fun onLongitudeChange(v: String) = _state.update { it.copy(longitude = v) }
+
+    fun saveEvent() {
+        if (editEventId != null) updateEvent(editEventId) else createEvent()
+    }
+
+    private fun updateEvent(eventId: String) {
+        val s = _state.value
+        if (s.title.isBlank()) {
+            _state.update { it.copy(errorMessage = "Введите название") }; return
+        }
+        if (s.dateStart == null || s.dateEnd == null) {
+            _state.update { it.copy(errorMessage = "Укажите дату начала и окончания") }; return
+        }
+        if (s.dateEnd.before(s.dateStart)) {
+            _state.update { it.copy(errorMessage = "Окончание раньше начала") }; return
+        }
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                val existing = eventRepository.getEvent(eventId)
+                if (existing == null) {
+                    _state.update { it.copy(isLoading = false, errorMessage = "Событие не найдено") }
+                    return@launch
+                }
+                val updated = existing.copy(
+                    title = s.title.trim(),
+                    description = s.description.trim(),
+                    location = s.location.trim(),
+                    dateStart = s.dateStart,
+                    dateEnd = s.dateEnd,
+                    latitude = s.latitude.toDoubleOrNull(),
+                    longitude = s.longitude.toDoubleOrNull(),
+                )
+                eventRepository.update(updated)
+                _state.update { it.copy(isLoading = false, isCreated = true) }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка сохранения") }
+            }
+        }
+    }
 
     fun createEvent() {
         val s = _state.value

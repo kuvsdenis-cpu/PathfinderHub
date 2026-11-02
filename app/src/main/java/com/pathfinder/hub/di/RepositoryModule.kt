@@ -34,8 +34,9 @@ object RepositoryModule {
         d: EventDao,
         participantDao: EventParticipantDao,
         consentDao: EventConsentDao,
-        syncQueueManager: SyncQueueManager
-    ) = EventRepository(db, d, participantDao, consentDao, syncQueueManager)
+        syncQueueManager: SyncQueueManager,
+        auditRepo: AuditRepository
+    ) = EventRepository(db, d, participantDao, consentDao, syncQueueManager, auditRepo)
 
     @Provides @Singleton
     fun provideTaskRepo(

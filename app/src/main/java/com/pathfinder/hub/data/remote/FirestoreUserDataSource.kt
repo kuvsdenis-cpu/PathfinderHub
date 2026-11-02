@@ -114,7 +114,9 @@ class FirestoreUserDataSource @Inject constructor() {
         if (!user.clubId.isNullOrBlank()) map["clubId"] = user.clubId
         if (user.clubIds.isNotEmpty()) map["clubIds"] = user.clubIds
         map["isOwnerClub"] = user.isOwnerClub
-        map["directorPermissions"] = user.directorPermissions
+        if (user.directorPermissions.isNotEmpty()) {
+            map["directorPermissions"] = user.directorPermissions
+        }
         map["conferenceId"] = user.conferenceId
         map["birthDate"] = user.birthDate
         map["avatar"] = user.avatar

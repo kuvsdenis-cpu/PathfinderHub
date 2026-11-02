@@ -1,0 +1,335 @@
+{
+  "level": {
+    "id": "explorer",
+    "name": "Исследователь",
+    "order": 3,
+    "ageMin": 12,
+    "grade": 7,
+    "icon": null,
+    "contentVersion": "2026.10.23.0001"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "explorer",
+      "name": "Общие",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "explorer_general_req_01",
+          "sectionId": "general",
+          "levelId": "explorer",
+          "text": "Возраст: не младше 12 лет.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_general_req_02",
+          "sectionId": "general",
+          "levelId": "explorer",
+          "text": "Быть активным членом в клубе «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_general_req_03",
+          "sectionId": "general",
+          "levelId": "explorer",
+          "text": "Знать на память и объяснить Обещание и Закон следопытов. Продемонстрировать их понимание в ролевой игре, в открытом обсуждении, в написании краткого очерка или подготовить проект по своему выбору.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_general_req_04",
+          "sectionId": "general",
+          "levelId": "explorer",
+          "text": "Прочитать книги «Путь к победе», «Найти верный путь», если не были прочитаны ранее.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_general_req_05",
+          "sectionId": "general",
+          "levelId": "explorer",
+          "text": "Иметь свидетельство «Книжный клуб» и написать небольшое заключение по каждой из прочитанных книг.",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "explorer",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "explorer_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Уметь пользоваться Симфонией.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Получить действующее свидетельство «Памятные жемчужины».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Прочитать Евангелие от Луки и Евангелие от Иоанна в любом переводе. Обсудить в звене любые три отрывка: Лк. 4:16–19 (чтение Писаний); Лк. 11:9–13 (просите, ищите, стучите); Лк. 21:25–28 (признаки Второго пришествия); Ин. 13:12–17 (смирение); Ин. 14:1–3 (обещания Господа); Ин. 15:5–8 (лоза и ветви).",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Выбрать вместе с наставником одну из историй: Ин. 3 (Никодим); Ин. 4 (самарянка); Лк. 15 (блудный сын); Лк. 10 (добрый самарянин); Лк. 19 (Закхей).",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_spiritual_req_05",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Из выбранной истории показать, как Иисус дарует спасение человеку, используя один из следующих методов: представить доклад; с помощью наставника обсудить в клубе; написать краткий очерк; создать серию иллюстраций или схем, или моделей.",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_spiritual_req_06",
+          "sectionId": "spiritual",
+          "levelId": "explorer",
+          "text": "Выучить наизусть Пр. 20:1 и Пр. 23:29–32. Объяснить их значения.",
+          "type": "boolean",
+          "order": 6,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "explorer",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "explorer_service_req_01",
+          "sectionId": "service",
+          "levelId": "explorer",
+          "text": "Ознакомиться с социальным служением вашей церкви. Принять участие хотя бы в одном из них.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_service_req_02",
+          "sectionId": "service",
+          "levelId": "explorer",
+          "text": "Принять участие хотя бы в трех церковных программах.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "explorer",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "explorer_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "explorer",
+          "text": "Принять участие в открытом обсуждении или сценической постановке по теме: «Давление сверстников и их роль в принятии решений».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_friendship_req_02",
+          "sectionId": "friendship",
+          "levelId": "explorer",
+          "text": "Принять участие в организации и проведении встречи с пастором или пресвитером. Найти не менее пяти вариантов взаимодействия с ним и церковью.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "explorer",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "explorer_health_req_01",
+          "sectionId": "health",
+          "levelId": "explorer",
+          "text": "Принять участие в одном из двух мероприятий: дискуссия в группе о воздействии наркотиков и алкоголя на организм; дискуссия на основании просмотра видеоматериалов об алкоголе и наркотиках и их влиянии на организм.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_health_req_02",
+          "sectionId": "health",
+          "levelId": "explorer",
+          "text": "Обсудить последствия влияния сверстников.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "explorer",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 6,
+      "requirements": [
+        {
+          "id": "explorer_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "explorer",
+          "text": "Принять участие в открытии занятия клуба или урока субботней школы.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_leadership_req_02",
+          "sectionId": "leadership",
+          "levelId": "explorer",
+          "text": "Принять участие в организации и проведении вашим звеном или клубом специального мероприятия для детей, находящихся в трудной жизненной ситуации, или по благоустройству города, или др.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "levelId": "explorer",
+      "name": "Исследование природы",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "explorer_nature_req_01",
+          "sectionId": "nature",
+          "levelId": "explorer",
+          "text": "Уметь находить Полярную звезду, созвездие Орион, Большую и Малую Медведицу и любые две планеты. Знать, что писала Э. Уайт в книге «Ранние произведения» о созвездии Орион.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_nature_req_02",
+          "sectionId": "nature",
+          "levelId": "explorer",
+          "text": "Получить одну из нашивок: «Следы животных», «Звезды», «Цветы», «Погода», «Кактусы».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "explorer",
+      "name": "Лагерные и походные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "explorer_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "explorer",
+          "text": "Принять участие в лагере с двумя ночевками. Знать шесть основных правил выбора места для разбивки лагеря. Спланировать и приготовить два блюда.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "explorer",
+          "text": "Сдать зачёт ступени «Исследователь» по оказанию первой медицинской помощи.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "explorer_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "explorer",
+          "text": "Объяснить, что такое топографическая карта и как ею пользоваться. Знать не менее 20 условных обозначений на карте.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "explorer",
+      "name": "Жизненные навыки",
+      "order": 9,
+      "requirements": [
+        {
+          "id": "explorer_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "explorer",
+          "text": "Получить одну нашивку из раздела «Домоводство» или «Искусства и ремесла».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

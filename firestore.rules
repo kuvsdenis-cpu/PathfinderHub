@@ -161,7 +161,8 @@ service cloud.firestore {
           // Защита: значения этих полей должны совпадать с серверными.
           && request.resource.data.role == resource.data.role
           && request.resource.data.isOwnerClub == resource.data.isOwnerClub
-          && request.resource.data.directorPermissions == resource.data.directorPermissions
+          && (!('directorPermissions' in request.resource.data)
+              || request.resource.data.directorPermissions == resource.data.directorPermissions)
           && request.resource.data.conferenceId == resource.data.conferenceId)
         // Owner снимает с себя владение (передача клуба): только isOwnerClub/clubIds/clubId.
         || (uid() == userId
@@ -432,6 +433,23 @@ service cloud.firestore {
           allow read: if isSignedIn();
           allow write: if isSignedIn() && (
             isConferenceAdmin() || (hasPerm("events.create") && isOwnClub(clubId))
+          );
+        }
+
+        // ---------- A2: участники события ----------
+        match /participants/{participantUserId} {
+          allow read: if isSignedIn() && (
+            request.auth.uid == participantUserId
+            || isStaffOfClub(clubId)
+            || isConferenceAdmin()
+          );
+          allow create, update: if isSignedIn() && (
+            request.auth.uid == participantUserId
+            || (hasPerm("events.create") && isOwnClub(clubId))
+          );
+          allow delete: if isSignedIn() && (
+            request.auth.uid == participantUserId
+            || (hasPerm("events.delete") && isOwnClub(clubId))
           );
         }
       }

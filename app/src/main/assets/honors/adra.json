@@ -1,0 +1,856 @@
+[
+  {
+    "id": "honor_adra_001",
+    "name": "Исследование общества",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/6/61/ADRA_-_%D0%98%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0.png/150px-ADRA_-_%D0%98%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/3/30/ADRA_-_%D0%98%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%98%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%98%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_adra_001_req_01",
+        "honorId": "honor_adra_001",
+        "text": "Выберите населенный пункт или район города, с которым вы хорошо знакомы, и наиболее полно представьте следующую информацию: географическое расположение, экономические условия, демографические характеристики населения (возраст, пол, наиболее распространенные профессии и т. д.), уровень доступности медицинского обслуживания, уровень преступности и образования.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_001_req_02",
+        "honorId": "honor_adra_001",
+        "text": "Перечислите нужды людей, проживающих в вашей местности. В этот список может входить поддержка малообеспеченных семей, помощь одиноким или пожилым людям, уборка улиц и т. д.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_001_req_03",
+        "honorId": "honor_adra_001",
+        "text": "Обратите внимание на то, что говорят общественные деятели, учителя, пастор церкви или полицейские о том, как лично вы можете положительно влиять на общество. Сделайте пометки в своем блокноте.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_001_req_04",
+        "honorId": "honor_adra_001",
+        "text": "Представьте своему клубу отчет о ваших исследованиях и опишите особенности выбранного вами района. Проявите творческий подход к делу.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_001_req_05",
+        "honorId": "honor_adra_001",
+        "text": "Опишите самые необходимые изменения, в которых нуждается ваше общество, и то, как вы можете способствовать этому.",
+        "type": "theory",
+        "order": 5
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_002",
+    "name": "Обучение грамоте",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/c/ca/ADRA_-_%D0%9E%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B3%D1%80%D0%B0%D0%BC%D0%BE%D1%82%D0%B5.png/150px-ADRA_-_%D0%9E%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B3%D1%80%D0%B0%D0%BC%D0%BE%D1%82%D0%B5.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/2b/ADRA_-_%D0%9E%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B3%D1%80%D0%B0%D0%BC%D0%BE%D1%82%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%9E%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B3%D1%80%D0%B0%D0%BC%D0%BE%D1%82%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9E%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B3%D1%80%D0%B0%D0%BC%D0%BE%D1%82%D0%B5",
+    "requirements": [
+      {
+        "id": "honor_adra_002_req_01",
+        "honorId": "honor_adra_002",
+        "text": "Дайте определение понятию «грамотность».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_002_req_02",
+        "honorId": "honor_adra_002",
+        "text": "Проведите исследование и вкратце опишите, как в двух или трех организациях в вашем районе или стране поддерживают достойный уровень грамотности населения или как организовано обучение грамоте детей и подростков.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_002_req_03",
+        "honorId": "honor_adra_002",
+        "text": "Напишите небольшую статью, объясняя, почему так важно уметь читать и писать.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_002_req_04",
+        "honorId": "honor_adra_002",
+        "text": "Выполните три задания из следующих:",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_002_req_05",
+        "honorId": "honor_adra_002",
+        "text": "• помогите кому-либо прочитать небольшую книгу или короткую историю;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_002_req_06",
+        "honorId": "honor_adra_002",
+        "text": "• прочитайте небольшую историю группе детей и обсудите с ними прочитанное;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_002_req_07",
+        "honorId": "honor_adra_002",
+        "text": "• сделайте десять карточек с простыми словами и изображением предметов и подарите эти карточки ребенку, который только учится читать;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_002_req_08",
+        "honorId": "honor_adra_002",
+        "text": "• прочитайте знакомому вам пожилому человеку, который слеп или просто не в состоянии читать, несколько глав из Библии. Это можно сделать в течение одного или нескольких визитов;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_002_req_09",
+        "honorId": "honor_adra_002",
+        "text": "• подготовьте пятиминутную презентацию и в школе или на уроке",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_adra_002_req_10",
+        "honorId": "honor_adra_002",
+        "text": "Субботней школы поделитесь тем, что нового вы узнали о грамотности;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_adra_002_req_11",
+        "honorId": "honor_adra_002",
+        "text": "Выберите любые три слова и расскажите вашему инструктору, как вы научили бы человека правильно их произносить и объяснили бы ему значение этих слов.",
+        "type": "theory",
+        "order": 11
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_003",
+    "name": "Переселение беженцев",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/4/44/ADRA_-_%D0%9F%D0%B5%D1%80%D0%B5%D1%81%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B1%D0%B5%D0%B6%D0%B5%D0%BD%D1%86%D0%B5%D0%B2.png/150px-ADRA_-_%D0%9F%D0%B5%D1%80%D0%B5%D1%81%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B1%D0%B5%D0%B6%D0%B5%D0%BD%D1%86%D0%B5%D0%B2.png",
+    "img": "https://wiki.sledopit.club/images/thumb/5/58/ADRA_-_%D0%9F%D0%B5%D1%80%D0%B5%D1%81%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B1%D0%B5%D0%B6%D0%B5%D0%BD%D1%86%D0%B5%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%9F%D0%B5%D1%80%D0%B5%D1%81%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B1%D0%B5%D0%B6%D0%B5%D0%BD%D1%86%D0%B5%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D0%B5%D1%80%D0%B5%D1%81%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B1%D0%B5%D0%B6%D0%B5%D0%BD%D1%86%D0%B5%D0%B2",
+    "requirements": [
+      {
+        "id": "honor_adra_003_req_01",
+        "honorId": "honor_adra_003",
+        "text": "Опишите некоторые причины общего характера, которые заставляют беженцев переезжать в другие страны. Дайте определение понятию «беженец», «лица, перемещенные внутри страны (ЛПВС)» и «эмигрант», при этом объяснив, в чем схожи или чем отличаются эти понятия.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_003_req_02",
+        "honorId": "honor_adra_003",
+        "text": "Составьте список наиболее острых нужд беженца, прибывшего в другую страну для проживания. Опишите свои чувства, которые возникли бы у вас при столкновении с необходимостью общаться на незнакомом вам языке, жить в новой культуре, в иных от привычных для вас условий окружающей среды.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_003_req_03",
+        "honorId": "honor_adra_003",
+        "text": "Выясните, какие организации в вашем районе, стране или мире оказывают помощь беженцам и ЛПВС.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_003_req_04",
+        "honorId": "honor_adra_003",
+        "text": "Напишите небольшую статью, описав меры помощи, которые вы могли бы оказать беженцу или ЛПВС, прибывшему для проживания в ваш район.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_003_req_05",
+        "honorId": "honor_adra_003",
+        "text": "Поговорите с человеком, приехавшим из другой страны и живущим теперь в вашем районе. Попросите его рассказать о том, как он привыкал к новым условиям окружающей среды, климату. Попросите этого человека описать вам трудности, с которыми он столкнулся, осваиваясь в новом для него окружении.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_003_req_06",
+        "honorId": "honor_adra_003",
+        "text": "Сделайте небольшой доклад в вашем клубе, школе или церкви и расскажите, что нового вы узнали о беженцах, ЛПВС, о трудностях, которые им приходится преодолевать. Для этой цели можно приготовить специальную презентацию, поставить сценку, смонтировать видеоролик либо использовать любой иной способ, который наиболее точно передаст суть изученного вами вопроса. Обсудите, почему этот вопрос требует очень внимательного рассмотрения, и постарайтесь найти меры решения представленных проблем.",
+        "type": "theory",
+        "order": 6
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_004",
+    "name": "Помощь голодающим",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/f/f4/ADRA_-_%D0%9F%D0%BE%D0%BC%D0%BE%D1%89%D1%8C_%D0%B3%D0%BE%D0%BB%D0%BE%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%BC.png/150px-ADRA_-_%D0%9F%D0%BE%D0%BC%D0%BE%D1%89%D1%8C_%D0%B3%D0%BE%D0%BB%D0%BE%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%BC.png",
+    "img": "https://wiki.sledopit.club/images/thumb/1/12/ADRA_-_%D0%9F%D0%BE%D0%BC%D0%BE%D1%89%D1%8C_%D0%B3%D0%BE%D0%BB%D0%BE%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%BC_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%9F%D0%BE%D0%BC%D0%BE%D1%89%D1%8C_%D0%B3%D0%BE%D0%BB%D0%BE%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%BC_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D0%BE%D0%BC%D0%BE%D1%89%D1%8C_%D0%B3%D0%BE%D0%BB%D0%BE%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%BC",
+    "requirements": [
+      {
+        "id": "honor_adra_004_req_01",
+        "honorId": "honor_adra_004",
+        "text": "Найдите в мировых новостях репортаж о факте голода и обсудите в вашем клубе меры, предпринятые для удовлетворения нужд голодающих, упомянутые в этом репортаже.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_004_req_02",
+        "honorId": "honor_adra_004",
+        "text": "Пообщайтесь с человеком, ответственным за раздачу еды в вашем районе. Это может быть руководитель церковного отдела, общественного центра, бесплатной столовой для нуждающихся и т. д. Определите категорию людей, для которых существует эта программа. Выясните, почему есть необходимость в этом служении и то, каким образом эти нужды восполняются. Поделитесь своими открытиями с инструктором вашего клуба.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_004_req_03",
+        "honorId": "honor_adra_004",
+        "text": "Опишите причины, вызвавшие голод в вашей стране. Постарайтесь изложить свое мнение в виде небольшого эссе, презентации, сценки или одноминутного видео сюжета. Представьте свой отчет в школе, в любой общественной группе, в вашем клубе или в церкви.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_004_req_04",
+        "honorId": "honor_adra_004",
+        "text": "Соберите некоторое количество продуктов питания, которое вы могли бы пожертвовать местному центру сбора продуктов или центру раздачи еды. Если поблизости нет таких центров, отнесите собранные вами продукты в ту семью, которая в них действительно нуждается.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_004_req_05",
+        "honorId": "honor_adra_004",
+        "text": "Посетите центр сбора продуктов, центр раздачи еды или бесплатную столовую для нуждающихся и поработайте там волонтером. Эту акцию вы можете организовать совместно с вашим следопытским клубом. Узнайте у сотрудников, как собирают еду для таких центров и с какими сложностями им приходится сталкиваться в процессе раздачи еды.",
+        "type": "theory",
+        "order": 5
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_005",
+    "name": "Разрешение конфликтов",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/a/a8/ADRA_-_%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D1%88%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%BE%D0%BD%D1%84%D0%BB%D0%B8%D0%BA%D1%82%D0%BE%D0%B2.png/150px-ADRA_-_%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D1%88%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%BE%D0%BD%D1%84%D0%BB%D0%B8%D0%BA%D1%82%D0%BE%D0%B2.png",
+    "img": "https://wiki.sledopit.club/images/thumb/1/1f/ADRA_-_%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D1%88%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%BE%D0%BD%D1%84%D0%BB%D0%B8%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D1%88%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%BE%D0%BD%D1%84%D0%BB%D0%B8%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D1%88%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%BE%D0%BD%D1%84%D0%BB%D0%B8%D0%BA%D1%82%D0%BE%D0%B2",
+    "requirements": [
+      {
+        "id": "honor_adra_005_req_01",
+        "honorId": "honor_adra_005",
+        "text": "Дискуссионная группа (требуется взрослый куратор)",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_005_req_02",
+        "honorId": "honor_adra_005",
+        "text": "Объясните на примере нижеприведенных библейских историй, как можно решать конфликтные ситуации. Определите суть конфликта или человеческие потребности в каждой из описываемых вами историй:",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_005_req_03",
+        "honorId": "honor_adra_005",
+        "text": "• Евангелие от Иоанна 8:1–11 (Мария Магдалина);",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_005_req_04",
+        "honorId": "honor_adra_005",
+        "text": "• Евангелие от Матфея 18:1–6 (Апостолы – вопрос о большем в Царстве Небесном);",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_005_req_05",
+        "honorId": "honor_adra_005",
+        "text": "• 3 Царств 3:16–28 (Соломон и младенец).",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_005_req_06",
+        "honorId": "honor_adra_005",
+        "text": "Обсудите проблемы взаимоотношений, самоопределения, расовые или культурные конфликты, с которыми сталкивается современная молодежь (например, отношения с родителями, самооценка, дружба).",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_005_req_07",
+        "honorId": "honor_adra_005",
+        "text": "Опишите виды человеческих нужд и приведите по одному конкретному примеру из жизни для каждого из них.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_005_req_08",
+        "honorId": "honor_adra_005",
+        "text": "Что такое активное слушание? Поупражняйтесь в активном слушании, разыграв по ролям одну из конфликтных ситуаций из пункта № 2.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_005_req_09",
+        "honorId": "honor_adra_005",
+        "text": "Примените на практике нижеприведенный метод разрешения конфликта к любой из ситуаций из пункта № 2:",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_adra_005_req_10",
+        "honorId": "honor_adra_005",
+        "text": "• опишите ситуацию;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_adra_005_req_11",
+        "honorId": "honor_adra_005",
+        "text": "• соберите необходимую информацию;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_adra_005_req_12",
+        "honorId": "honor_adra_005",
+        "text": "• определите суть проблемы;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_adra_005_req_13",
+        "honorId": "honor_adra_005",
+        "text": "• проведите мозговой штурм в поисках решения проблемы.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_adra_005_req_14",
+        "honorId": "honor_adra_005",
+        "text": "Вместе найдите решение проблемы.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_adra_005_req_15",
+        "honorId": "honor_adra_005",
+        "text": "Объясните, как можно записаться на прием к профессиональному консультанту или пастору.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_adra_005_req_16",
+        "honorId": "honor_adra_005",
+        "text": "Обсудите мотивы, побуждающие вас оказывать помощь друзьям, когда те оказываются в конфликтных ситуациях. А что движет вами, когда речь идет о незнакомых людях?",
+        "type": "theory",
+        "order": 16
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_006",
+    "name": "Развитие общества",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/4/48/ADRA_-_%D0%A0%D0%B0%D0%B7%D0%B2%D0%B8%D1%82%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0.png/150px-ADRA_-_%D0%A0%D0%B0%D0%B7%D0%B2%D0%B8%D1%82%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c4/ADRA_-_%D0%A0%D0%B0%D0%B7%D0%B2%D0%B8%D1%82%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%A0%D0%B0%D0%B7%D0%B2%D0%B8%D1%82%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A0%D0%B0%D0%B7%D0%B2%D0%B8%D1%82%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_adra_006_req_01",
+        "honorId": "honor_adra_006",
+        "text": "Дайте определение понятию «развитие общества».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_006_req_02",
+        "honorId": "honor_adra_006",
+        "text": "Расскажите своему инструктору, почему одни страны считаются «развивающимися», а другие мы относим к категории «развитые».",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_006_req_03",
+        "honorId": "honor_adra_006",
+        "text": "Перечислите пять развивающихся стран и назовите три направления деятельности, которые совершает АДРА в этих странах, относящихся к категории «развитие», и два направления, которые попадают под определение «помощь».",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_006_req_04",
+        "honorId": "honor_adra_006",
+        "text": "В книге Е. Уайт «Желание веков» прочитайте о том, почему в мире так много бедных людей (гл. 70, «Одному из сих братьев Моих меньших»). Расскажите инструктору, что нового для себя вы узнали.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_006_req_05",
+        "honorId": "honor_adra_006",
+        "text": "Опишите хотя бы одну нужду вашего общества, которая требует внимания.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_006_req_06",
+        "honorId": "honor_adra_006",
+        "text": "Напишите небольшой, посильный вашему клубу план по развитию общества (например, посадка деревьев, уборка парков и дворов, покраска стен и т. д.). В плане должны быть отражены конкретные детали: вид деятельности, количество людей для выполнения работы, транспортное сообщение, необходимые материалы и инвентарь.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_006_req_07",
+        "honorId": "honor_adra_006",
+        "text": "Проведите как минимум четыре часа, принимая активное участие в одном из нижеперечисленных занятий:",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_006_req_08",
+        "honorId": "honor_adra_006",
+        "text": "• организация помощи бездомным, находящимся в вашем районе;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_006_req_09",
+        "honorId": "honor_adra_006",
+        "text": "• помощь в строительных и восстановительных работах по обустройству жилья для бедных;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_adra_006_req_10",
+        "honorId": "honor_adra_006",
+        "text": "• работа в центре распределения продовольствия, в бесплатной столовой для нуждающихся, в приюте для бездомных.",
+        "type": "theory",
+        "order": 10
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_007",
+    "name": "Реагирование при стихийных бедствиях",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/a/ac/ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85.png/150px-ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85.png",
+    "img": "https://wiki.sledopit.club/images/thumb/d/d1/ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85",
+    "requirements": [
+      {
+        "id": "honor_adra_007_req_01",
+        "honorId": "honor_adra_007",
+        "text": "Объясните наиболее характерные виды разрушения и ущерба, которые наносятся строениям, человеку и обществу в целом при каждом из нижеприведенных стихийных бедствий, а также обозначьте части света, в которых чаще всего наблюдаются эти стихии:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_007_req_02",
+        "honorId": "honor_adra_007",
+        "text": "• ураганы / тайфуны / циклоны;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_007_req_03",
+        "honorId": "honor_adra_007",
+        "text": "• торнадо;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_007_req_04",
+        "honorId": "honor_adra_007",
+        "text": "• наводнения;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_007_req_05",
+        "honorId": "honor_adra_007",
+        "text": "• землетрясения;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_007_req_06",
+        "honorId": "honor_adra_007",
+        "text": "• цунами;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_007_req_07",
+        "honorId": "honor_adra_007",
+        "text": "• пожары;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_007_req_08",
+        "honorId": "honor_adra_007",
+        "text": "• военные или гражданские конфликты.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_007_req_09",
+        "honorId": "honor_adra_007",
+        "text": "Кратко опишите виды служб помощи, которые в вашей стране АДРА, правительство или местные службы МЧС задействуют при оказании поддержки людям, выжившим во время стихийных бедствий.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_adra_007_req_10",
+        "honorId": "honor_adra_007",
+        "text": "В местной газете или на сайте АДРА (www.adra.org) в разделе новостей прочитайте о недавно произошедшей катастрофе и обсудите те важные моменты, которые всегда следует помнить, оказывая помощь людям, находящимся в чрезвычайных ситуациях или застигнутых стихийным бедствием.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_adra_007_req_11",
+        "honorId": "honor_adra_007",
+        "text": "Расшифруйте аббревиатуру АДРА и поясните, какая из букв характеризует АДРА как организацию, оказывающую помощь пострадавшим от стихийных бедствий.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_adra_007_req_12",
+        "honorId": "honor_adra_007",
+        "text": "Опишите, хотя бы одну из нижеприведенных организаций, оказывающих помощь при стихийных бедствиях, и то, каким образом эти организации взаимодействуют с АДРА в случае чрезвычайных ситуаций:",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_adra_007_req_13",
+        "honorId": "honor_adra_007",
+        "text": "• Красный Крест;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_adra_007_req_14",
+        "honorId": "honor_adra_007",
+        "text": "• социальные службы Церкви АСД;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_adra_007_req_15",
+        "honorId": "honor_adra_007",
+        "text": "• Управление Верховного комиссара Организации Объединенных Наций по делам беженцев (УВКБ);",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_adra_007_req_16",
+        "honorId": "honor_adra_007",
+        "text": "• Всемирная продовольственная программа ООН.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_adra_007_req_17",
+        "honorId": "honor_adra_007",
+        "text": "Объясните роль государства при стихийных бедствиях и назовите главное государственное агентство, ответственное за организацию помощи при стихийных бедствиях.",
+        "type": "theory",
+        "order": 17
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_008",
+    "name": "Реагирование при стихийных бедствиях",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "(повышенной сложности)",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/6/6f/ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png/150px-ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c5/ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A0%D0%B5%D0%B0%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%B8_%D1%81%D1%82%D0%B8%D1%85%D0%B8%D0%B9%D0%BD%D1%8B%D1%85_%D0%B1%D0%B5%D0%B4%D1%81%D1%82%D0%B2%D0%B8%D1%8F%D1%85_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_adra_008_req_01",
+        "honorId": "honor_adra_008",
+        "text": "Опишите причины возникновения всех нижеперечисленных катастроф, приведите примеры как минимум шести недавно случившихся стихийных бедствий и расскажите о том, как это повлияло на страну или на общество в целом. Отметьте хотя бы один случай, в котором были задействованы ресурсы АДРА:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_008_req_02",
+        "honorId": "honor_adra_008",
+        "text": "• штормы / тайфуны / ураганы;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_008_req_03",
+        "honorId": "honor_adra_008",
+        "text": "• торнадо;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_008_req_04",
+        "honorId": "honor_adra_008",
+        "text": "• наводнения;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_008_req_05",
+        "honorId": "honor_adra_008",
+        "text": "• засуха;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_008_req_06",
+        "honorId": "honor_adra_008",
+        "text": "• землетрясения;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_008_req_07",
+        "honorId": "honor_adra_008",
+        "text": "• цунами;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_008_req_08",
+        "honorId": "honor_adra_008",
+        "text": "• пожары;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_008_req_09",
+        "honorId": "honor_adra_008",
+        "text": "• вулканические извержения;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_adra_008_req_10",
+        "honorId": "honor_adra_008",
+        "text": "• военные или гражданские конфликты.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_adra_008_req_11",
+        "honorId": "honor_adra_008",
+        "text": "Организация помощи при стихийных бедствиях или чрезвычайных ситуациях включает в себя четыре стадии: 1) планирование; 2) готовность; 3) реагирование; 4) восстановление. Своими словами опишите инструктору, что значат эти термины и почему важна каждая из этих стадий.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_adra_008_req_12",
+        "honorId": "honor_adra_008",
+        "text": "Готовность – это ключевой момент при стихийных бедствиях. Опишите инструктору, что вы включили бы в аптечку для оказания первой помощи при стихийных бедствиях, если бы вас попросили самостоятельно подготовить ее. Обсудите преимущества приборов, работающих от батареи, по сравнению с приборами, работающими от электросети, и сравните ценность скоропортящихся продуктов и продуктов длительного хранения.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_adra_008_req_13",
+        "honorId": "honor_adra_008",
+        "text": "Нарисуйте поэтажный план здания, в котором вы живете. Подумайте о возможных мерах реагирования в случае стихийных бедствий (любые три на выбор) из списка в пункте №",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_adra_008_req_14",
+        "honorId": "honor_adra_008",
+        "text": "Разработайте план эвакуации и обсудите его с инструктором вашего клуба и членами вашей семьи.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_adra_008_req_15",
+        "honorId": "honor_adra_008",
+        "text": "Найдите в Библии три истории, в которых описываются стихийные бедствия или чрезвычайные политические ситуации. Представьте себя на месте людей, о которых рассказано в этих историях, и постарайтесь описать, как те события повлияли бы на вас. Кратко обсудите, как герои обсуждаемых историй преодолели трудности.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_adra_008_req_16",
+        "honorId": "honor_adra_008",
+        "text": "Сделайте краткий доклад в вашем клубе о том, что вы узнали нового о стихийных бедствиях и мерах подготовки к ним. Вы можете подать информацию в виде презентации, юморески, коротенького видеоролика либо любым иным способом, который, с вашей точки зрения, сможет наиболее точно передать другим то, что вы узнали.",
+        "type": "theory",
+        "order": 16
+      }
+    ]
+  },
+  {
+    "id": "honor_adra_009",
+    "name": "Служение обществу",
+    "categoryId": "adra",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://mp.paradox-studio.su/images/1.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/f4/ADRA_-_%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D1%83_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-ADRA_-_%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D1%83_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BE%D0%B1%D1%89%D0%B5%D1%81%D1%82%D0%B2%D1%83",
+    "requirements": [
+      {
+        "id": "honor_adra_009_req_01",
+        "honorId": "honor_adra_009",
+        "text": "Прочитайте следующие библейские тексты и объясните, как вы понимаете, что именно Бог просит нас делать, помогая бедным и нуждающимся:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_adra_009_req_02",
+        "honorId": "honor_adra_009",
+        "text": "• Книга пророка Исаии 58:3–12;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_adra_009_req_03",
+        "honorId": "honor_adra_009",
+        "text": "• Евангелие от Луки 10:25–37;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_adra_009_req_04",
+        "honorId": "honor_adra_009",
+        "text": "• Евангелие от Матфея 25:31–46.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_adra_009_req_05",
+        "honorId": "honor_adra_009",
+        "text": "Расскажите инструктору:",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_adra_009_req_06",
+        "honorId": "honor_adra_009",
+        "text": "• что означает аббревиатура АДРА, и какая разница между «помощью» и «развитием»;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_adra_009_req_07",
+        "honorId": "honor_adra_009",
+        "text": "• о находящейся в вашей местности социальной организации и перечислите, что именно она делает для бедных и обездоленных.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_adra_009_req_08",
+        "honorId": "honor_adra_009",
+        "text": "Проведите встречу с общественным деятелем вашего района и спросите, в каких проектах могут поучаствовать следопыты, чтобы помочь удовлетворить потребности нуждающихся людей в вашей местности.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_adra_009_req_09",
+        "honorId": "honor_adra_009",
+        "text": "Вместе со следопытским клубом или школьным классом спланируйте, организуйте и осуществите проект служения обществу в вашем районе. Проект должен быть ориентирован на удовлетворение конкретной потребности общества. Общее время, затраченное на это проект, начиная с этапа планирования и до полного окончания работ, должно составлять около десяти часов.",
+        "type": "theory",
+        "order": 9
+      }
+    ]
+  }
+]

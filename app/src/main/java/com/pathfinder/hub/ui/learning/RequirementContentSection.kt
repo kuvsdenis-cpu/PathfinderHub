@@ -127,6 +127,17 @@ fun RequirementContentSection(
                 onSaveDraft = { json -> viewModel.saveDraft(t, json, emptyList()); openTask = null },
                 onSubmit = { json -> viewModel.submit(t, json, emptyList()); openTask = null },
             )
+        } else if (t.type == "ordering") {
+            OrderingTaskView(
+                task = t,
+                userId = state.currentUserId,
+                clubId = state.currentClubId,
+                existingAnswer = state.answers[t.id],
+                onSave = { entity ->
+                    viewModel.submit(t, entity.answer, emptyList())
+                    openTask = null
+                },
+            )
         } else {
         TaskAnswerSheet(
             task = t,

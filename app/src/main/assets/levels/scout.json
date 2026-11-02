@@ -1,0 +1,285 @@
+{
+  "level": {
+    "id": "scout",
+    "name": "Разведчик",
+    "order": 4,
+    "ageMin": 13,
+    "grade": 8,
+    "icon": null,
+    "contentVersion": "2026.10.23.0001"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "scout",
+      "name": "Общие",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "scout_general_req_01",
+          "sectionId": "general",
+          "levelId": "scout",
+          "text": "Возраст: не младше 13 лет.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_general_req_02",
+          "sectionId": "general",
+          "levelId": "scout",
+          "text": "Быть активным членом в клубе «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_general_req_03",
+          "sectionId": "general",
+          "levelId": "scout",
+          "text": "Знать на память и объяснить цель и девиз Служения Адвентистской Молодежи.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_general_req_04",
+          "sectionId": "general",
+          "levelId": "scout",
+          "text": "Прочитать три книги на выбор из списка книжного клуба.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "scout",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "scout_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "scout",
+          "text": "Изучить и обсудить в клубе следующие темы: Что такое христианство? Каковы признаки истинного ученика? Что вдохновляет человека стать христианином?",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "scout",
+          "text": "Принять участие в программе «Библия с пометками».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "scout",
+          "text": "Привлечь не менее трех человек к обучению на заочных библейских курсах.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "scout",
+          "text": "Получить действующее свидетельство «Памятные жемчужины».",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "scout",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "scout_service_req_01",
+          "sectionId": "service",
+          "levelId": "scout",
+          "text": "Под руководством наставника или директора клуба принять участие в двух разных миссионерских программах не меньше одного раза в каждой.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_service_req_02",
+          "sectionId": "service",
+          "levelId": "scout",
+          "text": "Вместе с другом принять участие в течение дня (не менее 8 часов) в проекте для церкви, школы или общества.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "scout",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "scout_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "scout",
+          "text": "Лично исследовать и обсудить в клубе свою жизненную позицию по любым двум темам из списка: уверенность в себе; правила приличия в обществе; дружба; сила воли.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "scout",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "scout_health_req_01",
+          "sectionId": "health",
+          "levelId": "scout",
+          "text": "Принять участие в одном любом мероприятии: обсудить принципы физической подготовки, составить программу ежедневной зарядки, составить и подписать личное обещание регулярно заниматься физкультурой; обсудить в клубе преимущества адвентистского образа жизни, основанного на библейских принципах.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "scout",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 6,
+      "requirements": [
+        {
+          "id": "scout_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "scout",
+          "text": "Посетить одно церковное членское собрание (для крещеных). Подготовить краткий отчет для обсуждения в клубе.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_leadership_req_02",
+          "sectionId": "leadership",
+          "levelId": "scout",
+          "text": "Составить вместе с клубом план социального служения на год с периодичностью мероприятий не реже одного раза в квартал.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "levelId": "scout",
+      "name": "Исследование природы",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "scout_nature_req_01",
+          "sectionId": "nature",
+          "levelId": "scout",
+          "text": "Сделать обзор библейского повествования о потопе. Изучить не менее трех видов полезных ископаемых. Обсудить их происхождение и исследовать связь с нарушением Божьего Закона.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_nature_req_02",
+          "sectionId": "nature",
+          "levelId": "scout",
+          "text": "Получить нашивку из раздела «Природа», не полученную ранее.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "scout",
+      "name": "Лагерные и походные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "scout_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "scout",
+          "text": "Сделать и продемонстрировать работу походной духовки, работающей на принципе отражения теплового излучения, приготовив одно блюдо.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "scout",
+          "text": "Принять участие в лагере с двумя ночевками. Правильно упаковать собственный рюкзак с личными вещами, в том числе с частью общего продовольственного запаса.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "scout_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "scout",
+          "text": "Сдать зачёт ступени «Разведчик» по оказанию первой медицинской помощи.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "scout",
+      "name": "Жизненные навыки",
+      "order": 9,
+      "requirements": [
+        {
+          "id": "scout_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "scout",
+          "text": "Получить одну нашивку из любого раздела: «Духовный рост, служение обществу и наследие», «Профессиональные навыки», «Сельскохозяйственные навыки».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

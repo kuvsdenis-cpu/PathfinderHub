@@ -47,7 +47,7 @@ data class RequirementTaskEntity(
     companion object {
         private val AUTO_CHECK_TYPES = setOf(
             "single_choice", "multi_choice", "number", "cipher", "crossword",
-            "fill_blank", "grouping", "match"
+            "fill_blank", "grouping", "match", "ordering"
         )
 
         fun isAutoCheckType(type: String): Boolean = type in AUTO_CHECK_TYPES

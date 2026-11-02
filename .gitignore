@@ -17,3 +17,61 @@ local.properties
 # Firebase Admin SDK keys
 pathfinder-hub-c495d-firebase-adminsdk-*.json
 
+# ============================================================
+# Добавлено fix_gitignore.py
+# ============================================================
+# === Service account keys (НЕ КОММИТИТЬ) ===
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceAccount*.json
+gcp-key*.json
+# === Бэкапы патчей ===
+*.bak
+*.bak_*
+*.bak-*
+.fix_*_backup/
+# === Мусор ===
+node_modules/
+apk_extracted/
+db.b64*
+*.log
+pdf_sabbath/
+*.db
+*.db-shm
+*.db-wal
+# === Локальные конфиги ===
+.idea/deploymentTargetSelector.xml
+.idea/inspectionProfiles/
+
+# === Одноразовые скрипты (не коммитить) ===
+fix_*.py
+patch_*.py
+add_*.py
+cleanup_*.py
+parse_*.py
+patch_*.kt
+patch_updateuser_log.kt
+
+# === Диагностика / логи ===
+log_*.txt
+pull_log*.txt
+club_log.txt
+tree_*.txt
+ui*.xml
+dump_db.ps1
+
+# === Бинарь, не в git ===
+*.apk
+*.pdf
+
+# === Дампы / временные БД ===
+bible_databases/
+pathfinder_hub.db
+
+# === Тестовые скрипты (уточни, если нужны в git) ===
+test_invite.mjstest_invite.mjs
+
+# === Old drafts / одноразовые ===
+*.old_draft
+RequirementDao.py
+test_invite.mjs

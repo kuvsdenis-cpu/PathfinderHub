@@ -57,7 +57,7 @@ class FirestoreChatDataSource @Inject constructor() {
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     Log.e(TAG, "myDMs listener failed", err)
-                    trySend(emptyList()); close(err); return@addSnapshotListener
+                    trySend(emptyList()); return@addSnapshotListener
                 }
                 val list = snap?.documents?.mapNotNull { doc ->
                     try { mapDm(doc.id, doc.data ?: emptyMap()) }
@@ -77,7 +77,7 @@ class FirestoreChatDataSource @Inject constructor() {
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     Log.e(TAG, "dm messages listener failed", err)
-                    trySend(emptyList()); close(err); return@addSnapshotListener
+                    trySend(emptyList()); return@addSnapshotListener
                 }
                 val list = snap?.documents?.mapNotNull { doc ->
                     try { mapMessage(doc.id, doc.data ?: emptyMap()) }
@@ -134,7 +134,7 @@ class FirestoreChatDataSource @Inject constructor() {
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     Log.e(TAG, "myGroups listener failed", err)
-                    trySend(emptyList()); close(err); return@addSnapshotListener
+                    trySend(emptyList()); return@addSnapshotListener
                 }
                 val list = snap?.documents?.mapNotNull { doc ->
                     try { mapGroup(doc.id, doc.data ?: emptyMap()) }
@@ -153,7 +153,7 @@ class FirestoreChatDataSource @Inject constructor() {
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     Log.e(TAG, "group meta listener failed", err)
-                    trySend(null); close(err); return@addSnapshotListener
+                    trySend(null); return@addSnapshotListener
                 }
                 trySend(snap?.takeIf { it.exists() }?.let { mapGroup(it.id, it.data ?: emptyMap()) })
             }
@@ -169,7 +169,7 @@ class FirestoreChatDataSource @Inject constructor() {
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     Log.e(TAG, "group messages listener failed", err)
-                    trySend(emptyList()); close(err); return@addSnapshotListener
+                    trySend(emptyList()); return@addSnapshotListener
                 }
                 val list = snap?.documents?.mapNotNull { doc ->
                     try { mapMessage(doc.id, doc.data ?: emptyMap()) }

@@ -1,0 +1,345 @@
+{
+  "level": {
+    "id": "companion",
+    "name": "Спутник",
+    "order": 2,
+    "ageMin": 11,
+    "grade": 6,
+    "icon": null,
+    "contentVersion": "2026.10.05.1237"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "companion",
+      "name": "Общие",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "companion_general_req_01",
+          "sectionId": "general",
+          "levelId": "companion",
+          "text": "Возраст: не младше 11 лет.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_general_req_02",
+          "sectionId": "general",
+          "levelId": "companion",
+          "text": "Быть активным членом в клубе «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_general_req_03",
+          "sectionId": "general",
+          "levelId": "companion",
+          "text": "Знать на память и объяснить Обещание и Закон следопытов. Обещание представить творчески.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_general_req_04",
+          "sectionId": "general",
+          "levelId": "companion",
+          "text": "Прочитать книгу «Путь к победе» или другую рекомендованную книгу об Обещании и Законе следопытов, которая еще не была прочитана.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_general_req_05",
+          "sectionId": "general",
+          "levelId": "companion",
+          "text": "Иметь свидетельство «Книжный клуб» и написать небольшое заключение по одной из прочитанных книг.",
+          "type": "boolean",
+          "order": 5,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "companion",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "companion_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "companion",
+          "text": "Знать книги Нового Завета и четыре раздела, в которые они группируются. Уметь находить каждую из этих книг.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "companion",
+          "text": "Получить действующее свидетельство «Памятные Жемчужины».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "companion",
+          "text": "Выбрать вместе с наставником одну из тем: «Одна из притч Христа», «Одно из чудес Христа», «Нагорная проповедь», «Вторая ангельская весть». Из выбранной темы показать, чему учил Христос, используя один из следующих методов: дискуссия с наставником; обсуждение на занятии клуба; доклад.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "companion",
+          "text": "Прочитать Евангелие от Матфея и Евангелие от Марка. Выучить любые два отрывка: Блаженства (Мф. 5:3–12); Молитва Господня (Мф. 6:9–13); Второе пришествие Христа (Мф. 24:4–7, 11–14); Евангельское поручение (Мф. 28:18–20).",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "companion",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "companion_service_req_01",
+          "sectionId": "service",
+          "levelId": "companion",
+          "text": "Обсудить с наставником, как вы можете проявить дружелюбие к членам клуба и окружающим людям.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_service_req_02",
+          "sectionId": "service",
+          "levelId": "companion",
+          "text": "Провести, по крайней мере, полдня, участвуя в проекте на благо общества или церкви.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "companion",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "companion_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "companion",
+          "text": "Обсудить принцип и проявить на деле истинное уважение к людям другой культуры или пола.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "companion",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "companion_health_req_01",
+          "sectionId": "health",
+          "levelId": "companion",
+          "text": "Выучить и объяснить 1 Коринфянам 9:24–27.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_health_req_02",
+          "sectionId": "health",
+          "levelId": "companion",
+          "text": "Обсудить со своим наставником влияние спорта и регулярных тренировок на здоровье человека.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_health_req_03",
+          "sectionId": "health",
+          "levelId": "companion",
+          "text": "Узнать о негативном влиянии курения на здоровье человека. Заполнить карточку с личным обещанием никогда не курить.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_health_req_04",
+          "sectionId": "health",
+          "levelId": "companion",
+          "text": "Получить нашивку «Плавание – Начинающий уровень (Повышенной сложности)».",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "levelId": "companion",
+      "name": "Исследование природы",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "companion_nature_req_01",
+          "sectionId": "nature",
+          "levelId": "companion",
+          "text": "Принять участие в игре или в тематической часовой прогулке, посвященной исследованию природы.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_nature_req_02",
+          "sectionId": "nature",
+          "levelId": "companion",
+          "text": "Получить одну из нашивок: «Земноводные», «Птицы», «Домашние животные», «Домашние птицы», «Пресмыкающиеся», «Ракушки», «Деревья», «Кустарники».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_nature_req_03",
+          "sectionId": "nature",
+          "levelId": "companion",
+          "text": "Рассказать историю о сотворении Земли. Провести наблюдение за природой в течение 7 дней и записать в дневнике, что было сотворено Богом в каждый из этих дней.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "companion",
+      "name": "Лагерные и походные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "companion_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "companion",
+          "text": "Уметь определять 8 основных направлений сторон света без помощи компаса.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "companion",
+          "text": "Принять участие в лагере с двумя ночевками. Знать 6 основных правил выбора места для разбивки лагеря.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "companion",
+          "text": "Выучить или повторить узлы ступени «Друг». Уметь завязывать узлы: шкотовый, «баранья нога», рыбацкий, древесная удавка, роллинг. Уметь применять их практически. Уметь вязать лаги тремя основными способами.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_camping_req_04",
+          "sectionId": "camping",
+          "levelId": "companion",
+          "text": "Сдать тест по оказанию первой медицинской помощи.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "companion",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 9,
+      "requirements": [
+        {
+          "id": "companion_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "companion",
+          "text": "Спланировать и провести молитвенное служение в вашем клубе.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "companion_leadership_req_02",
+          "sectionId": "leadership",
+          "levelId": "companion",
+          "text": "Помочь вашему звену или клубу запланировать специальное мероприятие: поход или лагерь с ночевкой.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "companion",
+      "name": "Жизненные навыки",
+      "order": 10,
+      "requirements": [
+        {
+          "id": "companion_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "companion",
+          "text": "Получить одну любую новую нашивку из раздела «Искусства и ремесла».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

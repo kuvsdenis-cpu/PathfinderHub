@@ -1,0 +1,2115 @@
+[
+  {
+    "id": "honor_household_001",
+    "name": "Выпечка",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/c/c4/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%92%D1%8B%D0%BF%D0%B5%D1%87%D0%BA%D0%B0.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%92%D1%8B%D0%BF%D0%B5%D1%87%D0%BA%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/5/54/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%92%D1%8B%D0%BF%D0%B5%D1%87%D0%BA%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%92%D1%8B%D0%BF%D0%B5%D1%87%D0%BA%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%92%D1%8B%D0%BF%D0%B5%D1%87%D0%BA%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_household_001_req_01",
+        "honorId": "honor_household_001",
+        "text": "Объясните разницу между питательной ценностью продуктов, приготовленных из пшеничной муки грубого помола и из белой муки.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_001_req_02",
+        "honorId": "honor_household_001",
+        "text": "Опишите дрожжевой эффект при выпечке хлеба.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_001_req_03",
+        "honorId": "honor_household_001",
+        "text": "Приведите по одному примеру из Ветхого и Нового заветов, где упоминается закваска.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_001_req_04",
+        "honorId": "honor_household_001",
+        "text": "Приготовьте хлеб из муки грубого помола (это может быть пшеничная, ржаная, овсяная мука и т. д.)",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_001_req_05",
+        "honorId": "honor_household_001",
+        "text": "Испеките два изделия из предложенных ниже:",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_001_req_06",
+        "honorId": "honor_household_001",
+        "text": "• дрожжевое печенье;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_001_req_07",
+        "honorId": "honor_household_001",
+        "text": "• пресный хлеб;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_001_req_08",
+        "honorId": "honor_household_001",
+        "text": "• хлебные палочки;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_001_req_09",
+        "honorId": "honor_household_001",
+        "text": "• бублики;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_001_req_10",
+        "honorId": "honor_household_001",
+        "text": "• овощной хлеб.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_001_req_11",
+        "honorId": "honor_household_001",
+        "text": "Прочитайте, что Э. Уайт писала относительно использования разрыхлителей и соды.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_001_req_12",
+        "honorId": "honor_household_001",
+        "text": "Расскажите, как вы проверяете готовность печенья. Как предохранить выпечку от оседания?",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_001_req_13",
+        "honorId": "honor_household_001",
+        "text": "Приготовьте две выпечки из указанных ниже:",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_001_req_14",
+        "honorId": "honor_household_001",
+        "text": "• пирог из основных ингредиентов (на любой вкус);",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_001_req_15",
+        "honorId": "honor_household_001",
+        "text": "• кекс из сухой смеси для кекса (на любой вкус);",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_001_req_16",
+        "honorId": "honor_household_001",
+        "text": "• фруктовый или ореховый пирог или каравай;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_001_req_17",
+        "honorId": "honor_household_001",
+        "text": "• бисквит.",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_001_req_18",
+        "honorId": "honor_household_001",
+        "text": "Приготовьте пирог:",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_household_001_req_19",
+        "honorId": "honor_household_001",
+        "text": "• испеченный с любыми фруктами, включая лимон;",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_household_001_req_20",
+        "honorId": "honor_household_001",
+        "text": "• не печенный (печется только основа), со свежими фруктами, желатином и т. д.",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_household_001_req_21",
+        "honorId": "honor_household_001",
+        "text": "Испеките печенье по рецепту. Испеките печенья из замороженного теста. Предпочтительно, чтобы в состав рецепта входили фрукты, овсянка, орехи и т. д.",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_household_001_req_22",
+        "honorId": "honor_household_001",
+        "text": "Сделайте папку с рецептами всех вышеупомянутых изделий и добавьте туда рецепты по вашему выбору. Посмотрите, сколько вам удалось найти рецептов, где используются фрукты и немного сахара.",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_household_001_req_23",
+        "honorId": "honor_household_001",
+        "text": "Расскажите две рекомендации Эллен Уайт относительно питания.",
+        "type": "theory",
+        "order": 23
+      }
+    ]
+  },
+  {
+    "id": "honor_household_002",
+    "name": "Домохозяйство",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/9/9b/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%94%D0%BE%D0%BC%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%94%D0%BE%D0%BC%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/2e/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%94%D0%BE%D0%BC%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%94%D0%BE%D0%BC%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%94%D0%BE%D0%BC%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_household_002_req_01",
+        "honorId": "honor_household_002",
+        "text": "Получите нашивку «Стирка и глажка одежды».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_002_req_02",
+        "honorId": "honor_household_002",
+        "text": "Перечислите предметы и средства, которые используются для поддержания чистоты в доме.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_002_req_03",
+        "honorId": "honor_household_002",
+        "text": "Опишите способы хранения в чистоте плиты, микроволновой печи, холодильника.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_002_req_04",
+        "honorId": "honor_household_002",
+        "text": "Объясните, при каких условиях появляются микробы и паразиты. Расскажите о том, как надо наводить порядок в: подвале, шкафу для одежды, буфете, раковине и туалете.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_002_req_05",
+        "honorId": "honor_household_002",
+        "text": "Объясните, как следует подготавливать посуду для мытья в раковине или посудомоечной машине. Расскажите, как следует мыть серебряные приборы, стеклянную посуду, столовые и кухонные приборы.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_002_req_06",
+        "honorId": "honor_household_002",
+        "text": "Объясните, как следует чистить подстилки, ковры, подушки, мягкую мебель, оклеенные обоями стены, окрашенные стены, полы и окна.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_002_req_07",
+        "honorId": "honor_household_002",
+        "text": "Объясните, как в вашем городе (населенном пункте) утилизируется бытовой мусор.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_002_req_08",
+        "honorId": "honor_household_002",
+        "text": "Объясните, какие меры предосторожности следует соблюдать во время чистки камина.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_002_req_09",
+        "honorId": "honor_household_002",
+        "text": "Объясните, что значит сделать дом «безопасным для ребенка».",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_002_req_10",
+        "honorId": "honor_household_002",
+        "text": "Спланируйте работу по дому на неделю.",
+        "type": "theory",
+        "order": 10
+      }
+    ]
+  },
+  {
+    "id": "honor_household_003",
+    "name": "Замораживание продуктов",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/d/d5/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B0%D0%BC%D0%BE%D1%80%D0%B0%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B0%D0%BC%D0%BE%D1%80%D0%B0%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2.png",
+    "img": "https://wiki.sledopit.club/images/thumb/b/b3/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B0%D0%BC%D0%BE%D1%80%D0%B0%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B0%D0%BC%D0%BE%D1%80%D0%B0%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%97%D0%B0%D0%BC%D0%BE%D1%80%D0%B0%D0%B6%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2",
+    "requirements": [
+      {
+        "id": "honor_household_003_req_01",
+        "honorId": "honor_household_003",
+        "text": "Дайте определение следующим терминам:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_003_req_02",
+        "honorId": "honor_household_003",
+        "text": "• бланширование;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_003_req_03",
+        "honorId": "honor_household_003",
+        "text": "• быстрое замораживание;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_003_req_04",
+        "honorId": "honor_household_003",
+        "text": "• морозный ожег.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_003_req_05",
+        "honorId": "honor_household_003",
+        "text": "Объясните, какие виды емкостей могут быть использованы для замораживания продуктов питания.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_003_req_06",
+        "honorId": "honor_household_003",
+        "text": "Объясните, какие основные моменты необходимо учитывать при выборе овощей или фруктов для замораживания.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_003_req_07",
+        "honorId": "honor_household_003",
+        "text": "Объясните, как разморозить замороженные овощи для приема в пищу? Как разморозить замороженные фрукты для приема в пищу.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_003_req_08",
+        "honorId": "honor_household_003",
+        "text": "Заморозьте два овоща (кукурузу и другой овощ на свой выбор), а затем разморозьте, приготовьте и подайте на стол.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_003_req_09",
+        "honorId": "honor_household_003",
+        "text": "Заморозьте овощ быстрым замораживанием для удобного использования в дальнейшем.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_003_req_10",
+        "honorId": "honor_household_003",
+        "text": "Объясните, почему при заморозке овощей не используется соль.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_003_req_11",
+        "honorId": "honor_household_003",
+        "text": "Заморозьте несколько персиков в сиропе, и несколько в апельсиновом или ананасовом соке.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_003_req_12",
+        "honorId": "honor_household_003",
+        "text": "Объясните, почему аскорбиновую кислоту используют в сиропе, но не используют во фруктовом соке. Почему аскорбиновая кислота используется в замороженных персиках?",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_003_req_13",
+        "honorId": "honor_household_003",
+        "text": "Заморозьте один вид ягод без использования подсластителей.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_003_req_14",
+        "honorId": "honor_household_003",
+        "text": "Сделайте один вид замороженного джема.",
+        "type": "theory",
+        "order": 14
+      }
+    ]
+  },
+  {
+    "id": "honor_household_004",
+    "name": "Здоровое питание",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/8/88/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5.png",
+    "img": "https://wiki.sledopit.club/images/thumb/b/bb/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5",
+    "requirements": [
+      {
+        "id": "honor_household_004_req_01",
+        "honorId": "honor_household_004",
+        "text": "Нарисуйте пирамиду питания с пояснениями к ней. Назовите количество порций для каждой из групп продуктов на день. Почему важно питаться, соблюдая правильную диету?",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_004_req_02",
+        "honorId": "honor_household_004",
+        "text": "Объясните, чем отличаются следующие виды вегетарианства:",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_004_req_03",
+        "honorId": "honor_household_004",
+        "text": "• лактоововегетарианец;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_004_req_04",
+        "honorId": "honor_household_004",
+        "text": "• ововегетарианец;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_004_req_05",
+        "honorId": "honor_household_004",
+        "text": "• чистый вегетарианец.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_004_req_06",
+        "honorId": "honor_household_004",
+        "text": "Составьте сбалансированное лактоововегетарианское меню на два дня, используя пояснения к пирамиде питания.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_004_req_07",
+        "honorId": "honor_household_004",
+        "text": "Как по-другому называются:",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_004_req_08",
+        "honorId": "honor_household_004",
+        "text": "• витамин B 1;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_004_req_09",
+        "honorId": "honor_household_004",
+        "text": "• витамин B 2.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_004_req_10",
+        "honorId": "honor_household_004",
+        "text": "Назовите как минимум три продукта, которые богаты следующими витаминами и микроэлементами:",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_004_req_11",
+        "honorId": "honor_household_004",
+        "text": "• витамин C;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_004_req_12",
+        "honorId": "honor_household_004",
+        "text": "• витамин A;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_004_req_13",
+        "honorId": "honor_household_004",
+        "text": "• витамин B 1;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_004_req_14",
+        "honorId": "honor_household_004",
+        "text": "• витамин B 2;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_004_req_15",
+        "honorId": "honor_household_004",
+        "text": "• железо;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_004_req_16",
+        "honorId": "honor_household_004",
+        "text": "• кальций.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_004_req_17",
+        "honorId": "honor_household_004",
+        "text": "Объясните, почему важно ежедневно выпивать много воды.",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_004_req_18",
+        "honorId": "honor_household_004",
+        "text": "Назовите, сколько воды следует выпивать ежедневно?",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_household_004_req_19",
+        "honorId": "honor_household_004",
+        "text": "Назовите три часто встречающихся заболевания, которых можно избежать, правильно спланировав свою диету.",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_household_004_req_20",
+        "honorId": "honor_household_004",
+        "text": "Объясните, какая разница между мукой высшего сорта и мукой грубого помола. Какая мука полезнее?",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_household_004_req_21",
+        "honorId": "honor_household_004",
+        "text": "Объясните, что такое РСНП (рекомендуемые суточные нормы потребления)?",
+        "type": "theory",
+        "order": 21
+      }
+    ]
+  },
+  {
+    "id": "honor_household_005",
+    "name": "Здоровое питание",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "(повышенной сложности)",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/5/5a/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c3/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B5_%D0%BF%D0%B8%D1%82%D0%B0%D0%BD%D0%B8%D0%B5_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_household_005_req_01",
+        "honorId": "honor_household_005",
+        "text": "Получите нашивку «Здоровое питание».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_005_req_02",
+        "honorId": "honor_household_005",
+        "text": "Прочитайте книгу о здоровом питании.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_005_req_03",
+        "honorId": "honor_household_005",
+        "text": "Выполните следующее:",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_005_req_04",
+        "honorId": "honor_household_005",
+        "text": "• заполняйте в течение недели дневник питания;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_005_req_05",
+        "honorId": "honor_household_005",
+        "text": "• для каждого из дней посчитайте суммарное количество следующих питательных веществ в вашей диете: калории, белки, железо, кальций, витамин A, тиамин (B 1), рибофлавин (B 2), ниацин (PP или никотиновая кислота) и витамин C (или аскорбиновая кислота).",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_005_req_06",
+        "honorId": "honor_household_005",
+        "text": "Расскажите, насколько совпадает количество питательных веществ в вашей диете с рекомендуемыми суточными нормами потребления?",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_005_req_07",
+        "honorId": "honor_household_005",
+        "text": "Объясните, почему диета богатая клетчаткой так важна для человека и расскажите, какие продукты нужно употреблять, чтобы получить такую диету.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_005_req_08",
+        "honorId": "honor_household_005",
+        "text": "Назовите три заболевания, вызванные нехваткой питательных веществ, и опишите симптомы каждого из этих заболеваний.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_005_req_09",
+        "honorId": "honor_household_005",
+        "text": "Опишите симптомы дефицита витамина B 12.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_005_req_10",
+        "honorId": "honor_household_005",
+        "text": "Расскажите, какой совет вы дали бы человеку, который собирается стать чистым вегетарианцем.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_005_req_11",
+        "honorId": "honor_household_005",
+        "text": "Объясните, какая разница между насыщенными и ненасыщенными жирами. Какие жиры полезны для человека и почему?",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_005_req_12",
+        "honorId": "honor_household_005",
+        "text": "Объясните, почему рекомендуется употреблять меньше сахара. Перечислите несколько способов, как этого можно достичь.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_005_req_13",
+        "honorId": "honor_household_005",
+        "text": "Используя книгу «Основы здорового питания» Э. Уайт, напишите краткую заметку о преимуществах лактоововегетарианской диеты.",
+        "type": "theory",
+        "order": 13
+      }
+    ]
+  },
+  {
+    "id": "honor_household_006",
+    "name": "Изготовление циновки",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/4/42/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%98%D0%B7%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D1%86%D0%B8%D0%BD%D0%BE%D0%B2%D0%BA%D0%B8.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%98%D0%B7%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D1%86%D0%B8%D0%BD%D0%BE%D0%B2%D0%BA%D0%B8.png",
+    "img": "https://wiki.sledopit.club/images/thumb/7/75/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%98%D0%B7%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D1%86%D0%B8%D0%BD%D0%BE%D0%B2%D0%BA%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%98%D0%B7%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D1%86%D0%B8%D0%BD%D0%BE%D0%B2%D0%BA%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%98%D0%B7%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D1%86%D0%B8%D0%BD%D0%BE%D0%B2%D0%BA%D0%B8",
+    "requirements": [
+      {
+        "id": "honor_household_006_req_01",
+        "honorId": "honor_household_006",
+        "text": "Назовите материалы, которые в вашей культуре используют для изготовления циновок.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_006_req_02",
+        "honorId": "honor_household_006",
+        "text": "Объясните и покажите, как подготовить эти материалы.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_006_req_03",
+        "honorId": "honor_household_006",
+        "text": "Назовите растения, которые в вашей культуре могут быть использованы для изготовления красителей. Расскажите, где их можно найти и как из них приготовить краситель.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_006_req_04",
+        "honorId": "honor_household_006",
+        "text": "Покажите, как использовать природные и синтетические красители для окрашивания материалов, необходимых для изготовления циновок.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_006_req_05",
+        "honorId": "honor_household_006",
+        "text": "Изготовьте две циновки, применяя два разных способа плетения/тканья. Одна из циновок должна демонстрировать достаточно высокий уровень мастерства плетения.",
+        "type": "theory",
+        "order": 5
+      }
+    ]
+  },
+  {
+    "id": "honor_household_007",
+    "name": "Квилтинг",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3c/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%B2%D0%B8%D0%BB%D1%82%D0%B8%D0%BD%D0%B3.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%B2%D0%B8%D0%BB%D1%82%D0%B8%D0%BD%D0%B3.png",
+    "img": "https://wiki.sledopit.club/images/thumb/5/54/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%B2%D0%B8%D0%BB%D1%82%D0%B8%D0%BD%D0%B3_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%B2%D0%B8%D0%BB%D1%82%D0%B8%D0%BD%D0%B3_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9A%D0%B2%D0%B8%D0%BB%D1%82%D0%B8%D0%BD%D0%B3",
+    "requirements": [
+      {
+        "id": "honor_household_007_req_01",
+        "honorId": "honor_household_007",
+        "text": "Объясните, что такое квилт (лоскутное шитье, изготовление стеганных одеял). Для чего он используется?",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_007_req_02",
+        "honorId": "honor_household_007",
+        "text": "Объясните, какие три вида тканей используются в качестве прокладки (среднего слоя) лоскутного одеяла.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_007_req_03",
+        "honorId": "honor_household_007",
+        "text": "Объясните, какие два способа создания узоров чаще всего встречаются в квилте. Дайте определение термину «сумасшедший квилт».",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_007_req_04",
+        "honorId": "honor_household_007",
+        "text": "Объясните, чем вязание отличается от квилтинга.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_007_req_05",
+        "honorId": "honor_household_007",
+        "text": "Перечислите основные этапы создания квилта.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_007_req_06",
+        "honorId": "honor_household_007",
+        "text": "Полностью самостоятельно или с группой разработайте и сделайте квилт.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_007_req_07",
+        "honorId": "honor_household_007",
+        "text": "Создайте папку как минимум с шестью образцами работ из квилта, включая работы с геометрическим орнаментом и одну работу на национально-этническую тему.",
+        "type": "theory",
+        "order": 7
+      }
+    ]
+  },
+  {
+    "id": "honor_household_008",
+    "name": "Консервирование",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/0/04/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%BE%D0%BD%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%BE%D0%BD%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.png",
+    "img": "https://wiki.sledopit.club/images/thumb/9/98/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%BE%D0%BD%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9A%D0%BE%D0%BD%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9A%D0%BE%D0%BD%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5",
+    "requirements": [
+      {
+        "id": "honor_household_008_req_01",
+        "honorId": "honor_household_008",
+        "text": "Дайте определение следующим терминам:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_008_req_02",
+        "honorId": "honor_household_008",
+        "text": "• ботулизм;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_008_req_03",
+        "honorId": "honor_household_008",
+        "text": "• кипячение;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_008_req_04",
+        "honorId": "honor_household_008",
+        "text": "• холодное консервирование;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_008_req_05",
+        "honorId": "honor_household_008",
+        "text": "• горячее консервирование;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_008_req_06",
+        "honorId": "honor_household_008",
+        "text": "• варенье;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_008_req_07",
+        "honorId": "honor_household_008",
+        "text": "• желе;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_008_req_08",
+        "honorId": "honor_household_008",
+        "text": "• мармелад;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_008_req_09",
+        "honorId": "honor_household_008",
+        "text": "• открытое консервирование;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_008_req_10",
+        "honorId": "honor_household_008",
+        "text": "• пектин;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_008_req_11",
+        "honorId": "honor_household_008",
+        "text": "• маринование;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_008_req_12",
+        "honorId": "honor_household_008",
+        "text": "• обработка кипятком;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_008_req_13",
+        "honorId": "honor_household_008",
+        "text": "• паровое консервирование;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_008_req_14",
+        "honorId": "honor_household_008",
+        "text": "• консервирование давлением пара;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_008_req_15",
+        "honorId": "honor_household_008",
+        "text": "• стерилизация.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_008_req_16",
+        "honorId": "honor_household_008",
+        "text": "Перечислите инструменты, используемые в следующих видах консервирования:",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_008_req_17",
+        "honorId": "honor_household_008",
+        "text": "• давлением;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_008_req_18",
+        "honorId": "honor_household_008",
+        "text": "• кипячением;",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_household_008_req_19",
+        "honorId": "honor_household_008",
+        "text": "• паром;",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_household_008_req_20",
+        "honorId": "honor_household_008",
+        "text": "• горячий разлив (горячая расфасовка).",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_household_008_req_21",
+        "honorId": "honor_household_008",
+        "text": "Проинструктируйте, как выполнять стерилизацию и заполнение банок, укупорку и проверку крышек на банках.",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_household_008_req_22",
+        "honorId": "honor_household_008",
+        "text": "Когда следует проводить обработку продуктов паром?",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_household_008_req_23",
+        "honorId": "honor_household_008",
+        "text": "Перечислите овощи и фрукты, которые превосходно подходят для консервирования, но не подходят для замораживания или сушки.",
+        "type": "theory",
+        "order": 23
+      },
+      {
+        "id": "honor_household_008_req_24",
+        "honorId": "honor_household_008",
+        "text": "Возможно ли следующее:",
+        "type": "theory",
+        "order": 24
+      },
+      {
+        "id": "honor_household_008_req_25",
+        "honorId": "honor_household_008",
+        "text": "• консервирование сока одного фрукта методом горячего разлива;",
+        "type": "theory",
+        "order": 25
+      },
+      {
+        "id": "honor_household_008_req_26",
+        "honorId": "honor_household_008",
+        "text": "• консервирование двух видов фруктов методом кипячения, один вид горячим, а другой холодным способом консервирования;",
+        "type": "theory",
+        "order": 26
+      },
+      {
+        "id": "honor_household_008_req_27",
+        "honorId": "honor_household_008",
+        "text": "• консервирование двух видов овощей, используя метод давлением пара, один вид горячим, а другой холодным способом консервирования;",
+        "type": "theory",
+        "order": 27
+      },
+      {
+        "id": "honor_household_008_req_28",
+        "honorId": "honor_household_008",
+        "text": "• консервирование желе или варенья.",
+        "type": "theory",
+        "order": 28
+      }
+    ]
+  },
+  {
+    "id": "honor_household_009",
+    "name": "Основы шитья",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/a/a9/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B_%D1%88%D0%B8%D1%82%D1%8C%D1%8F.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B_%D1%88%D0%B8%D1%82%D1%8C%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/f8/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B_%D1%88%D0%B8%D1%82%D1%8C%D1%8F_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B_%D1%88%D0%B8%D1%82%D1%8C%D1%8F_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B_%D1%88%D0%B8%D1%82%D1%8C%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_household_009_req_01",
+        "honorId": "honor_household_009",
+        "text": "Покажите, как правильно пользоваться наперстком, сантиметром, различными видами ножниц, дыроколами, иголками различных размеров и видов.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_009_req_02",
+        "honorId": "honor_household_009",
+        "text": "Дома или в школе ознакомьтесь со швейной машинкой. Найдите маховое колесо, направитель нити, ножное управление, рычаг, подъема лапки, иглу, лапку, шпульку, шпульный колпачок.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_009_req_03",
+        "honorId": "honor_household_009",
+        "text": "Покажите, как правильно заправить нити швейной машинки и как правильно шить.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_009_req_04",
+        "honorId": "honor_household_009",
+        "text": "Подрубите полотенце правильными стежками.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_009_req_05",
+        "honorId": "honor_household_009",
+        "text": "Покажите умение правильно пришить пуговицы, кнопки, крючки и пуговицы с ушком.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_009_req_06",
+        "honorId": "honor_household_009",
+        "text": "Расскажите, что такое кромочный край, скос, продольная и поперечная нитки.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_009_req_07",
+        "honorId": "honor_household_009",
+        "text": "Сшейте что-то не очень сложное (полотенце, носовые платочки, мешочки для круп и т. д.).",
+        "type": "theory",
+        "order": 7
+      }
+    ]
+  },
+  {
+    "id": "honor_household_010",
+    "name": "Пиццайоло",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3e/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%B8%D1%86%D1%86%D0%B0%D0%B9%D0%BE%D0%BB%D0%BE.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%B8%D1%86%D1%86%D0%B0%D0%B9%D0%BE%D0%BB%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/1/17/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%B8%D1%86%D1%86%D0%B0%D0%B9%D0%BE%D0%BB%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%B8%D1%86%D1%86%D0%B0%D0%B9%D0%BE%D0%BB%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D0%B8%D1%86%D1%86%D0%B0%D0%B9%D0%BE%D0%BB%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_household_010_req_01",
+        "honorId": "honor_household_010",
+        "text": "Выполните краткое исследование по истории происхождения пиццы.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_010_req_02",
+        "honorId": "honor_household_010",
+        "text": "Напишите список основных ингредиентов теста для пиццы.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_010_req_03",
+        "honorId": "honor_household_010",
+        "text": "Найдите в Библии, по крайней мере, один стих о каждом ингредиенте для пиццы. Объясните символическое значение, как минимум, четырех стихов из найденных вами.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_010_req_04",
+        "honorId": "honor_household_010",
+        "text": "Опишите процесс брожения теста.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_010_req_05",
+        "honorId": "honor_household_010",
+        "text": "Чем отличается неаполитанская пицца от римской пиццы.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_010_req_06",
+        "honorId": "honor_household_010",
+        "text": "Сколько видов пицц, отличающихся формой и размерами, вы знаете?",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_010_req_07",
+        "honorId": "honor_household_010",
+        "text": "Какие существуют способы выпекания пиццы. Опишите подробно, чем они отличаются.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_010_req_08",
+        "honorId": "honor_household_010",
+        "text": "Какая наилучшая температура для выпекания пиццы в дровяной печи и в электрической духовке?",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_010_req_09",
+        "honorId": "honor_household_010",
+        "text": "Приготовьте пиццу «Маргарита».",
+        "type": "theory",
+        "order": 9
+      }
+    ]
+  },
+  {
+    "id": "honor_household_011",
+    "name": "Пошив одежды",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3b/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%BE%D1%88%D0%B8%D0%B2_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%BE%D1%88%D0%B8%D0%B2_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B.png",
+    "img": "https://wiki.sledopit.club/images/thumb/d/dc/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%BE%D1%88%D0%B8%D0%B2_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D0%BE%D1%88%D0%B8%D0%B2_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D0%BE%D1%88%D0%B8%D0%B2_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B",
+    "requirements": [
+      {
+        "id": "honor_household_011_req_01",
+        "honorId": "honor_household_011",
+        "text": "Определите следующие материалы:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_011_req_02",
+        "honorId": "honor_household_011",
+        "text": "• шерсть;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_011_req_03",
+        "honorId": "honor_household_011",
+        "text": "• ткань из гребенной шерсти;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_011_req_04",
+        "honorId": "honor_household_011",
+        "text": "• хлопок;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_011_req_05",
+        "honorId": "honor_household_011",
+        "text": "• лен;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_011_req_06",
+        "honorId": "honor_household_011",
+        "text": "• шелк;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_011_req_07",
+        "honorId": "honor_household_011",
+        "text": "• вискоза.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_011_req_08",
+        "honorId": "honor_household_011",
+        "text": "Определите следующие ткани:",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_011_req_09",
+        "honorId": "honor_household_011",
+        "text": "• полотняное (простое);",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_011_req_10",
+        "honorId": "honor_household_011",
+        "text": "• рогожа;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_011_req_11",
+        "honorId": "honor_household_011",
+        "text": "• репсовое переплетение;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_011_req_12",
+        "honorId": "honor_household_011",
+        "text": "• саржевое;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_011_req_13",
+        "honorId": "honor_household_011",
+        "text": "• усиленная саржа;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_011_req_14",
+        "honorId": "honor_household_011",
+        "text": "• ворсовое переплетение.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_011_req_15",
+        "honorId": "honor_household_011",
+        "text": "Объясните, для чего используют:",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_011_req_16",
+        "honorId": "honor_household_011",
+        "text": "• прокладку;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_011_req_17",
+        "honorId": "honor_household_011",
+        "text": "• наметку;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_011_req_18",
+        "honorId": "honor_household_011",
+        "text": "• бельевой холст (подкладочный материал);",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_household_011_req_19",
+        "honorId": "honor_household_011",
+        "text": "• другие подкладочные или каркасные материалы (например, флизелин).",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_household_011_req_20",
+        "honorId": "honor_household_011",
+        "text": "Перечислите нюансы, которые надо соблюдать во время пошива одежды, чтобы она хорошо сидела и была хорошо пошита.",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_household_011_req_21",
+        "honorId": "honor_household_011",
+        "text": "Покажите, что знакомы со следующим гладильным оборудованием:",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_household_011_req_22",
+        "honorId": "honor_household_011",
+        "text": "• доска для отглаживания рукавов;",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_household_011_req_23",
+        "honorId": "honor_household_011",
+        "text": "• рукавичка для глажки;",
+        "type": "theory",
+        "order": 23
+      },
+      {
+        "id": "honor_household_011_req_24",
+        "honorId": "honor_household_011",
+        "text": "• подушка-валик для глажки;",
+        "type": "theory",
+        "order": 24
+      },
+      {
+        "id": "honor_household_011_req_25",
+        "honorId": "honor_household_011",
+        "text": "• подушка-окорок для глажки;",
+        "type": "theory",
+        "order": 25
+      },
+      {
+        "id": "honor_household_011_req_26",
+        "honorId": "honor_household_011",
+        "text": "• гладильная доска;",
+        "type": "theory",
+        "order": 26
+      },
+      {
+        "id": "honor_household_011_req_27",
+        "honorId": "honor_household_011",
+        "text": "• игольная доска (для глажки бархата).",
+        "type": "theory",
+        "order": 27
+      },
+      {
+        "id": "honor_household_011_req_28",
+        "honorId": "honor_household_011",
+        "text": "Сделайте заплаточную обтачную (выточную) петлю и обметную (выметную) петлю, а также воздушные петли",
+        "type": "theory",
+        "order": 28
+      },
+      {
+        "id": "honor_household_011_req_29",
+        "honorId": "honor_household_011",
+        "text": "Сделайте продольный прорезной карман с клапаном или карманщель.",
+        "type": "theory",
+        "order": 29
+      },
+      {
+        "id": "honor_household_011_req_30",
+        "honorId": "honor_household_011",
+        "text": "Продемонстрируйте умение правильно снять мерки, выкроить и сшить надлежащим образом мужской или женский костюм так, чтобы он хорошо сидел.",
+        "type": "theory",
+        "order": 30
+      }
+    ]
+  },
+  {
+    "id": "honor_household_012",
+    "name": "Приготовление национальной пищи",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/a/ac/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B8.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B8.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/28/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B8",
+    "requirements": [
+      {
+        "id": "honor_household_012_req_01",
+        "honorId": "honor_household_012",
+        "text": "Приготовьте блюда, самостоятельно используя местные методы и ингредиенты (смотрите примеры ниже).",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_012_req_02",
+        "honorId": "honor_household_012",
+        "text": "Ингредиенты/принадлежности:",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_012_req_03",
+        "honorId": "honor_household_012",
+        "text": "Сырые продукты питания (например, маниока, ямс, сладкий картофель, листья таро и т. д.);",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_012_req_04",
+        "honorId": "honor_household_012",
+        "text": "Банановые листья или другие листья, используемые в вашей местности;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_012_req_05",
+        "honorId": "honor_household_012",
+        "text": "Камни;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_012_req_06",
+        "honorId": "honor_household_012",
+        "text": "Дрова для огня;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_012_req_07",
+        "honorId": "honor_household_012",
+        "text": "Банановый стебель;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_012_req_08",
+        "honorId": "honor_household_012",
+        "text": "Кокосовые листья.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_012_req_09",
+        "honorId": "honor_household_012",
+        "text": "Способы:",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_012_req_10",
+        "honorId": "honor_household_012",
+        "text": "Сначала разведите костер;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_012_req_11",
+        "honorId": "honor_household_012",
+        "text": "Уложите дрова (крест-накрест, костер «Пирамида»);",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_012_req_12",
+        "honorId": "honor_household_012",
+        "text": "Положите все камни наверх дров;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_012_req_13",
+        "honorId": "honor_household_012",
+        "text": "Поддерживайте костер до тех пор, пока вы не заметите, что камни раскалились докрасна;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_012_req_14",
+        "honorId": "honor_household_012",
+        "text": "Расчистите лово/печь;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_012_req_15",
+        "honorId": "honor_household_012",
+        "text": "Поверх камней выложите наломанные банановые стебли;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_012_req_16",
+        "honorId": "honor_household_012",
+        "text": "Положите подготовленную сырую еду на банановые стебли;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_012_req_17",
+        "honorId": "honor_household_012",
+        "text": "После этого накройте еду зелеными кокосовыми листьями и оставьте на 1–1,5 часа;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_012_req_18",
+        "honorId": "honor_household_012",
+        "text": "Откройте лово/печь. Ваша еда готова!",
+        "type": "theory",
+        "order": 18
+      }
+    ]
+  },
+  {
+    "id": "honor_household_013",
+    "name": "Приготовление пищи",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/31/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8.png",
+    "img": "https://wiki.sledopit.club/images/thumb/9/97/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8",
+    "requirements": [
+      {
+        "id": "honor_household_013_req_01",
+        "honorId": "honor_household_013",
+        "text": "Расскажите, как правильно пользоваться вашей кухонной плитой, как чистить ее от подгоревшего масла и жира. Объясните, как предотвратить такое загрязнение и какие правила безопасности надо соблюдать во время приготовления пищи, учитывая, что рядом находятся маленькие дети.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_013_req_02",
+        "honorId": "honor_household_013",
+        "text": "Покажите, как правильно пользоваться мерными ложками, чашками, венчиком, ситом для муки и, если есть, электрическим миксером.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_013_req_03",
+        "honorId": "honor_household_013",
+        "text": "Объясните, что значит варить, жарить, тушить, печь, варить на малом огне, готовить пищу без воды. Какой способ приготовления пищи соответствует здоровому питанию? Какой наиболее вредит здоровью?",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_013_req_04",
+        "honorId": "honor_household_013",
+        "text": "Приготовьте два горячих блюда из круп, полезный для здоровья горячий напиток. Приготовьте двумя различными способами, кроме жарки, яйца.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_013_req_05",
+        "honorId": "honor_household_013",
+        "text": "Приготовьте картофель двумя разными способами, чтобы это было полезно для здоровья. Приготовьте три других овоща так, чтобы это было полезно для здоровья.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_013_req_06",
+        "honorId": "honor_household_013",
+        "text": "Приготовьте простой салат. Почему нам необходимо есть салаты из свежих овощей?",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_013_req_07",
+        "honorId": "honor_household_013",
+        "text": "Расскажите о пищевой пирамиде. Почему в питании так важно следовать этой схеме? Проследите за тем, что вы едите в течение недели, чтобы удостовериться, что вы питаетесь согласно этой схеме.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_013_req_08",
+        "honorId": "honor_household_013",
+        "text": "Правильно, красиво и аккуратно накройте стол к обеду в вашей семье. Подайте сбалансированную еду, которую вы запланировали, приготовьте как можно больше блюд самостоятельно, включая основное блюдо, овощи и салат.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_013_req_09",
+        "honorId": "honor_household_013",
+        "text": "Приготовьте вегетарианское блюдо, выполняя все точно по рецепту.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_013_req_10",
+        "honorId": "honor_household_013",
+        "text": "Заведите папку с рецептами. Записывайте туда только те рецепты, которые вы пробовали и они вам понравились.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_013_req_11",
+        "honorId": "honor_household_013",
+        "text": "Опишите влияние Эллен Уайт на ваши знания о здоровье и питании в настоящее время. Расскажите две ее рекомендации в приготовлении пищи.",
+        "type": "theory",
+        "order": 11
+      }
+    ]
+  },
+  {
+    "id": "honor_household_014",
+    "name": "Приготовление пищи",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "(повышенной сложности)",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/6/6b/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/8/8f/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D1%80%D0%B8%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B8%D1%89%D0%B8_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_household_014_req_01",
+        "honorId": "honor_household_014",
+        "text": "Получите нашивку «Приготовление пищи».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_014_req_02",
+        "honorId": "honor_household_014",
+        "text": "Расскажите, сколько чашек в одном литре, сколько миллилитров в литре, сколько столовых ложек в чашке, сколько в столовой ложке чайных ложек.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_014_req_03",
+        "honorId": "honor_household_014",
+        "text": "Приготовьте два вида запеканок из макарон, лапши, бобовых или риса.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_014_req_04",
+        "honorId": "honor_household_014",
+        "text": "Приготовьте два вида овощных запеканок.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_014_req_05",
+        "honorId": "honor_household_014",
+        "text": "Приготовьте два вида салатов. Как сохранить салаты свежими и хрустящими?",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_014_req_06",
+        "honorId": "honor_household_014",
+        "text": "Объясните разницу в пищевой ценности цельного и обезжиренного молока.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_014_req_07",
+        "honorId": "honor_household_014",
+        "text": "Пользуясь пирамидой питания, приготовьте сбалансированный завтрак.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_014_req_08",
+        "honorId": "honor_household_014",
+        "text": "Приготовьте вегетарианское основное (второе) блюдо.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_014_req_09",
+        "honorId": "honor_household_014",
+        "text": "Спланируйте меню на неделю, предусмотрев как минимум три блюда, для приготовления которых используются остатки еды с прошлых приемов пищи.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_014_req_10",
+        "honorId": "honor_household_014",
+        "text": "Приготовьте сбалансированный обед, состоящий из вегетарианских основного блюда, овощной запеканки и салата.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_014_req_11",
+        "honorId": "honor_household_014",
+        "text": "Расскажите, как кофеин влияет на тело. Перечислите пять продуктов питания, содержащих кофеин.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_014_req_12",
+        "honorId": "honor_household_014",
+        "text": "У вас должны быть двадцать пять рецептов блюд, которые вы лично готовили, из них сладостей и десертов должно быть не более пяти блюд.",
+        "type": "theory",
+        "order": 12
+      }
+    ]
+  },
+  {
+    "id": "honor_household_015",
+    "name": "Стирка и глажка одежды",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/2/26/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A1%D1%82%D0%B8%D1%80%D0%BA%D0%B0_%D0%B8_%D0%B3%D0%BB%D0%B0%D0%B6%D0%BA%D0%B0_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A1%D1%82%D0%B8%D1%80%D0%BA%D0%B0_%D0%B8_%D0%B3%D0%BB%D0%B0%D0%B6%D0%BA%D0%B0_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c0/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A1%D1%82%D0%B8%D1%80%D0%BA%D0%B0_%D0%B8_%D0%B3%D0%BB%D0%B0%D0%B6%D0%BA%D0%B0_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A1%D1%82%D0%B8%D1%80%D0%BA%D0%B0_%D0%B8_%D0%B3%D0%BB%D0%B0%D0%B6%D0%BA%D0%B0_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A1%D1%82%D0%B8%D1%80%D0%BA%D0%B0_%D0%B8_%D0%B3%D0%BB%D0%B0%D0%B6%D0%BA%D0%B0_%D0%BE%D0%B4%D0%B5%D0%B6%D0%B4%D1%8B",
+    "requirements": [
+      {
+        "id": "honor_household_015_req_01",
+        "honorId": "honor_household_015",
+        "text": "Объясните, почему перед стиркой нужно читать ярлычки на одежде.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_015_req_02",
+        "honorId": "honor_household_015",
+        "text": "Объясните, как правильно подготовить одежду для стирки.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_015_req_03",
+        "honorId": "honor_household_015",
+        "text": "Объясните, какие виды одежды нужно стирать в горячей, теплой и холодной воде.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_015_req_04",
+        "honorId": "honor_household_015",
+        "text": "Объясните, какие меры предосторожности нужно соблюдать при использовании хлорного отбеливателя. В чем преимущества порошкообразного кислородосодержащего отбеливателя? Почему нельзя смешивать отбеливатель и аммиак?",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_015_req_05",
+        "honorId": "honor_household_015",
+        "text": "Объясните, какие меры предосторожности следует соблюдать при использовании кондиционера для белья.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_015_req_06",
+        "honorId": "honor_household_015",
+        "text": "Объясните, на что надо обращать внимание при выборе стиральной машинки, сушильной машины, утюга. Как надо ухаживать за этими приборами?",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_015_req_07",
+        "honorId": "honor_household_015",
+        "text": "Объясните, как нужно стирать шерстяную одежду.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_015_req_08",
+        "honorId": "honor_household_015",
+        "text": "Объясните, как удалить пятна от чернил, фруктов, ржавчины, травы, какао, жира, крови, жевательной резинки. Почему пятно надо выводить до стирки?",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_015_req_09",
+        "honorId": "honor_household_015",
+        "text": "Объясните, почему очень важно доставать одежду из сушильной машины сразу после того, как заканчивается цикл сушки.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_015_req_10",
+        "honorId": "honor_household_015",
+        "text": "Объясните, какие виды тканей следует сушить при самом низком температурном режиме сушильной машины?",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_015_req_11",
+        "honorId": "honor_household_015",
+        "text": "Покажите блузку или рубашку, которую вы правильно отутюжили и сложили, или юбку или пиджак, которые вы прогладили под гладильным прессом.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_015_req_12",
+        "honorId": "honor_household_015",
+        "text": "На протяжении одной недели стирайте и складывайте одежду для своей семьи.",
+        "type": "theory",
+        "order": 12
+      }
+    ]
+  },
+  {
+    "id": "honor_household_016",
+    "name": "Ткань тапа",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/0/0d/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A2%D0%BA%D0%B0%D0%BD%D1%8C_%D1%82%D0%B0%D0%BF%D0%B0.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A2%D0%BA%D0%B0%D0%BD%D1%8C_%D1%82%D0%B0%D0%BF%D0%B0.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/f7/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A2%D0%BA%D0%B0%D0%BD%D1%8C_%D1%82%D0%B0%D0%BF%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A2%D0%BA%D0%B0%D0%BD%D1%8C_%D1%82%D0%B0%D0%BF%D0%B0_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A2%D0%BA%D0%B0%D0%BD%D1%8C_%D1%82%D0%B0%D0%BF%D0%B0",
+    "requirements": [
+      {
+        "id": "honor_household_016_req_01",
+        "honorId": "honor_household_016",
+        "text": "Расскажите, где в основном используется тапа.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_016_req_02",
+        "honorId": "honor_household_016",
+        "text": "Расскажите два способа, которыми изготавливается ткань тапа на островах Тихого океана.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_016_req_03",
+        "honorId": "honor_household_016",
+        "text": "Расскажите, какие деревья в вашей местности используются для изготовления ткани тапа.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_016_req_04",
+        "honorId": "honor_household_016",
+        "text": "Объясните:",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_016_req_05",
+        "honorId": "honor_household_016",
+        "text": "• этапы приготовления ткани тапа и потом продемонстрируйте познания, изготовив половину квадратных метра ткани тапа;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_016_req_06",
+        "honorId": "honor_household_016",
+        "text": "• процесс покраски ткани тапа с помощью природных красителей и украсьте свою ткань.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_016_req_07",
+        "honorId": "honor_household_016",
+        "text": "Соберите коллекцию из нескольких различных по рисунку типов ткани тапа. Расскажите в общих чертах, для чего эти ткани были сделаны.",
+        "type": "theory",
+        "order": 7
+      }
+    ]
+  },
+  {
+    "id": "honor_household_017",
+    "name": "Швейное дело",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/6/67/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/0/0d/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE",
+    "requirements": []
+  },
+  {
+    "id": "honor_household_018",
+    "name": "Швейное дело",
+    "categoryId": "household",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "(повышенной сложности)",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/7/7c/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png/150px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F.png",
+    "img": "https://wiki.sledopit.club/images/thumb/4/47/%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%94%D0%BE%D0%BC%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D1%81%D0%BB%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A8%D0%B2%D0%B5%D0%B9%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BB%D0%BE_-_%D0%BF%D0%BE%D0%B2%D1%8B%D1%88%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F",
+    "requirements": [
+      {
+        "id": "honor_household_018_req_01",
+        "honorId": "honor_household_018",
+        "text": "Получите нашивку «Швейное дело».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_household_018_req_02",
+        "honorId": "honor_household_018",
+        "text": "Сделайте следующее:",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_household_018_req_03",
+        "honorId": "honor_household_018",
+        "text": "• стачной шов, края деталей обрежьте ножницами зигзаг;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_household_018_req_04",
+        "honorId": "honor_household_018",
+        "text": "• вытачки;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_household_018_req_05",
+        "honorId": "honor_household_018",
+        "text": "• складки (сборки);",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_household_018_req_06",
+        "honorId": "honor_household_018",
+        "text": "• краевой шов;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_household_018_req_07",
+        "honorId": "honor_household_018",
+        "text": "• обстрочку;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_household_018_req_08",
+        "honorId": "honor_household_018",
+        "text": "• французский шов.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_household_018_req_09",
+        "honorId": "honor_household_018",
+        "text": "Сделайте аккуратную петлю.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_household_018_req_10",
+        "honorId": "honor_household_018",
+        "text": "Продемонстрируйте на другом человеке как снимать мерки длины юбки, длины рукава, длины спины до талии.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_household_018_req_11",
+        "honorId": "honor_household_018",
+        "text": "Сшейте рубашку с втачным рукавом и воротничком и объясните, как подгонять размер в плечах для людей с разной фигурой.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_household_018_req_12",
+        "honorId": "honor_household_018",
+        "text": "Объясните, как выполнить подгонку выкроек, описав как минимум четыре пункта из предложенных ниже:",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_household_018_req_13",
+        "honorId": "honor_household_018",
+        "text": "• укоротить линию талии;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_household_018_req_14",
+        "honorId": "honor_household_018",
+        "text": "• удлинить линию талии;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_household_018_req_15",
+        "honorId": "honor_household_018",
+        "text": "• удлинить рукав;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_household_018_req_16",
+        "honorId": "honor_household_018",
+        "text": "• высота талии;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_household_018_req_17",
+        "honorId": "honor_household_018",
+        "text": "• удлинить юбку или брюки;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_household_018_req_18",
+        "honorId": "honor_household_018",
+        "text": "• удлинить или укоротить шаговый шов брюк.",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_household_018_req_19",
+        "honorId": "honor_household_018",
+        "text": "Сшейте пару брюк или шорт, чтобы они хорошо сидели.",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_household_018_req_20",
+        "honorId": "honor_household_018",
+        "text": "Сшейте юбку.",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_household_018_req_21",
+        "honorId": "honor_household_018",
+        "text": "Подберите по рисункам или нарисуйте сами комплект одежды, в котором видна гармония цвета и который подходил бы вашей фигуре.",
+        "type": "theory",
+        "order": 21
+      }
+    ]
+  }
+]

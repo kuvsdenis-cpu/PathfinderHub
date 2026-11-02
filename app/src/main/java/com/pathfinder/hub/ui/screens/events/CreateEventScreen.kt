@@ -66,7 +66,7 @@ fun CreateEventScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Новое событие") },
+                title = { Text(if (state.isEditMode) "Редактировать событие" else "Новое событие") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
@@ -158,8 +158,8 @@ fun CreateEventScreen(
             }
 
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+                expanded = expanded && !state.isEditMode,
+                onExpandedChange = { if (!state.isEditMode) expanded = !expanded }
             ) {
                 OutlinedTextField(
                     value = assignedDisplay,
@@ -169,8 +169,8 @@ fun CreateEventScreen(
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = !state.isLoading),
-                    enabled = !state.isLoading
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = !state.isLoading && !state.isEditMode),
+                    enabled = !state.isLoading && !state.isEditMode
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
@@ -298,9 +298,9 @@ fun CreateEventScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = viewModel::createEvent,
+                onClick = viewModel::saveEvent,
                 enabled = !state.isLoading && state.title.isNotBlank() &&
-                        (state.assignedTo.isNotBlank() || !state.targetGroup.isNullOrBlank()),
+                        (state.isEditMode || state.assignedTo.isNotBlank() || !state.targetGroup.isNullOrBlank()),
 
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
@@ -311,7 +311,7 @@ fun CreateEventScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Создать событие")
+                    Text(if (state.isEditMode) "Сохранить" else "Создать событие")
                 }
             }
         }

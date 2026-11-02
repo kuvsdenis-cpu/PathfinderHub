@@ -1,0 +1,2088 @@
+[
+  {
+    "id": "honor_agriculture_001",
+    "name": "Выращивание фруктов",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3d/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%92%D1%8B%D1%80%D0%B0%D1%89%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D1%84%D1%80%D1%83%D0%BA%D1%82%D0%BE%D0%B2.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%92%D1%8B%D1%80%D0%B0%D1%89%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D1%84%D1%80%D1%83%D0%BA%D1%82%D0%BE%D0%B2.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/cc/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%92%D1%8B%D1%80%D0%B0%D1%89%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D1%84%D1%80%D1%83%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%92%D1%8B%D1%80%D0%B0%D1%89%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D1%84%D1%80%D1%83%D0%BA%D1%82%D0%BE%D0%B2_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%92%D1%8B%D1%80%D0%B0%D1%89%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5_%D1%84%D1%80%D1%83%D0%BA%D1%82%D0%BE%D0%B2",
+    "requirements": [
+      {
+        "id": "honor_agriculture_001_req_01",
+        "honorId": "honor_agriculture_001",
+        "text": "Расскажите, для чего фруктовые деревья прививаются.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_001_req_02",
+        "honorId": "honor_agriculture_001",
+        "text": "Объясните, что означает термин «выносливость растений».",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_001_req_03",
+        "honorId": "honor_agriculture_001",
+        "text": "Расскажите, какие требования к условиям местности и почвы необходимо выполнить, чтобы вырастить три вида деревьев из указанных ниже:",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_001_req_04",
+        "honorId": "honor_agriculture_001",
+        "text": "• яблоня;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_001_req_05",
+        "honorId": "honor_agriculture_001",
+        "text": "• персик;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_001_req_06",
+        "honorId": "honor_agriculture_001",
+        "text": "• груша;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_001_req_07",
+        "honorId": "honor_agriculture_001",
+        "text": "• слива;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_001_req_08",
+        "honorId": "honor_agriculture_001",
+        "text": "• черешня;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_001_req_09",
+        "honorId": "honor_agriculture_001",
+        "text": "• апельсин;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_001_req_10",
+        "honorId": "honor_agriculture_001",
+        "text": "• на ваш выбор.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_001_req_11",
+        "honorId": "honor_agriculture_001",
+        "text": "Что такое карликовое фруктовое дерево, как оно становится карликовым?",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_001_req_12",
+        "honorId": "honor_agriculture_001",
+        "text": "Посадите не менее двух деревьев и направляйте их рост с помощью подрезания на протяжении не менее двух сезонов или направляйте рост уже существующего дерева и подрезайте его. Под наблюдением удобрите почву и опрыскивайте дерево по мере необходимости в течение одного сезона созревания. Покажите инструктору собранные плоды.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_001_req_13",
+        "honorId": "honor_agriculture_001",
+        "text": "Ответьте на следующие вопросы:",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_001_req_14",
+        "honorId": "honor_agriculture_001",
+        "text": "• что такое опыление;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_001_req_15",
+        "honorId": "honor_agriculture_001",
+        "text": "• что такое опылитель;",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_001_req_16",
+        "honorId": "honor_agriculture_001",
+        "text": "• каким деревьям нужно опыление.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_001_req_17",
+        "honorId": "honor_agriculture_001",
+        "text": "Объясните, как защитить молодые деревья от грызунов.",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_001_req_18",
+        "honorId": "honor_agriculture_001",
+        "text": "Сравните вкус и внешний вид двух разных фруктов одного и того же сорта.",
+        "type": "theory",
+        "order": 18
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_002",
+    "name": "Голубеводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/30/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%93%D0%BE%D0%BB%D1%83%D0%B1%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%93%D0%BE%D0%BB%D1%83%D0%B1%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/f/f4/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%93%D0%BE%D0%BB%D1%83%D0%B1%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%93%D0%BE%D0%BB%D1%83%D0%B1%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%93%D0%BE%D0%BB%D1%83%D0%B1%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_002_req_01",
+        "honorId": "honor_agriculture_002",
+        "text": "Опишите, какими должны быть голубятня (чердачная или типовая, т. е. голубиный питомник), садок, клетки (вольеры) и гнездовой ящик (или дуплянка), используемые для разведения голубей. Перечислите, что должно быть внутри голубятни.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_002_req_02",
+        "honorId": "honor_agriculture_002",
+        "text": "Расскажите о правильном соотношении смеси из семян масличных культур, зерна и мелких камушков/крупного речного песка (в какой пропорции следует их смешивать), которую используют для кормления. Почему в областях с жарким климатом в рационе должно быть меньше зерна?",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_002_req_03",
+        "honorId": "honor_agriculture_002",
+        "text": "Расскажите о назначении различных частей голубиного крыла, особенно первичных и вторичных перьев.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_002_req_04",
+        "honorId": "honor_agriculture_002",
+        "text": "Объясните, почему важна линька. Как можно контролировать время линьки?",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_002_req_05",
+        "honorId": "honor_agriculture_002",
+        "text": "Вырастите хотя бы две пары голубей. Если это почтовые голуби, то обучите их возвращаться в голубятню с расстояния 40 км. Если это декоративные (статные) голуби — подготовьте их к выставке.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_002_req_06",
+        "honorId": "honor_agriculture_002",
+        "text": "Подготовьте краткий отчет о вашем опыте ухода и дрессировки, названных выше голубей, в который также будет включена информация о соблюдении санитарных норм, профилактике болезней, вшей, клещей, крыс и других паразитов.",
+        "type": "theory",
+        "order": 6
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_003",
+    "name": "Земледелие",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/5/51/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%97%D0%B5%D0%BC%D0%BB%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8%D0%B5.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%97%D0%B5%D0%BC%D0%BB%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8%D0%B5.png",
+    "img": "https://wiki.sledopit.club/images/thumb/a/a2/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%97%D0%B5%D0%BC%D0%BB%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%97%D0%B5%D0%BC%D0%BB%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8%D0%B5_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%97%D0%B5%D0%BC%D0%BB%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8%D0%B5",
+    "requirements": [
+      {
+        "id": "honor_agriculture_003_req_01",
+        "honorId": "honor_agriculture_003",
+        "text": "Перечислите составные элементы почвы. Почему почва важна для растений?",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_003_req_02",
+        "honorId": "honor_agriculture_003",
+        "text": "Объясните, чем отличаются глинистая, песчаная и суглинистая виды почв. Перечислите три культуры, которые хорошо растут на каждой из этих видов почв.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_003_req_03",
+        "honorId": "honor_agriculture_003",
+        "text": "Протестируйте прорастание трех видов семян — по сто семян каждого вида. Запишите процент прорастания на третий, четвертый и пятый дни.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_003_req_04",
+        "honorId": "honor_agriculture_003",
+        "text": "Объясните, как растения получают питательные вещества и превращают их в пищу. Объясните разницу между макро- и микроэлементами.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_003_req_05",
+        "honorId": "honor_agriculture_003",
+        "text": "Назовите и определите десять видов сорных трав, растущих в вашей местности. Расскажите, как лучше всего уничтожать их, используя природные и химические методы.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_003_req_06",
+        "honorId": "honor_agriculture_003",
+        "text": "Определите шесть наиболее распространенных насекомых-вредителей или болезней. Расскажите, какие растения они обычно поражают, а также как избавиться от них или предотвратить их появление.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_003_req_07",
+        "honorId": "honor_agriculture_003",
+        "text": "Назовите два источника информации о погоде. Как такая информация оказывает помощь фермеру?",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_003_req_08",
+        "honorId": "honor_agriculture_003",
+        "text": "Объясните, что такое эрозия. Как можно ее предотвратить?",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_003_req_09",
+        "honorId": "honor_agriculture_003",
+        "text": "Назовите цель следующих видов работ: пахота, культивация, боронование, дискование, дренирование, ирригация и сбор урожая.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_003_req_10",
+        "honorId": "honor_agriculture_003",
+        "text": "Назовите и определите десять видов птиц, распространенных в вашей местности, расскажите, какую пользу они приносят фермерам.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_003_req_11",
+        "honorId": "honor_agriculture_003",
+        "text": "Примите участие в посадке, культивировании и сборе урожая по крайней мере четырех различных культур. В журнале регистрации сделайте запись о проделанной работе и о трудностях, с которыми вы столкнулись.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_003_req_12",
+        "honorId": "honor_agriculture_003",
+        "text": "Посетите частное или государственное фермерское хозяйство и изучите, каким образом работники помогают фермеру. Напишите отчет о вашей поездке.",
+        "type": "theory",
+        "order": 12
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_004",
+    "name": "Козоводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/1/13/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%B7%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%B7%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/c7/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%B7%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%B7%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9A%D0%BE%D0%B7%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_004_req_01",
+        "honorId": "honor_agriculture_004",
+        "text": "Определите вживую или по рисункам как минимум две породы коз. Расскажите, ради чего их разводят — молока, мяса или шерсти.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_004_req_02",
+        "honorId": "honor_agriculture_004",
+        "text": "Объясните, каким должен быть хлев для коз.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_004_req_03",
+        "honorId": "honor_agriculture_004",
+        "text": "Расскажите, какие корма следует использовать:",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_004_req_04",
+        "honorId": "honor_agriculture_004",
+        "text": "• в первый месяц жизни;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_004_req_05",
+        "honorId": "honor_agriculture_004",
+        "text": "• в период лактации;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_004_req_06",
+        "honorId": "honor_agriculture_004",
+        "text": "• во второй месяц жизни;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_004_req_07",
+        "honorId": "honor_agriculture_004",
+        "text": "• для годовалого животного;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_004_req_08",
+        "honorId": "honor_agriculture_004",
+        "text": "• во время беременности.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_004_req_09",
+        "honorId": "honor_agriculture_004",
+        "text": "Назовите три растения, которые ядовиты для коз.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_004_req_10",
+        "honorId": "honor_agriculture_004",
+        "text": "Расскажите, когда козлят отнимают от маток.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_004_req_11",
+        "honorId": "honor_agriculture_004",
+        "text": "Объясните, когда молодых козлов нужно отделять от козочек и почему.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_004_req_12",
+        "honorId": "honor_agriculture_004",
+        "text": "Расскажите, как обрезают копыта у коз.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_004_req_13",
+        "honorId": "honor_agriculture_004",
+        "text": "Объясните, почему коз хорошо использовать для очистки земель от густого кустарника.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_004_req_14",
+        "honorId": "honor_agriculture_004",
+        "text": "Назовите не менее шести предметов, которые изготавливают из козьих шкур.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_004_req_15",
+        "honorId": "honor_agriculture_004",
+        "text": "Расскажите, что такое сережки.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_004_req_16",
+        "honorId": "honor_agriculture_004",
+        "text": "Ухаживайте, по крайней мере, за двумя козами на протяжении шести месяцев.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_004_req_17",
+        "honorId": "honor_agriculture_004",
+        "text": "Если у вас выращиваются молочные козы, ответьте на следующие вопросы:",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_004_req_18",
+        "honorId": "honor_agriculture_004",
+        "text": "• на что надо обращать внимание, выбирая хорошую молочную козу;",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_agriculture_004_req_19",
+        "honorId": "honor_agriculture_004",
+        "text": "• как и для чего пастеризуют молоко.",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_agriculture_004_req_20",
+        "honorId": "honor_agriculture_004",
+        "text": "Если у вас выращиваются молочные козы, выполните следующее:",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_agriculture_004_req_21",
+        "honorId": "honor_agriculture_004",
+        "text": "• не менее трех месяцев доите козу утром или вечером;",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_agriculture_004_req_22",
+        "honorId": "honor_agriculture_004",
+        "text": "• записывайте данные о ежедневных надоях молока.",
+        "type": "theory",
+        "order": 22
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_005",
+    "name": "Коневодство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/c/c1/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%BD%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%BD%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/d/da/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%BD%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9A%D0%BE%D0%BD%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9A%D0%BE%D0%BD%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_005_req_01",
+        "honorId": "honor_agriculture_005",
+        "text": "Расскажите, какие два преимущества можно получить, используя для получения потомства специально отобранных кобыл.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_005_req_02",
+        "honorId": "honor_agriculture_005",
+        "text": "Объясните, почему предпочтительнее выращивать чистокровных жеребят, чем простых.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_005_req_03",
+        "honorId": "honor_agriculture_005",
+        "text": "Назовите по крайней мере пять моментов, на которые надо обращать особое внимание при выборе лошади.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_005_req_04",
+        "honorId": "honor_agriculture_005",
+        "text": "Расскажите, как нужно дрессировать жеребенка, чтобы он вырос благородной и заслуживающей доверия лошадью.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_005_req_05",
+        "honorId": "honor_agriculture_005",
+        "text": "Расскажите, какими должны быть надлежащий уход и питание лошадей.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_005_req_06",
+        "honorId": "honor_agriculture_005",
+        "text": "Перечислите части недоуздка, уздечки и седла.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_005_req_07",
+        "honorId": "honor_agriculture_005",
+        "text": "Расскажите, как правильно надевать недоуздок, уздечку и седло.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_005_req_08",
+        "honorId": "honor_agriculture_005",
+        "text": "Объясните, как правильно ухаживать за копытами лошади.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_005_req_09",
+        "honorId": "honor_agriculture_005",
+        "text": "Не менее одной недели ухаживайте за одним или несколькими жеребятами или за лошадьми.",
+        "type": "theory",
+        "order": 9
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_006",
+    "name": "Скотоводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/5/5c/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A1%D0%BA%D0%BE%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A1%D0%BA%D0%BE%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/0/0d/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A1%D0%BA%D0%BE%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A1%D0%BA%D0%BE%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A1%D0%BA%D0%BE%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_006_req_01",
+        "honorId": "honor_agriculture_006",
+        "text": "Назовите не менее 25 частей туши молодого вола.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_006_req_02",
+        "honorId": "honor_agriculture_006",
+        "text": "Перечислите четыре характеристики хорошей телки.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_006_req_03",
+        "honorId": "honor_agriculture_006",
+        "text": "Объясните, что такое кастрация и для чего ее применяют.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_006_req_04",
+        "honorId": "honor_agriculture_006",
+        "text": "Расскажите, почему животным удаляют рога, какой возраст наиболее благоприятен для удаления рогов.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_006_req_05",
+        "honorId": "honor_agriculture_006",
+        "text": "Объясните, что такое подкормка молодняка.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_006_req_06",
+        "honorId": "honor_agriculture_006",
+        "text": "Расскажите, когда нужно отнимать телят от маток.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_006_req_07",
+        "honorId": "honor_agriculture_006",
+        "text": "Расскажите, какими должны быть коровники.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_006_req_08",
+        "honorId": "honor_agriculture_006",
+        "text": "Объясните, почему корм и воду лучше всего размещать в противоположных концах загона.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_006_req_09",
+        "honorId": "honor_agriculture_006",
+        "text": "Определите по рисункам или в естественной среде три породы мясного скота и три породы молочного скота.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_006_req_10",
+        "honorId": "honor_agriculture_006",
+        "text": "Расскажите, какой должен быть корм:",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_006_req_11",
+        "honorId": "honor_agriculture_006",
+        "text": "• первые 90 дней;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_006_req_12",
+        "honorId": "honor_agriculture_006",
+        "text": "• с 90 по 180 день;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_006_req_13",
+        "honorId": "honor_agriculture_006",
+        "text": "• со 180 дня до дня продажи.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_006_req_14",
+        "honorId": "honor_agriculture_006",
+        "text": "Как надо воспитывать телку, чтобы она выросла послушной коровой?",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_006_req_15",
+        "honorId": "honor_agriculture_006",
+        "text": "Не менее шести месяцев поухаживайте за одной или несколькими коровами.",
+        "type": "theory",
+        "order": 15
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_007",
+    "name": "Молочное хозяйство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/b/be/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9C%D0%BE%D0%BB%D0%BE%D1%87%D0%BD%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9C%D0%BE%D0%BB%D0%BE%D1%87%D0%BD%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/1/12/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9C%D0%BE%D0%BB%D0%BE%D1%87%D0%BD%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9C%D0%BE%D0%BB%D0%BE%D1%87%D0%BD%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9C%D0%BE%D0%BB%D0%BE%D1%87%D0%BD%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_007_req_01",
+        "honorId": "honor_agriculture_007",
+        "text": "Расскажите, что надо учитывать, выбирая телочку.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_007_req_02",
+        "honorId": "honor_agriculture_007",
+        "text": "Назовите 25 частей туши молочной коровы.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_007_req_03",
+        "honorId": "honor_agriculture_007",
+        "text": "Расскажите, как надо ухаживать, погонять и кормить молочных коров во время следующих этапов их жизни:",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_007_req_04",
+        "honorId": "honor_agriculture_007",
+        "text": "• теленок;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_007_req_05",
+        "honorId": "honor_agriculture_007",
+        "text": "• отнятие от матери до шести месяцев;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_007_req_06",
+        "honorId": "honor_agriculture_007",
+        "text": "• от шести до пятнадцати месяцев;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_007_req_07",
+        "honorId": "honor_agriculture_007",
+        "text": "• от пятнадцати месяцев до стельной коровы;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_007_req_08",
+        "honorId": "honor_agriculture_007",
+        "text": "• недойная корова.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_007_req_09",
+        "honorId": "honor_agriculture_007",
+        "text": "Объясните, как правильно кормить дойную корову.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_007_req_10",
+        "honorId": "honor_agriculture_007",
+        "text": "Расскажите, как у коровы образуется молоко.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_007_req_11",
+        "honorId": "honor_agriculture_007",
+        "text": "Объясните, как доить корову руками и машиной.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_007_req_12",
+        "honorId": "honor_agriculture_007",
+        "text": "Назовите восемь частей доильного аппарата.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_007_req_13",
+        "honorId": "honor_agriculture_007",
+        "text": "Объясните, что такое мастит. Что надо делать для предотвращения мастита?",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_007_req_14",
+        "honorId": "honor_agriculture_007",
+        "text": "Назовите пять проблем, возникающих со здоровьем стада, их симптомы, как предотвратить и/или лечить их.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_007_req_15",
+        "honorId": "honor_agriculture_007",
+        "text": "Объясните значение следующих терминов:",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_007_req_16",
+        "honorId": "honor_agriculture_007",
+        "text": "• концентраты;",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_007_req_17",
+        "honorId": "honor_agriculture_007",
+        "text": "• сырой белок;",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_007_req_18",
+        "honorId": "honor_agriculture_007",
+        "text": "• отбраковка скота;",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_agriculture_007_req_19",
+        "honorId": "honor_agriculture_007",
+        "text": "• сухостойный период;",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_agriculture_007_req_20",
+        "honorId": "honor_agriculture_007",
+        "text": "• лактация;",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_agriculture_007_req_21",
+        "honorId": "honor_agriculture_007",
+        "text": "• цикл или период лактации;",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_agriculture_007_req_22",
+        "honorId": "honor_agriculture_007",
+        "text": "• окситоцин.",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_agriculture_007_req_23",
+        "honorId": "honor_agriculture_007",
+        "text": "Объясните, что такое пастеризация молока и как надо должным образом обращаться и содержать в чистоте молочные приборы и инструменты.",
+        "type": "theory",
+        "order": 23
+      },
+      {
+        "id": "honor_agriculture_007_req_24",
+        "honorId": "honor_agriculture_007",
+        "text": "Помогите ухаживать и доить стадо молочных коров не менее трех месяцев.",
+        "type": "theory",
+        "order": 24
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_008",
+    "name": "Натуральное сельское хозяйство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/c/cf/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9D%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9D%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/4/4c/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9D%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9D%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9D%D0%B0%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%81%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B5_%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_008_req_01",
+        "honorId": "honor_agriculture_008",
+        "text": "Примите участие в подготовке земли под огород площадью девять квадратных метров. Выполните следующее:",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_008_req_02",
+        "honorId": "honor_agriculture_008",
+        "text": "• выберите место;",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_008_req_03",
+        "honorId": "honor_agriculture_008",
+        "text": "• очистите его от кустарника;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_008_req_04",
+        "honorId": "honor_agriculture_008",
+        "text": "• очистите от травы;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_008_req_05",
+        "honorId": "honor_agriculture_008",
+        "text": "• подготовьте грунт к посадке.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_008_req_06",
+        "honorId": "honor_agriculture_008",
+        "text": "Покажите умение приготовить и использовать компост в вашем саду.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_008_req_07",
+        "honorId": "honor_agriculture_008",
+        "text": "Перечислите зерновые культуры из указанных ниже семейств растений, которые вы посадите в саду и укажите, в какое время года это надо делать.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_008_req_08",
+        "honorId": "honor_agriculture_008",
+        "text": "• корнеплоды — свекла, картофель, морковь или другие;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_008_req_09",
+        "honorId": "honor_agriculture_008",
+        "text": "• бобовые — фасоль, соя, бобы или другие;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_008_req_10",
+        "honorId": "honor_agriculture_008",
+        "text": "• овощи — разновидности капусты, томаты, огурцы, тыквы или другие;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_008_req_11",
+        "honorId": "honor_agriculture_008",
+        "text": "• фрукты — персики, яблоки или другие.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_008_req_12",
+        "honorId": "honor_agriculture_008",
+        "text": "Покажите на практике и изобразите на схеме, как вы поделите сад на участки для посева растений.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_008_req_13",
+        "honorId": "honor_agriculture_008",
+        "text": "Расскажите, какие культуры будут расти лучше на том месте, где вы сжигали пеньки и бревна.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_008_req_14",
+        "honorId": "honor_agriculture_008",
+        "text": "Продемонстрируйте, что вы будете делать, чтобы в вашем саду не было сорняков и вредителей.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_008_req_15",
+        "honorId": "honor_agriculture_008",
+        "text": "Продемонстрируйте, как вы будете сажать культуры, чтобы у вас постоянно что-то созревало.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_008_req_16",
+        "honorId": "honor_agriculture_008",
+        "text": "Покажите, как надо собирать урожай для нужд семьи и для продажи на рынке.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_008_req_17",
+        "honorId": "honor_agriculture_008",
+        "text": "Покажите, как вы будете чередовать культуры в саду.",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_008_req_18",
+        "honorId": "honor_agriculture_008",
+        "text": "Наметьте в общих чертах, что вы будете делать в саду после нескольких урожайных сезонов.",
+        "type": "theory",
+        "order": 18
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_009",
+    "name": "Овощеводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3f/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D0%BE%D1%89%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D0%BE%D1%89%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/5/5b/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D0%BE%D1%89%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D0%BE%D1%89%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9E%D0%B2%D0%BE%D1%89%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_009_req_01",
+        "honorId": "honor_agriculture_009",
+        "text": "Подготовьте почву, удобрите ее и засадите овощами участок земли, площадью не менее 10 м",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_009_req_02",
+        "honorId": "honor_agriculture_009",
+        "text": "Вырастите не менее шести различных видов овощей. Три вида овощей вырастите из семян, и три вида — из рассады. Соберите урожай этих овощей.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_009_req_03",
+        "honorId": "honor_agriculture_009",
+        "text": "Перечислите средства борьбы с вредителями и болезнями в огороде. Расскажите, когда и как применять средства от насекомых и болезней.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_009_req_04",
+        "honorId": "honor_agriculture_009",
+        "text": "Объясните, что такое мульча. Как и для чего она применяется в огороде?",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_009_req_05",
+        "honorId": "honor_agriculture_009",
+        "text": "Расскажите, что такое зимостойкость. Какие овощи считаются зимостойкими в вашей местности?",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_009_req_06",
+        "honorId": "honor_agriculture_009",
+        "text": "Выполните одно из указанных ниже заданий:",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_009_req_07",
+        "honorId": "honor_agriculture_009",
+        "text": "• протестируйте прорастание ста семян одного вида;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_009_req_08",
+        "honorId": "honor_agriculture_009",
+        "text": "• постройте и вырастите овощи в парнике или теплице;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_009_req_09",
+        "honorId": "honor_agriculture_009",
+        "text": "• подготовьте любые три овоща для продажи на рынке;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_009_req_10",
+        "honorId": "honor_agriculture_009",
+        "text": "• сделайте и используйте контейнер или яму для хранения ваших овощей.",
+        "type": "theory",
+        "order": 10
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_010",
+    "name": "Овцеводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/9/94/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/7/74/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D0%B2%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9E%D0%B2%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_010_req_01",
+        "honorId": "honor_agriculture_010",
+        "text": "Расскажите о естественной среде обитания овец.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_010_req_02",
+        "honorId": "honor_agriculture_010",
+        "text": "Объясните, какая растительность больше всего подходит овцам.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_010_req_03",
+        "honorId": "honor_agriculture_010",
+        "text": "Расскажите, какой загон или овчарня должны быть у овец.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_010_req_04",
+        "honorId": "honor_agriculture_010",
+        "text": "Объясните, сколько места нужно каждому животному при следующих условиях:",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_010_req_05",
+        "honorId": "honor_agriculture_010",
+        "text": "• в сарае для взрослых овец;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_010_req_06",
+        "honorId": "honor_agriculture_010",
+        "text": "• в загоне под открытым небом для взрослых овец;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_010_req_07",
+        "honorId": "honor_agriculture_010",
+        "text": "• в сарае для молодняка (взрослого ягненка);",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_010_req_08",
+        "honorId": "honor_agriculture_010",
+        "text": "• в сарае для маленького ягненка;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_010_req_09",
+        "honorId": "honor_agriculture_010",
+        "text": "• на пастбище для одной овцы;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_010_req_10",
+        "honorId": "honor_agriculture_010",
+        "text": "• возле кормушки для взрослых овец;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_010_req_11",
+        "honorId": "honor_agriculture_010",
+        "text": "• во время ягнения.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_010_req_12",
+        "honorId": "honor_agriculture_010",
+        "text": "Расскажите, какое время года лучше всего подходит для разведения овец.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_010_req_13",
+        "honorId": "honor_agriculture_010",
+        "text": "Объясните, что надо учитывать при выборе породы овец для отары.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_010_req_14",
+        "honorId": "honor_agriculture_010",
+        "text": "Расскажите, какое количество овец в отаре идеально подходит для людей, начинающих заниматься разведением овец.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_010_req_15",
+        "honorId": "honor_agriculture_010",
+        "text": "Объясните, какой корм зимой можно считать идеальным для овец.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_010_req_16",
+        "honorId": "honor_agriculture_010",
+        "text": "Расскажите, как следует ухаживать за ягнятами.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_010_req_17",
+        "honorId": "honor_agriculture_010",
+        "text": "Дайте определение следующим терминам:",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_010_req_18",
+        "honorId": "honor_agriculture_010",
+        "text": "• кастрация;",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_agriculture_010_req_19",
+        "honorId": "honor_agriculture_010",
+        "text": "• убойный скот;",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_agriculture_010_req_20",
+        "honorId": "honor_agriculture_010",
+        "text": "• концентраты;",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_agriculture_010_req_21",
+        "honorId": "honor_agriculture_010",
+        "text": "• скрещивание;",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_agriculture_010_req_22",
+        "honorId": "honor_agriculture_010",
+        "text": "• матка / производительница;",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_agriculture_010_req_23",
+        "honorId": "honor_agriculture_010",
+        "text": "• купировать;",
+        "type": "theory",
+        "order": 23
+      },
+      {
+        "id": "honor_agriculture_010_req_24",
+        "honorId": "honor_agriculture_010",
+        "text": "• депаратизация;",
+        "type": "theory",
+        "order": 24
+      },
+      {
+        "id": "honor_agriculture_010_req_25",
+        "honorId": "honor_agriculture_010",
+        "text": "• овца;",
+        "type": "theory",
+        "order": 25
+      },
+      {
+        "id": "honor_agriculture_010_req_26",
+        "honorId": "honor_agriculture_010",
+        "text": "• случка (кормление в предслучный период);",
+        "type": "theory",
+        "order": 26
+      },
+      {
+        "id": "honor_agriculture_010_req_27",
+        "honorId": "honor_agriculture_010",
+        "text": "• фураж и грубый корм;",
+        "type": "theory",
+        "order": 27
+      },
+      {
+        "id": "honor_agriculture_010_req_28",
+        "honorId": "honor_agriculture_010",
+        "text": "• набор веса;",
+        "type": "theory",
+        "order": 28
+      },
+      {
+        "id": "honor_agriculture_010_req_29",
+        "honorId": "honor_agriculture_010",
+        "text": "• суягность;",
+        "type": "theory",
+        "order": 29
+      },
+      {
+        "id": "honor_agriculture_010_req_30",
+        "honorId": "honor_agriculture_010",
+        "text": "• руно;",
+        "type": "theory",
+        "order": 30
+      },
+      {
+        "id": "honor_agriculture_010_req_31",
+        "honorId": "honor_agriculture_010",
+        "text": "• охота у овец;",
+        "type": "theory",
+        "order": 31
+      },
+      {
+        "id": "honor_agriculture_010_req_32",
+        "honorId": "honor_agriculture_010",
+        "text": "• лактация;",
+        "type": "theory",
+        "order": 32
+      },
+      {
+        "id": "honor_agriculture_010_req_33",
+        "honorId": "honor_agriculture_010",
+        "text": "• комолый;",
+        "type": "theory",
+        "order": 33
+      },
+      {
+        "id": "honor_agriculture_010_req_34",
+        "honorId": "honor_agriculture_010",
+        "text": "• породистый (чистокровный);",
+        "type": "theory",
+        "order": 34
+      },
+      {
+        "id": "honor_agriculture_010_req_35",
+        "honorId": "honor_agriculture_010",
+        "text": "• баран;",
+        "type": "theory",
+        "order": 35
+      },
+      {
+        "id": "honor_agriculture_010_req_36",
+        "honorId": "honor_agriculture_010",
+        "text": "• кормовой рацион;",
+        "type": "theory",
+        "order": 36
+      },
+      {
+        "id": "honor_agriculture_010_req_37",
+        "honorId": "honor_agriculture_010",
+        "text": "• зарегистрированная овца;",
+        "type": "theory",
+        "order": 37
+      },
+      {
+        "id": "honor_agriculture_010_req_38",
+        "honorId": "honor_agriculture_010",
+        "text": "• понос;",
+        "type": "theory",
+        "order": 38
+      },
+      {
+        "id": "honor_agriculture_010_req_39",
+        "honorId": "honor_agriculture_010",
+        "text": "• рудиментарные рога;",
+        "type": "theory",
+        "order": 39
+      },
+      {
+        "id": "honor_agriculture_010_req_40",
+        "honorId": "honor_agriculture_010",
+        "text": "• производитель;",
+        "type": "theory",
+        "order": 40
+      },
+      {
+        "id": "honor_agriculture_010_req_41",
+        "honorId": "honor_agriculture_010",
+        "text": "• валух.",
+        "type": "theory",
+        "order": 41
+      },
+      {
+        "id": "honor_agriculture_010_req_42",
+        "honorId": "honor_agriculture_010",
+        "text": "Ухаживайте за двумя или более ягнятами до тех пор, пока их не выставят на продажу или до шести месяцев.",
+        "type": "theory",
+        "order": 42
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_011",
+    "name": "Островное рыболовство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/3/3b/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%BD%D0%BE%D0%B5_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%BD%D0%BE%D0%B5_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/7/78/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%BD%D0%BE%D0%B5_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%BD%D0%BE%D0%B5_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%BD%D0%BE%D0%B5_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_011_req_01",
+        "honorId": "honor_agriculture_011",
+        "text": "Назовите пять исконных способа островной рыбной ловли.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_011_req_02",
+        "honorId": "honor_agriculture_011",
+        "text": "Покажите, что вы можете сделать хотя бы одну рыболовную снасть из материалов, используемых в вашей местности.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_011_req_03",
+        "honorId": "honor_agriculture_011",
+        "text": "Определите в вашей культуре виды рыбной ловли в зависимости от приливов и отливов и фаз луны.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_011_req_04",
+        "honorId": "honor_agriculture_011",
+        "text": "Приготовьте к демонстрации и снабдите подписями коллекцию наживок, приманок, рыболовных крючков, традиционно используемых в вашей местности.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_011_req_05",
+        "honorId": "honor_agriculture_011",
+        "text": "Примите участие в рыбалке и поймайте две рыбы с помощью разных традиционных способов.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_011_req_06",
+        "honorId": "honor_agriculture_011",
+        "text": "Выполните следующее:",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_011_req_07",
+        "honorId": "honor_agriculture_011",
+        "text": "• соберите изображения десяти тропических рыб и определите их местное название и место обитания;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_011_req_08",
+        "honorId": "honor_agriculture_011",
+        "text": "• назовите десять ядовитых и опасных рыб, обитающих в вашей местности.",
+        "type": "theory",
+        "order": 8
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_012",
+    "name": "Птицеводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/5/54/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%82%D0%B8%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%82%D0%B8%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/d/da/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%82%D0%B8%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%82%D0%B8%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D1%82%D0%B8%D1%86%D0%B5%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_012_req_01",
+        "honorId": "honor_agriculture_012",
+        "text": "Получите нашивку «Домашняя птица».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_012_req_02",
+        "honorId": "honor_agriculture_012",
+        "text": "Опишите инкубаторы, гнезда птиц, птичники (приусадебного хозяйства), загоны для птиц и получите практические знания по их использованию.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_012_req_03",
+        "honorId": "honor_agriculture_012",
+        "text": "Проверьте и упакуйте яйца для продажи на рынке. Расскажите, как определить испорченные яйца, и как определяется категория яиц.",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_012_req_04",
+        "honorId": "honor_agriculture_012",
+        "text": "Наметьте в общих чертах программу вскармливания домашней птицы от вылупливания из яйца до зрелости.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_012_req_05",
+        "honorId": "honor_agriculture_012",
+        "text": "Объясните, какая должна быть температура, влажность и сколько дней понадобиться для высиживания яиц:",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_012_req_06",
+        "honorId": "honor_agriculture_012",
+        "text": "• утки;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_012_req_07",
+        "honorId": "honor_agriculture_012",
+        "text": "• курицы;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_012_req_08",
+        "honorId": "honor_agriculture_012",
+        "text": "• гуся;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_012_req_09",
+        "honorId": "honor_agriculture_012",
+        "text": "• индюшки.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_012_req_10",
+        "honorId": "honor_agriculture_012",
+        "text": "Вырастите выводок как минимум шести домашних птиц по вашему выбору.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_012_req_11",
+        "honorId": "honor_agriculture_012",
+        "text": "Напишите и сделайте устный доклад о своем опыте работы над выполнением указанных выше требований и о приобретенных знаниях о курах, индюках, утках и гусях.",
+        "type": "theory",
+        "order": 11
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_013",
+    "name": "Пчеловодство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/b/b4/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/a/ab/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%9F%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%9F%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_013_req_01",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите краткую историю пчеловодства или меда.",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_013_req_02",
+        "honorId": "honor_agriculture_013",
+        "text": "Перечислите пять способов применения следующих веществ:",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_013_req_03",
+        "honorId": "honor_agriculture_013",
+        "text": "• мед;",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_013_req_04",
+        "honorId": "honor_agriculture_013",
+        "text": "• пчелиный воск;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_013_req_05",
+        "honorId": "honor_agriculture_013",
+        "text": "• прополис.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_013_req_06",
+        "honorId": "honor_agriculture_013",
+        "text": "Назовите десять продуктов питания, которые было бы трудно вырастить, если бы не было пчел.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_013_req_07",
+        "honorId": "honor_agriculture_013",
+        "text": "Перечислите обязанности трутня, рабочей пчелы и королевы пчел.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_013_req_08",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите, как пчелы строят соты. Почему со временем соты темнеют?",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_013_req_09",
+        "honorId": "honor_agriculture_013",
+        "text": "Объясните, что означают следующие термины:",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_013_req_10",
+        "honorId": "honor_agriculture_013",
+        "text": "• рамочные ульи;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_013_req_11",
+        "honorId": "honor_agriculture_013",
+        "text": "• соты;",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_013_req_12",
+        "honorId": "honor_agriculture_013",
+        "text": "• улей;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_013_req_13",
+        "honorId": "honor_agriculture_013",
+        "text": "• роение.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_013_req_14",
+        "honorId": "honor_agriculture_013",
+        "text": "Объясните, что такое дымарь. Какие вещества являются хорошим горючим для дымаря?",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_013_req_15",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите, что необходимо учитывать при выборе месторасположения улья.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_013_req_16",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите, как болезни медоносной пчелы передаются от одного улья к другому.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_013_req_17",
+        "honorId": "honor_agriculture_013",
+        "text": "Объясните, что такое пчелиное воровство. Опишите пчелу-воровку.",
+        "type": "theory",
+        "order": 17
+      },
+      {
+        "id": "honor_agriculture_013_req_18",
+        "honorId": "honor_agriculture_013",
+        "text": "Назовите четыре способа, которые помогают предотвратить роение. Почему роение необходимо предотвращать?",
+        "type": "theory",
+        "order": 18
+      },
+      {
+        "id": "honor_agriculture_013_req_19",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите, какие три необходимых условия должны быть соблюдены для успешной зимовки колонии.",
+        "type": "theory",
+        "order": 19
+      },
+      {
+        "id": "honor_agriculture_013_req_20",
+        "honorId": "honor_agriculture_013",
+        "text": "Объясните, в чем преимущество использования двухматочного улья.",
+        "type": "theory",
+        "order": 20
+      },
+      {
+        "id": "honor_agriculture_013_req_21",
+        "honorId": "honor_agriculture_013",
+        "text": "Выполните следующие обязанности успешного пчеловода:",
+        "type": "theory",
+        "order": 21
+      },
+      {
+        "id": "honor_agriculture_013_req_22",
+        "honorId": "honor_agriculture_013",
+        "text": "• весеннее кормление для стимуляции размножения семьи",
+        "type": "theory",
+        "order": 22
+      },
+      {
+        "id": "honor_agriculture_013_req_23",
+        "honorId": "honor_agriculture_013",
+        "text": "• увеличение места для меда и другие методы предотвращения роения",
+        "type": "theory",
+        "order": 23
+      },
+      {
+        "id": "honor_agriculture_013_req_24",
+        "honorId": "honor_agriculture_013",
+        "text": "• выкачка (сбор) меда",
+        "type": "theory",
+        "order": 24
+      },
+      {
+        "id": "honor_agriculture_013_req_25",
+        "honorId": "honor_agriculture_013",
+        "text": "• осеннее кормление и подготовка улья к зимовке.",
+        "type": "theory",
+        "order": 25
+      },
+      {
+        "id": "honor_agriculture_013_req_26",
+        "honorId": "honor_agriculture_013",
+        "text": "Расскажите, как узнать, что пришло время собирать мед.",
+        "type": "theory",
+        "order": 26
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_014",
+    "name": "Цветоводство",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/4/4d/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A6%D0%B2%D0%B5%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A6%D0%B2%D0%B5%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE.png",
+    "img": "https://wiki.sledopit.club/images/thumb/2/28/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A6%D0%B2%D0%B5%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%A6%D0%B2%D0%B5%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%A6%D0%B2%D0%B5%D1%82%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE",
+    "requirements": [
+      {
+        "id": "honor_agriculture_014_req_01",
+        "honorId": "honor_agriculture_014",
+        "text": "Объясните, что значит термины «многолетнее растение», «однолетнее», «двулетнее».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_014_req_02",
+        "honorId": "honor_agriculture_014",
+        "text": "Расскажите в общих чертах, как надо делать теплицу. Чем отличается теплица от парника?",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_014_req_03",
+        "honorId": "honor_agriculture_014",
+        "text": "Объясните, что такое дренажная система, почему она очень важна. Как ее сделать?",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_014_req_04",
+        "honorId": "honor_agriculture_014",
+        "text": "Назовите три вида вредителей растений и расскажите, как с ними бороться.",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_014_req_05",
+        "honorId": "honor_agriculture_014",
+        "text": "Расскажите, как делать наружный ящик для растений (закрепляется на подоконнике) и как им пользоваться.",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_014_req_06",
+        "honorId": "honor_agriculture_014",
+        "text": "Назовите три вида удобрений и расскажите, как их использовать.",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_014_req_07",
+        "honorId": "honor_agriculture_014",
+        "text": "Подготовьте почву, растение и вырастите до полного созревания три вида однолетних растений.",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_014_req_08",
+        "honorId": "honor_agriculture_014",
+        "text": "Расскажите, какие три вида питательных веществ наиболее важны при выращивании цветов.",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_014_req_09",
+        "honorId": "honor_agriculture_014",
+        "text": "Поухаживайте за двумя или более многолетними растениями, растущими на открытом воздухе на протяжении одного сезона. Еженедельно отмечайте в регистрационном журнале выполняемые вами виды работ.",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_014_req_10",
+        "honorId": "honor_agriculture_014",
+        "text": "Объясните, для чего нужно проводить тестирование почвы.",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_014_req_11",
+        "honorId": "honor_agriculture_014",
+        "text": "Назовите три цветущих растения, приспособленных к следующим условиям:",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_014_req_12",
+        "honorId": "honor_agriculture_014",
+        "text": "• тень;",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_014_req_13",
+        "honorId": "honor_agriculture_014",
+        "text": "• сухая почва;",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_014_req_14",
+        "honorId": "honor_agriculture_014",
+        "text": "• солнце;",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_014_req_15",
+        "honorId": "honor_agriculture_014",
+        "text": "• влажная почва.",
+        "type": "theory",
+        "order": 15
+      }
+    ]
+  },
+  {
+    "id": "honor_agriculture_015",
+    "name": "Ягодные культуры",
+    "categoryId": "agriculture",
+    "level": 1,
+    "year": 0,
+    "source": "ЕАД",
+    "description": "",
+    "version": "1.0",
+    "isLocal": false,
+    "localClubId": null,
+    "scope": "global",
+    "promotedAt": null,
+    "promotedBy": null,
+    "contentVersion": "2026.10.19.0000",
+    "preview": "https://wiki.sledopit.club/images/thumb/8/8d/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%AF%D0%B3%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5_%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B.png/150px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%AF%D0%B3%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5_%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B.png",
+    "img": "https://wiki.sledopit.club/images/thumb/c/cc/%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%AF%D0%B3%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5_%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png/1000px-%D0%A1%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D1%85%D0%BE%D0%B7%D1%8F%D0%B9%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BD%D0%B0%D0%B2%D1%8B%D0%BA%D0%B8_-_%D0%AF%D0%B3%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5_%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B_-_%D1%88%D0%B0%D0%BF%D0%BA%D0%B0.png",
+    "link": "https://wiki.sledopit.club/index.php?title=%D0%AF%D0%B3%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5_%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B",
+    "requirements": [
+      {
+        "id": "honor_agriculture_015_req_01",
+        "honorId": "honor_agriculture_015",
+        "text": "Примечание. Эта нашивка включает в себя требования по выращиванию ягодных культур. О фруктах, растущих на деревьях, идет речь в нашивке «Выращивание фруктов».",
+        "type": "theory",
+        "order": 1
+      },
+      {
+        "id": "honor_agriculture_015_req_02",
+        "honorId": "honor_agriculture_015",
+        "text": "Выберите четыре различные ягодные культуры, растущие в вашей местности, такие как клубника, виноград, малина и т. д., и определите, какая почва нужна каждому из этих растений.",
+        "type": "theory",
+        "order": 2
+      },
+      {
+        "id": "honor_agriculture_015_req_03",
+        "honorId": "honor_agriculture_015",
+        "text": "Напишите доклад на одну страницу о том, как выращивать одну из указанных выше ягодных культур. Укажите следующее:",
+        "type": "theory",
+        "order": 3
+      },
+      {
+        "id": "honor_agriculture_015_req_04",
+        "honorId": "honor_agriculture_015",
+        "text": "• отбор саженцев;",
+        "type": "theory",
+        "order": 4
+      },
+      {
+        "id": "honor_agriculture_015_req_05",
+        "honorId": "honor_agriculture_015",
+        "text": "• подготовка грунта;",
+        "type": "theory",
+        "order": 5
+      },
+      {
+        "id": "honor_agriculture_015_req_06",
+        "honorId": "honor_agriculture_015",
+        "text": "• техника посадки;",
+        "type": "theory",
+        "order": 6
+      },
+      {
+        "id": "honor_agriculture_015_req_07",
+        "honorId": "honor_agriculture_015",
+        "text": "• внесение удобрений;",
+        "type": "theory",
+        "order": 7
+      },
+      {
+        "id": "honor_agriculture_015_req_08",
+        "honorId": "honor_agriculture_015",
+        "text": "• обрезка / подрезка;",
+        "type": "theory",
+        "order": 8
+      },
+      {
+        "id": "honor_agriculture_015_req_09",
+        "honorId": "honor_agriculture_015",
+        "text": "• полив;",
+        "type": "theory",
+        "order": 9
+      },
+      {
+        "id": "honor_agriculture_015_req_10",
+        "honorId": "honor_agriculture_015",
+        "text": "• борьба с вредителями;",
+        "type": "theory",
+        "order": 10
+      },
+      {
+        "id": "honor_agriculture_015_req_11",
+        "honorId": "honor_agriculture_015",
+        "text": "• сбор урожая.",
+        "type": "theory",
+        "order": 11
+      },
+      {
+        "id": "honor_agriculture_015_req_12",
+        "honorId": "honor_agriculture_015",
+        "text": "Назовите несколько сортов для каждого вида ягодных культур, которые могут плодоносить в вашей местности.",
+        "type": "theory",
+        "order": 12
+      },
+      {
+        "id": "honor_agriculture_015_req_13",
+        "honorId": "honor_agriculture_015",
+        "text": "Правильно обрежьте не менее двух кустов или лоз вьющихся растений в вашем саду или в саду вашего друга или соседа.",
+        "type": "theory",
+        "order": 13
+      },
+      {
+        "id": "honor_agriculture_015_req_14",
+        "honorId": "honor_agriculture_015",
+        "text": "Объясните, что такое скоропортящийся урожай.",
+        "type": "theory",
+        "order": 14
+      },
+      {
+        "id": "honor_agriculture_015_req_15",
+        "honorId": "honor_agriculture_015",
+        "text": "Расскажите, как долго можно хранить фрукты, перечисленные в требовании № 1.",
+        "type": "theory",
+        "order": 15
+      },
+      {
+        "id": "honor_agriculture_015_req_16",
+        "honorId": "honor_agriculture_015",
+        "text": "Перечислите несколько насекомых-вредителей или болезней каждого фрукта. Расскажите, как проявляется болезнь, какой ущерб наносят насекомые, какая требуется химическая или природная обработка. Если возможно, используйте для иллюстрации рисунки или фотографии.",
+        "type": "theory",
+        "order": 16
+      },
+      {
+        "id": "honor_agriculture_015_req_17",
+        "honorId": "honor_agriculture_015",
+        "text": "Проведите тестирование почвы в саду и определите, какие ягоды будут там хорошо расти. Узнайте, какое удобрение нужно для посадки этой ягодной культуры и определите стоимость удобрений, необходимых для шести тридцатиметровых рядов.",
+        "type": "theory",
+        "order": 17
+      }
+    ]
+  }
+]

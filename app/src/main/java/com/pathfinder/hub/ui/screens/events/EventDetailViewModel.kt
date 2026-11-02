@@ -63,6 +63,9 @@ data class EventDetailUiState(
     val participantRows: List<AttendeeRow> = emptyList(),
     val attendeeRows: List<AttendeeRow> = emptyList(),
     val parentQuestions: List<ParentQuestion> = emptyList(),
+    val canEdit: Boolean = false,
+    val canDelete: Boolean = false,
+    val isDeleting: Boolean = false,
 )
 
 @HiltViewModel
@@ -88,7 +91,12 @@ class EventDetailViewModel @Inject constructor(
                 u.role in listOf("director", "co-director", "instructor") || u.isOwnerClub
             )
             _state.update {
-                it.copy(isLoading = false, event = e, currentUser = u, canManageAttendance = canManage)
+                it.copy(
+                    isLoading = false, event = e, currentUser = u,
+                    canManageAttendance = canManage,
+                    canEdit = canManage,
+                    canDelete = canManage,
+                )
             }
         }
         viewModelScope.launch {
@@ -322,6 +330,23 @@ class EventDetailViewModel @Inject constructor(
             } catch (e: Exception) {
                 _state.update {
                     it.copy(isRequesting = false, errorMessage = e.message ?: "Ошибка")
+                }
+            }
+        }
+    }
+
+    /** Удалить событие (Room + Firestore через SyncQueue). */
+    fun deleteEvent(onSuccess: () -> Unit) {
+        val e = _state.value.event ?: return
+        _state.update { it.copy(isDeleting = true) }
+        viewModelScope.launch {
+            try {
+                eventRepository.delete(e)
+                _state.update { it.copy(isDeleting = false) }
+                onSuccess()
+            } catch (ex: Exception) {
+                _state.update {
+                    it.copy(isDeleting = false, errorMessage = ex.message ?: "Ошибка удаления")
                 }
             }
         }

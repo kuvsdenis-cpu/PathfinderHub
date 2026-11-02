@@ -1,0 +1,325 @@
+{
+  "level": {
+    "id": "guide",
+    "name": "Проводник",
+    "order": 6,
+    "ageMin": 15,
+    "grade": 10,
+    "icon": null,
+    "contentVersion": "2026.10.23.0001"
+  },
+  "sections": [
+    {
+      "id": "general",
+      "levelId": "guide",
+      "name": "Общие",
+      "order": 1,
+      "requirements": [
+        {
+          "id": "guide_general_req_01",
+          "sectionId": "general",
+          "levelId": "guide",
+          "text": "Возраст: не младше 15 лет.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_general_req_02",
+          "sectionId": "general",
+          "levelId": "guide",
+          "text": "Быть активным членом в клубе «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_general_req_03",
+          "sectionId": "general",
+          "levelId": "guide",
+          "text": "Знать и понимать обещание Лиги Чести Адвентистской Молодежи (см. «Руководство ОМС»).",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_general_req_04",
+          "sectionId": "general",
+          "levelId": "guide",
+          "text": "Выбрать и прочитать одну книгу на выбор из списка книжного клуба, а также одну из рекомендованных книг об истории церкви в своем дивизионе или стране.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "spiritual",
+      "levelId": "guide",
+      "name": "Духовное возрастание",
+      "order": 2,
+      "requirements": [
+        {
+          "id": "guide_spiritual_req_01",
+          "sectionId": "spiritual",
+          "levelId": "guide",
+          "text": "На основании послания апостола Павла к Галатам обсудить, как христианин может обладать плодом Святого Духа.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_spiritual_req_02",
+          "sectionId": "spiritual",
+          "levelId": "guide",
+          "text": "Изучить и обсудить, как ветхозаветное служение в святилище указывает на крест и служение Иисуса Христа.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_spiritual_req_03",
+          "sectionId": "spiritual",
+          "levelId": "guide",
+          "text": "Прочитать самостоятельно и рассказать на любой встрече три небольших истории о пионерах-адвентистах: на следопытском занятии, на молодежной встрече, на уроке субботней школы.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_spiritual_req_04",
+          "sectionId": "spiritual",
+          "levelId": "guide",
+          "text": "Получить действующее свидетельство «Памятные жемчужины».",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "levelId": "guide",
+      "name": "Служение ближним",
+      "order": 3,
+      "requirements": [
+        {
+          "id": "guide_service_req_01",
+          "sectionId": "service",
+          "levelId": "guide",
+          "text": "В составе группы или лично помочь организовать и принять участие в любом одном мероприятии: дружеское посещение больного человека; помощь человеку или семье в трудных обстоятельствах; осуществление любой другой помощи, одобренной вашим наставником.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_service_req_02",
+          "sectionId": "service",
+          "levelId": "guide",
+          "text": "Обсудить, как свидетельствовать сверстникам и практически осуществить ваши предложения.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "friendship",
+      "levelId": "guide",
+      "name": "Развитие дружеских отношений",
+      "order": 4,
+      "requirements": [
+        {
+          "id": "guide_friendship_req_01",
+          "sectionId": "friendship",
+          "levelId": "guide",
+          "text": "Самостоятельно исследовать и обсудить в клубе свою жизненную позицию по любым двум темам из списка: выбор профессии; нравственное поведение; добрачные отношения и свидания; выбор спутника жизни.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "levelId": "guide",
+      "name": "Здоровье и физическая культура",
+      "order": 5,
+      "requirements": [
+        {
+          "id": "guide_health_req_01",
+          "sectionId": "health",
+          "levelId": "guide",
+          "text": "Сделать презентацию для ребят с первых трех ступеней клуба о принципах здорового образа жизни.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_health_req_02",
+          "sectionId": "health",
+          "levelId": "guide",
+          "text": "Принять участие в одном из следующих мероприятий: написать стихотворение или статью о здоровье или о воздержании для возможной публикации в одном из церковных журналов; лично или в составе группы организовать и принять участие в эстафете «Веселые старты» или других подобных мероприятиях; обсудить и записать программу ваших тренировок для подготовки к мероприятию из предыдущего пункта; прочитать 6-ю главу «Жизнеутверждающие принципы обновленной жизни» из книги Э. Уайт «Воздержание» и сдать тест по прочитанному.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_health_req_03",
+          "sectionId": "health",
+          "levelId": "guide",
+          "text": "Получить нашивку «Здоровое питание» или «Физическая культура».",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "leadership",
+      "levelId": "guide",
+      "name": "Организация и развитие лидерских качеств",
+      "order": 6,
+      "requirements": [
+        {
+          "id": "guide_leadership_req_01",
+          "sectionId": "leadership",
+          "levelId": "guide",
+          "text": "После обсуждения подготовить схему организации Всемирной Церкви с детализацией по своему дивизиону.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_leadership_req_02",
+          "sectionId": "leadership",
+          "levelId": "guide",
+          "text": "Посетить базовый курс сотрудника клуба «Следопыт».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_leadership_req_03",
+          "sectionId": "leadership",
+          "levelId": "guide",
+          "text": "Спланировать и провести занятия, по крайней мере, по двум требованиям любой специализации с любым звеном младших следопытов.",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "levelId": "guide",
+      "name": "Исследование природы",
+      "order": 7,
+      "requirements": [
+        {
+          "id": "guide_nature_req_01",
+          "sectionId": "nature",
+          "levelId": "guide",
+          "text": "Прочитать историю детства Иисуса в книге «Желание Веков» (глава 7) и определить, какое место занимало изучение природы в Его образовании и служении. Изложить перед аудиторией сделанные вами исследования и наблюдения.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_nature_req_02",
+          "sectionId": "nature",
+          "levelId": "guide",
+          "text": "Получить нашивку «Экология» или «Охрана окружающей среды».",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "camping",
+      "levelId": "guide",
+      "name": "Лагерные и походные навыки",
+      "order": 8,
+      "requirements": [
+        {
+          "id": "guide_camping_req_01",
+          "sectionId": "camping",
+          "levelId": "guide",
+          "text": "Принять участие в лагере с двумя ночевками. Обсудить список необходимого оборудования.",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_camping_req_02",
+          "sectionId": "camping",
+          "levelId": "guide",
+          "text": "Составить меню и приготовить трехразовое питание на костре.",
+          "type": "boolean",
+          "order": 2,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_camping_req_03",
+          "sectionId": "camping",
+          "levelId": "guide",
+          "text": "Изготовить лагерное сооружение из жердей и веревок (с использованием вязок).",
+          "type": "boolean",
+          "order": 3,
+          "isAdvanced": false,
+          "imageUrls": []
+        },
+        {
+          "id": "guide_camping_req_04",
+          "sectionId": "camping",
+          "levelId": "guide",
+          "text": "Получить одну любую нашивку: «Специалист по водным видам спорта», «Специалист-спортсмен», «Специалист по активному отдыху», которой не было ранее.",
+          "type": "boolean",
+          "order": 4,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    },
+    {
+      "id": "life_skills",
+      "levelId": "guide",
+      "name": "Жизненные навыки",
+      "order": 9,
+      "requirements": [
+        {
+          "id": "guide_life_skills_req_01",
+          "sectionId": "life_skills",
+          "levelId": "guide",
+          "text": "Получить одну нашивку из любого раздела: «Духовный рост, служение обществу и наследие», «Сельскохозяйственные навыки», «Профессиональные навыки», «Здоровье и наука», «Домоводство».",
+          "type": "boolean",
+          "order": 1,
+          "isAdvanced": false,
+          "imageUrls": []
+        }
+      ]
+    }
+  ]
+}

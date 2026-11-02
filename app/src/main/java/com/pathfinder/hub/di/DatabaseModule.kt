@@ -53,6 +53,7 @@ object DatabaseModule {
     @Provides fun provideRequirementMaterialDao(db: AppDatabase): RequirementMaterialDao = db.requirementMaterialDao()
     @Provides fun provideRequirementTaskDao(db: AppDatabase): RequirementTaskDao = db.requirementTaskDao()
     @Provides fun provideRequirementTaskAnswerDao(db: AppDatabase): RequirementTaskAnswerDao = db.requirementTaskAnswerDao()
+    @Provides fun provideRequirementDao(db: AppDatabase): RequirementDao = db.requirementDao()
 
     // ---------- Learning: книги и стихи ----------
     @Provides fun provideBookReportDao(db: AppDatabase): BookReportDao = db.bookReportDao()

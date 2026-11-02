@@ -1,0 +1,15 @@
+{
+  "version": "2026.10.19.0003",
+  "categories": [
+    { "id": "household", "name": "Домоводство", "order": 1, "icon": null },
+    { "id": "agriculture", "name": "Сельскохозяйственные навыки", "order": 2, "icon": null },
+    { "id": "spiritual", "name": "Духовный рост, миссионерская работа и наследие", "order": 3, "icon": null },
+    { "id": "adra", "name": "ADRA", "order": 4, "icon": null },
+    { "id": "health", "name": "Здоровье и наука", "order": 5, "icon": null },
+    { "id": "arts", "name": "Искусство, ремесла и хобби", "order": 6, "icon": null },
+    { "id": "nature", "name": "Природа", "order": 7, "icon": null },
+    { "id": "outdoor", "name": "Активный отдых", "order": 8, "icon": null },
+    { "id": "vocational", "name": "Профессиональные навыки", "order": 9, "icon": null },
+    { "id": "master", "name": "Мастер", "order": 10, "icon": null }
+  ]
+}

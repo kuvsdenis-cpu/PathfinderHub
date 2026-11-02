@@ -400,12 +400,14 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             )
             .build()
 
+        // REPLACE: сбрасывает залипший FAILED/RETRY, чтобы применить фикс error()→continue.
+        // После успешного засева doWork() сразу вернёт success (early-return по books+verses).
         WorkManager.getInstance(this).enqueueUniqueWork(
             BibleSeedWorker.WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.REPLACE,
             request
         )
-        Log.d(TAG, "Воркер BibleSeedWorker поставлен в очередь (KEEP)")
+        Log.d(TAG, "Воркер BibleSeedWorker поставлен в очередь (REPLACE)")
     }
 
     private suspend fun observeBibleSeedCompletion() {

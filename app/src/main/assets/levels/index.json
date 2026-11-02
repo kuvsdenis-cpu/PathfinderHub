@@ -1,0 +1,11 @@
+{
+  "version": "2026.10.23.0005",
+  "files": [
+    "friend.json",
+    "companion.json",
+    "explorer.json",
+    "scout.json",
+    "traveler.json",
+    "guide.json"
+  ]
+}
