@@ -25,6 +25,11 @@ interface ParentDao {
     @Query("""UPDATE payments SET status = :status, confirmedBy = :by, confirmedAt = :at
         WHERE id = :id""")
     suspend fun confirmPayment(id: String, status: String, by: String, at: Long)
+    @Query("UPDATE payments SET status = 'cancelled' WHERE id = :id")
+    suspend fun cancelPayment(id: String)
+    @Query("DELETE FROM payments WHERE id = :id")
+    suspend fun deletePaymentById(id: String)
+
     @Query("SELECT * FROM parent_messages WHERE parentId = :parentId ORDER BY createdAt DESC")
     fun observeMessages(parentId: String): Flow<List<ParentMessageEntity>>
     @Query("SELECT * FROM parent_messages WHERE status = 'pending'")

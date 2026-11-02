@@ -37,6 +37,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -100,6 +106,8 @@ fun DirectorPaymentsContent(
     val clubState by clubContextViewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
     val fmt = SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("ru"))
+    var cancelDialogPayment by remember { mutableStateOf<PaymentEntity?>(null) }
+    var deleteDialogPayment by remember { mutableStateOf<PaymentEntity?>(null) }
 
     LaunchedEffect(state.infoMessage) {
         state.infoMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
@@ -164,6 +172,8 @@ fun DirectorPaymentsContent(
                             fmt = fmt,
                             isProcessing = state.processingId == p.id,
                             onConfirm = { viewModel.confirm(p) },
+                            onCancel = { cancelDialogPayment = p },
+                            onDelete = { deleteDialogPayment = p },
                         )
                     }
                 }
@@ -174,6 +184,40 @@ fun DirectorPaymentsContent(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+
+        cancelDialogPayment?.let { p ->
+            AlertDialog(
+                onDismissRequest = { cancelDialogPayment = null },
+                title = { Text("Отменить платёж?") },
+                text = { Text("Платёж ${p.title} будет отменён. Это действие нельзя отменить.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.cancelPayment(p)
+                        cancelDialogPayment = null
+                    }) { Text("Отменить", color = MaterialTheme.colorScheme.error) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { cancelDialogPayment = null }) { Text("Не отменять") }
+                }
+            )
+        }
+
+        deleteDialogPayment?.let { p ->
+            AlertDialog(
+                onDismissRequest = { deleteDialogPayment = null },
+                title = { Text("Удалить платёж?") },
+                text = { Text("Платёж ${p.title} будет удалён из базы. Это действие нельзя отменить.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.deletePayment(p)
+                        deleteDialogPayment = null
+                    }) { Text("Удалить", color = MaterialTheme.colorScheme.error) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { deleteDialogPayment = null }) { Text("Отмена") }
+                }
+            )
+        }
     }
 }
 
@@ -184,6 +228,8 @@ private fun PaymentRow(
     fmt: SimpleDateFormat,
     isProcessing: Boolean,
     onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val statusLabel = when (p.status) {
         "pending" -> "Ожидает оплаты"
@@ -253,6 +299,33 @@ private fun PaymentRow(
                         Text("Подтвердить оплату")
                     }
                 }
+            }
+
+            if (p.status == "pending" || p.status == "overdue") {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onCancel,
+                    enabled = !isProcessing,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Default.Cancel, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text("Отменить платёж")
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(
+                onClick = onDelete,
+                enabled = !isProcessing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.size(6.dp))
+                Text("Удалить")
             }
         }
     }

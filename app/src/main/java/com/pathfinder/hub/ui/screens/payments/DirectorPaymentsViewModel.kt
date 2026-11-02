@@ -115,5 +115,29 @@ class DirectorPaymentsViewModel @Inject constructor(
         }
     }
 
+    fun cancelPayment(p: PaymentEntity) {
+        _state.update { it.copy(processingId = p.id) }
+        viewModelScope.launch {
+            try {
+                parentRepository.cancelPayment(p.id)
+                _state.update { it.copy(processingId = null, infoMessage = "Платёж отменён") }
+            } catch (e: Exception) {
+                _state.update { it.copy(processingId = null, errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun deletePayment(p: PaymentEntity) {
+        _state.update { it.copy(processingId = p.id) }
+        viewModelScope.launch {
+            try {
+                parentRepository.deletePaymentById(p.id)
+                _state.update { it.copy(processingId = null, infoMessage = "Платёж удалён") }
+            } catch (e: Exception) {
+                _state.update { it.copy(processingId = null, errorMessage = e.message) }
+            }
+        }
+    }
+
     fun clearMessages() = _state.update { it.copy(errorMessage = null, infoMessage = null) }
 }

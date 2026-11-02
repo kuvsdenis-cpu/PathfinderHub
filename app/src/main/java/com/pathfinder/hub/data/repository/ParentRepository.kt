@@ -57,6 +57,9 @@ class ParentRepository @Inject constructor(
         by: String,
         at: Long = System.currentTimeMillis(),
     ) = dao.confirmPayment(id, status, by, at)
+    suspend fun cancelPayment(id: String) = dao.cancelPayment(id)
+    suspend fun deletePaymentById(id: String) = dao.deletePaymentById(id)
+
 
     // ---------- Сообщения ----------
     fun observeMessages(parentId: String): Flow<List<ParentMessageEntity>> =
