@@ -140,6 +140,22 @@ class DirectorInvitesViewModel @Inject constructor(
         }
     }
 
+    fun revokeInvite(invite: InviteEntity) {
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            inviteRepository.revoke(invite).fold(
+                onSuccess = {
+                    _state.update { it.copy(isLoading = false) }
+                },
+                onFailure = { e ->
+                    _state.update {
+                        it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка отзыва инвайта")
+                    }
+                },
+            )
+        }
+    }
+
     fun clearLastCreated() {
         _state.update { it.copy(lastCreated = null) }
     }

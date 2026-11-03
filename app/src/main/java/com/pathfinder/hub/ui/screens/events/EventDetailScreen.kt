@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -78,6 +80,9 @@ fun EventDetailScreen(
     val fmt = remember { SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.forLanguageTag("ru")) }
     val snackbar = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditAgendaDialog by remember { mutableStateOf(false) }
+    var showDeleteMeetingDialog by remember { mutableStateOf(false) }
+    var editedAgenda by remember { mutableStateOf("") }
 
     LaunchedEffect(state.consentMessage) {
         state.consentMessage?.let { snackbar.showSnackbar(it); viewModel.clearMessages() }
@@ -362,6 +367,23 @@ fun EventDetailScreen(
                                 )
                             }
                         }
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(
+                                onClick = {
+                                    editedAgenda = meeting.agenda
+                                    showEditAgendaDialog = true
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) { Text("Повестка") }
+                            OutlinedButton(
+                                onClick = { showDeleteMeetingDialog = true },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                ),
+                            ) { Text("Удалить") }
+                        }
                     }
                 }
             }
@@ -476,6 +498,48 @@ fun EventDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showEditAgendaDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditAgendaDialog = false },
+            title = { Text("Повестка встречи") },
+            text = {
+                OutlinedTextField(
+                    value = editedAgenda,
+                    onValueChange = { editedAgenda = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    label = { Text("Повестка") },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showEditAgendaDialog = false
+                    viewModel.updateMeetingAgenda(editedAgenda)
+                }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditAgendaDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showDeleteMeetingDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteMeetingDialog = false },
+            title = { Text("Удалить встречу?") },
+            text = { Text("Встреча с родителями будет удалена. Событие и ответы родителей не затрагиваются.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteMeetingDialog = false
+                    viewModel.deleteMeeting { /* state already updated */ }
+                }) { Text("Удалить", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteMeetingDialog = false }) { Text("Отмена") }
             }
         )
     }

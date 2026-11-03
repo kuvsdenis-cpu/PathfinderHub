@@ -196,6 +196,20 @@ class InviteRepository @Inject constructor(
         return invite
     }
 
+    /** Отзывает один инвайт (status = "revoked"). Используется в UI директора. */
+    suspend fun revoke(invite: InviteEntity): Result<Unit> {
+        return try {
+            val revoked = invite.copy(status = "revoked")
+            remote.createInvite(revoked)
+            dao.upsert(revoked)
+            Log.d(TAG, "revoke: ${invite.code}  revoked")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "revoke failed: ${invite.code}", e)
+            Result.failure(e)
+        }
+    }
+
     /** Отзывает все активные transfer-invites клуба. */
     suspend fun revokeActiveTransferInvites(clubId: String) {
         val all = dao.getByClubOnce(clubId)

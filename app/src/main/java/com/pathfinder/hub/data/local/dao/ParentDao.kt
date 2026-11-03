@@ -47,6 +47,9 @@ interface ParentDao {
 
     @Query("SELECT * FROM parent_meetings WHERE eventId = :eventId LIMIT 1")
     suspend fun getMeetingByEventId(eventId: String): ParentMeetingEntity?
+    @Query("DELETE FROM parent_meetings WHERE eventId = :eventId")
+    suspend fun deleteMeeting(eventId: String)
+
     @Query("SELECT * FROM pwa_config WHERE id = 1")
     fun observePWAConfig(): Flow<PWAConfigEntity?>
     @Insert(onConflict = OnConflictStrategy.REPLACE)

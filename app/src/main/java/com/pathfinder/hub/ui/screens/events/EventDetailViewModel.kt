@@ -352,6 +352,41 @@ class EventDetailViewModel @Inject constructor(
         }
     }
 
+    /** Редактировать повестку встречи (для staff). */
+    fun updateMeetingAgenda(newAgenda: String) {
+        val meeting = _state.value.parentMeeting ?: return
+        viewModelScope.launch {
+            try {
+                parentRepository.upsertMeeting(meeting.copy(agenda = newAgenda.trim()))
+                _state.update {
+                    it.copy(
+                        parentMeeting = meeting.copy(agenda = newAgenda.trim()),
+                        consentMessage = "Повестка обновлена",
+                    )
+                }
+                refreshDerived()
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка обновления повестки") }
+            }
+        }
+    }
+
+    /** Удалить встречу (для staff). */
+    fun deleteMeeting(onSuccess: () -> Unit) {
+        val meeting = _state.value.parentMeeting ?: return
+        viewModelScope.launch {
+            try {
+                parentRepository.deleteMeeting(meeting.eventId)
+                _state.update {
+                    it.copy(parentMeeting = null, consentMessage = "Встреча удалена")
+                }
+                onSuccess()
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Ошибка удаления встречи") }
+            }
+        }
+    }
+
     fun clearMessages() = _state.update {
         it.copy(consentMessage = null, errorMessage = null)
     }

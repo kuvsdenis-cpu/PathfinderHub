@@ -85,6 +85,8 @@ class ParentRepository @Inject constructor(
 
     suspend fun getMeetingByEventId(eventId: String): ParentMeetingEntity? =
         dao.getMeetingByEventId(eventId)
+    suspend fun deleteMeeting(eventId: String) = dao.deleteMeeting(eventId)
+
 
     // ---------- Согласия на мероприятия ----------
     fun observeConsentsByParent(parentId: String): Flow<List<EventConsentEntity>> =

@@ -19,6 +19,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
+import com.pathfinder.hub.data.local.entity.auth.InviteEntity
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -97,6 +105,7 @@ fun DirectorInvitesContent(
     val state by viewModel.state.collectAsState()
     val clubState by clubContextViewModel.state.collectAsState()
     val context = LocalContext.current
+    var revokeDialogInvite by remember { mutableStateOf<InviteEntity?>(null) }
 
     LaunchedEffect(Unit) { viewModel.pullInvites() }
 
@@ -286,8 +295,38 @@ fun DirectorInvitesContent(
                             Spacer(Modifier.width(4.dp))
                             Text("Отправить ещё раз")
                         }
+                        if (invite.status == "active") {
+                            Spacer(Modifier.height(4.dp))
+                            OutlinedButton(
+                                onClick = { revokeDialogInvite = invite },
+                                enabled = !state.isLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Отозвать")
+                            }
+                        }
                     }
                 }
+            }
+
+            revokeDialogInvite?.let { inviteToRevoke ->
+                AlertDialog(
+                    onDismissRequest = { revokeDialogInvite = null },
+                    title = { Text("Отозвать инвайт?") },
+                    text = { Text("Код ${inviteToRevoke.code} больше нельзя будет использовать для регистрации.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            viewModel.revokeInvite(inviteToRevoke)
+                            revokeDialogInvite = null
+                        }) { Text("Отозвать", color = MaterialTheme.colorScheme.error) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { revokeDialogInvite = null }) { Text("Отмена") }
+                    }
+                )
             }
         }
     }
