@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,6 +63,7 @@ fun DirectorManagementScreen(
     onCreateReport: () -> Unit = {},
     onOpenReport: (String) -> Unit = {},
     onNavigateToSync: () -> Unit = {},
+    onOpenAppeals: () -> Unit = {},
     clubContextViewModel: ClubContextViewModel = hiltViewModel(),
 ) {
     val clubState by clubContextViewModel.state.collectAsState()
@@ -73,6 +75,7 @@ fun DirectorManagementScreen(
     if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("Аудит")
         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Отчёты")
         if (TilePermissions.isVisible(user, TilePermissions.ARCHIVE)) add("Архив")
+        if (TilePermissions.isVisible(user, TilePermissions.MODERATION)) add("Апелляции")
         if (clubState.currentUser?.isOwnerClub == true) add("Удалённые")
     }
 
@@ -136,6 +139,11 @@ fun DirectorManagementScreen(
                         onCreateReport = onCreateReport,
                         onReportClick = onOpenReport,
                     )
+                    "Апелляции" -> {
+                        androidx.compose.runtime.LaunchedEffect(Unit) {
+                            onOpenAppeals()
+                        }
+                    }
                     "Архив" -> ArchiveContent()
                     "Удалённые" -> DeletedClubsContent()
                     else -> {}
@@ -150,6 +158,7 @@ private fun iconFor(title: String): ImageVector = when (title) {
     "Настройки" -> Icons.Default.Settings
     "Аудит" -> Icons.Default.History
     "Отчёты" -> Icons.Default.Description
+    "Апелляции" -> Icons.Default.Gavel
     "Архив" -> Icons.Default.Archive
     "Удалённые" -> Icons.Default.Delete
     else -> Icons.Default.Settings

@@ -82,6 +82,7 @@ import com.pathfinder.hub.ui.screens.home.conference.ConferenceInvitesScreen
 import com.pathfinder.hub.ui.screens.homework.CreateHomeworkScreen
 import com.pathfinder.hub.ui.screens.homework.review.ReviewHomeworkScreen
 import com.pathfinder.hub.ui.screens.archive.ArchiveScreen
+import com.pathfinder.hub.ui.screens.appeals.AppealsScreen
 import com.pathfinder.hub.ui.screens.groups.ManageCustomGroupsScreen
 import com.pathfinder.hub.ui.screens.groups.CreateCustomGroupScreen
 import com.pathfinder.hub.ui.screens.club_info.ClubInfoScreen
@@ -109,6 +110,7 @@ import com.pathfinder.hub.ui.learning.content.ContentSectionScreen
 import com.pathfinder.hub.ui.learning.editor.RequirementEditorScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
 import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
+import com.pathfinder.hub.ui.screens.profile.ParentProfileScreen
 import com.pathfinder.hub.ui.screens.profile.ParentalConsentScreen
 import com.pathfinder.hub.ui.screens.help.HelpScreen
 import com.pathfinder.hub.ui.screens.about.AboutScreen
@@ -270,6 +272,7 @@ fun PathfinderNavHost(
                 onNavigateToConsents = { navController.navigate(Routes.PARENT_CONSENTS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToProfile = { navController.navigate(Routes.PARENT_PROFILE) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -309,6 +312,7 @@ fun PathfinderNavHost(
                 onNavigateToInvites = { navController.navigate(Routes.CONFERENCE_INVITES) },
                 onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
+                onNavigateToAppeals = { navController.navigate(Routes.APPEALS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
@@ -491,6 +495,7 @@ fun PathfinderNavHost(
                     navController.navigate(Routes.reportDetail(reportId))
                 },
                 onNavigateToSync = { navController.navigate(Routes.SYNC) },
+                onOpenAppeals = { navController.navigate(Routes.APPEALS) },
             )
         }
         composable(Routes.DELETED_CLUBS) {
@@ -1173,6 +1178,14 @@ fun PathfinderNavHost(
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
             )
         }
+        composable(Routes.PARENT_PROFILE) {
+            ParentProfileScreen(
+                onBack = { navController.popBackStack() },
+                onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToMessages = { navController.navigate(Routes.PARENT_MESSAGES) }
+            )
+        }
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
@@ -1321,6 +1334,10 @@ fun PathfinderNavHost(
             arguments = listOf(navArgument("clubId") { type = NavType.StringType })
         ) {
             ClubInfoScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.APPEALS) {
+            AppealsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.ARCHIVE) {

@@ -82,8 +82,23 @@ interface ModerationDao {
     @Query("""UPDATE moderation_requests SET escalationLevel = :level,
         escalatedTo = :to, escalatedAt = :at WHERE id = :id""")
     suspend fun escalate(id: String, level: Int, to: String, at: Long)
-    @Query("SELECT * FROM appeals WHERE status = 'pending'")
+    @Query("SELECT * FROM appeals WHERE status = 'pending' ORDER BY createdAt")
     fun observePendingAppeals(): Flow<List<AppealEntity>>
+
+    /** Апелляции только своего клуба — для директора. */
+    @Query("""
+        SELECT a.* FROM appeals a
+        INNER JOIN moderation_requests r ON r.id = a.moderationRequestId
+        WHERE a.status = 'pending' AND r.clubId = :clubId
+        ORDER BY a.createdAt
+    """)
+    fun observePendingAppealsByClub(clubId: String): Flow<List<AppealEntity>>
+
+    @Query("SELECT * FROM appeals WHERE id = :id LIMIT 1")
+    suspend fun getAppealById(id: String): AppealEntity?
+
+    @Query("SELECT * FROM moderation_requests WHERE id = :id LIMIT 1")
+    suspend fun getRequestById(id: String): ModerationRequestEntity?
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAppeal(a: AppealEntity)
     @Query("""UPDATE appeals SET status = :status, reviewedBy = :by, reviewedAt = :at

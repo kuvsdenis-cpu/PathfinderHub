@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,6 +57,7 @@ fun ConferenceHomeScreen(
     onNavigateToInvites: () -> Unit,
     onNavigateToEvents: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
+    onNavigateToAppeals: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
@@ -188,7 +190,7 @@ fun ConferenceHomeScreen(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Tile(Icons.Default.Analytics, "Аналитика", "Клубы и участники", onNavigateToAnalytics, Modifier.weight(1f))
-                Spacer(Modifier.weight(1f))
+                Tile(Icons.Default.Gavel, "Апелляции", "Спорные случаи", onNavigateToAppeals, Modifier.weight(1f))
             }
 
 

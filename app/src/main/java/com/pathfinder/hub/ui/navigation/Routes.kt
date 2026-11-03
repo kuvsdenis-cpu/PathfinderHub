@@ -124,6 +124,7 @@ object Routes {
 
     // === Teen - Profile ===
     const val TEEN_PROFILE = "teen_profile"
+    const val PARENT_PROFILE = "parent_profile"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
     const val HELP = "help"
@@ -166,6 +167,9 @@ object Routes {
     // === Club Info ===
     const val CLUB_INFO = "club_info/{clubId}"
     fun clubInfo(clubId: String) = "club_info/$clubId"
+
+    // === Appeals (C v13) ===
+    const val APPEALS = "appeals"
 
     // === Archive ===
     const val ARCHIVE = "archive"
