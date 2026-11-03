@@ -2,7 +2,9 @@ package com.pathfinder.hub.ui.screens.sync
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.dao.SyncDao
+import com.pathfinder.hub.data.repository.SyncConflictRepository
 import com.pathfinder.hub.data.sync.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +19,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 data class SyncUiState(
     val isSyncing: Boolean = false,
     val queueSize: Int = 0,
-    val lastError: String? = null
+    val lastError: String? = null,
+    val conflictsCount: Int = 0
 )
 
 @HiltViewModel
 class SyncViewModel @Inject constructor(
     private val syncScheduler: SyncScheduler,
     private val syncDao: SyncDao,
+    private val syncConflictRepository: SyncConflictRepository,
+    private val sessionManager: SessionManager,
     @ApplicationContext private val app: Context) : ViewModel() {
 
     private val _state = MutableStateFlow(SyncUiState())
@@ -40,6 +45,14 @@ class SyncViewModel @Inject constructor(
                             lastError = it.lastError
                         )
                     }
+                }
+            }
+        }
+        val uid = sessionManager.getUserId()
+        if (uid != null) {
+            viewModelScope.launch {
+                syncConflictRepository.observeUnresolvedCount(uid).collect { count ->
+                    _state.update { it.copy(conflictsCount = count) }
                 }
             }
         }

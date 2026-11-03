@@ -108,6 +108,11 @@ object Routes {
     // === Универсальная загрузка файлов ===
     const val FILE_UPLOAD = "file_upload/{contextType}/{contextId}"
 
+    // === Attendance (B v13) ===
+    const val ATTENDANCE = "attendance"
+    const val ATTENDANCE_EVENT = "attendance_event/{eventId}"
+    fun attendanceEvent(eventId: String) = "attendance_event/$eventId"
+
     // === Teen - Events & Tasks ===
     const val EVENTS = "events"
     const val EVENT_DETAIL = "event_detail/{eventId}"
@@ -120,6 +125,9 @@ object Routes {
     // === Teen - Profile ===
     const val TEEN_PROFILE = "teen_profile"
     const val SETTINGS = "settings"
+    const val ABOUT = "about"
+    const val HELP = "help"
+    const val CONFERENCE_SETTINGS = "conference_settings"
     const val PARENTAL_CONSENT = "parental_consent"
 
     // === Teen - Gamification ===
@@ -181,6 +189,7 @@ object Routes {
 
     // === Sync ===
     const val SYNC = "sync"
+    const val SYNC_CONFLICTS = "sync_conflicts"
 
     // === Books ===
     const val BOOKS = "books"

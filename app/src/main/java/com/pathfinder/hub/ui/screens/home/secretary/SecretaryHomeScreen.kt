@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Assessment
@@ -68,6 +69,8 @@ fun SecretaryHomeScreen(
     onNavigateToSabbathSchool: () -> Unit = {},
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToAttendance: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -83,6 +86,13 @@ fun SecretaryHomeScreen(
             TopAppBar(
                 title = { Text("Панель секретаря") },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Настройки",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(Icons.Default.Notifications, "Уведомления",
                             tint = MaterialTheme.colorScheme.onPrimary)
@@ -248,6 +258,21 @@ fun SecretaryHomeScreen(
                         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) {
                             Tile(Icons.Default.Assessment, "Отчёты", "История", onNavigateToReports, Modifier.weight(1f))
                         } else Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+
+            if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(
+                            Icons.Default.FactCheck,
+                            "Посещаемость",
+                            "Отметить явку на событиях",
+                            onNavigateToAttendance,
+                            Modifier.weight(1f)
+                        )
+                        Spacer(Modifier.weight(1f))
                     }
                 }
             }

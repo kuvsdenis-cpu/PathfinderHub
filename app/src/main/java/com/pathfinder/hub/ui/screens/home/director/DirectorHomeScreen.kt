@@ -50,6 +50,8 @@ fun DirectorHomeScreen(
     onNavigateToSabbathSchool: () -> Unit = {},
     onNavigateToSabbathSchoolSettings: () -> Unit = {},
     onOpenClubInfo: (String) -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToAttendance: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
 ) {
@@ -66,6 +68,13 @@ fun DirectorHomeScreen(
             TopAppBar(
                 title = { Text("Панель директора") },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Настройки",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             Icons.Default.Notifications,
@@ -260,6 +269,24 @@ fun DirectorHomeScreen(
                             "Чат, чаты, модерация",
                             onNavigateToCommunications, Modifier.weight(1f)
                         )
+                    }
+                }
+
+                if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
+                    item {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            SectionTile(
+                                Icons.Default.FactCheck,
+                                "Посещаемость",
+                                "Отметить явку на событиях",
+                                onNavigateToAttendance,
+                                Modifier.weight(1f)
+                            )
+                            Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
 

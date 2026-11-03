@@ -65,6 +65,7 @@ class HonorRepository @Inject constructor(
     /** Завершено специализаций за период по клубу. */
     suspend fun countSpecializationsCompletedInPeriod(clubId: String, from: Long, to: Long): Int =
         dao.countSpecializationsCompletedInPeriod(clubId, from, to)
+    suspend fun deleteContentVersionByVersion(v: String) = dao.deleteContentVersionByVersion(v)
     suspend fun clearContentVersion() = dao.clearContentVersion()
 
     // ---------- Сидовый контент (без enqueue) ----------

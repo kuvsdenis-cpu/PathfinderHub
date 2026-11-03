@@ -1,4 +1,4 @@
-﻿package com.pathfinder.hub.data.local.dao
+package com.pathfinder.hub.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -188,6 +188,9 @@ interface HonorDao {
     fun observePendingApprovalsByClub(clubId: String): Flow<List<HonorProgressEntity>>
 
     // ✅ ДОБАВЛЕНО: Для автоматического сброса версии контента
+    @Query("DELETE FROM content_versions WHERE version = :version")
+    suspend fun deleteContentVersionByVersion(version: String)
+
     @Query("DELETE FROM content_versions")
     suspend fun clearContentVersion()
 

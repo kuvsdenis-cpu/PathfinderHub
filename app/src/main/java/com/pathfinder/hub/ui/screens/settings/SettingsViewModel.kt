@@ -21,6 +21,7 @@ data class SettingsUiState(
     val isLoading: Boolean = true,
     val theme: String = "system",
     val prefs: NotificationPreferencesEntity? = null,
+    val role: String? = null,
     val errorMessage: String? = null,
 )
 
@@ -29,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val notificationDao: NotificationDao,
     private val sessionManager: SessionManager,
+    private val userRepository: com.pathfinder.hub.data.repository.UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
@@ -50,6 +52,10 @@ class SettingsViewModel @Inject constructor(
                 notificationDao.observePrefs(uid).collect { p ->
                     _state.update { it.copy(prefs = p, isLoading = false) }
                 }
+            }
+            viewModelScope.launch {
+                val user = userRepository.getUser(uid)
+                _state.update { it.copy(role = user?.role) }
             }
         }
     }
@@ -107,6 +113,12 @@ class SettingsViewModel @Inject constructor(
     fun onQuietHoursToggle(enabled: Boolean) {
         viewModelScope.launch {
             notificationDao.upsertPrefs(currentPrefs().copy(quietHoursEnabled = enabled))
+        }
+    }
+
+    fun onPaymentsToggle(enabled: Boolean) {
+        viewModelScope.launch {
+            notificationDao.upsertPrefs(currentPrefs().copy(categoryPayments = enabled))
         }
     }
 

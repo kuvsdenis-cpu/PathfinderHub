@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Assignment
@@ -57,6 +58,7 @@ fun ConferenceHomeScreen(
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: ConferenceStaffViewModel = hiltViewModel(),
 ) {
@@ -71,6 +73,13 @@ fun ConferenceHomeScreen(
             TopAppBar(
                 title = { Text("Конференция") },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Настройки",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             Icons.Default.Notifications, "Уведомления",

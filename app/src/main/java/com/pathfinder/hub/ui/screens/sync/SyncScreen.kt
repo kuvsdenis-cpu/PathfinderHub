@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,6 +39,7 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun SyncScreen(
     onBack: () -> Unit,
+    onNavigateToConflicts: () -> Unit = {},
     viewModel: SyncViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -135,6 +137,22 @@ fun SyncScreen(
                     .height(56.dp)
             ) {
                 Text("Пересидить уровни")
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToConflicts,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    if (state.conflictsCount > 0)
+                        "Конфликты (${state.conflictsCount})"
+                    else
+                        "Журнал конфликтов"
+                )
             }
         }
     }

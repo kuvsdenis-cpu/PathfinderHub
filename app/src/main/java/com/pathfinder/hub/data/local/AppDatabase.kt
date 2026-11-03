@@ -314,6 +314,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Offline
     abstract fun syncDao(): SyncDao
+    abstract fun syncConflictDao(): SyncConflictDao
 
     // Parent
     abstract fun parentDao(): ParentDao

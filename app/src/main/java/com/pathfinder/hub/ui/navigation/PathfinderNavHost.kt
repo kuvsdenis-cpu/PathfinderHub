@@ -47,6 +47,8 @@ import com.pathfinder.hub.ui.screens.home.conference.events.ConferenceEventsScre
 import com.pathfinder.hub.ui.screens.home.conference.analytics.ConferenceAnalyticsScreen
 import com.pathfinder.hub.ui.screens.home.conference.events.CreateConferenceEventScreen
 import com.pathfinder.hub.ui.screens.events.EventsScreen
+import com.pathfinder.hub.ui.screens.attendance.AttendanceScreen
+import com.pathfinder.hub.ui.screens.attendance.AttendanceEventScreen
 import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
 import com.pathfinder.hub.ui.screens.home.director.ApprovalsScreen
 import com.pathfinder.hub.ui.screens.home.director.ClubMembersScreen
@@ -108,8 +110,12 @@ import com.pathfinder.hub.ui.learning.editor.RequirementEditorScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
 import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
 import com.pathfinder.hub.ui.screens.profile.ParentalConsentScreen
+import com.pathfinder.hub.ui.screens.help.HelpScreen
+import com.pathfinder.hub.ui.screens.about.AboutScreen
 import com.pathfinder.hub.ui.screens.settings.SettingsScreen
+import com.pathfinder.hub.ui.screens.settings.ConferenceSettingsScreen
 import com.pathfinder.hub.ui.screens.sync.SyncScreen
+import com.pathfinder.hub.ui.screens.sync.SyncConflictScreen
 import com.pathfinder.hub.ui.screens.tasks.CreateTaskScreen
 import com.pathfinder.hub.ui.screens.tasks.MyTasksScreen
 import com.pathfinder.hub.ui.screens.tests.openanswers.OpenAnswersScreen
@@ -226,6 +232,7 @@ fun PathfinderNavHost(
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -233,6 +240,7 @@ fun PathfinderNavHost(
         // ===== Secretary =====
         composable(Routes.SECRETARY_HOME) {
             SecretaryHomeScreen(
+                onNavigateToAttendance = { navController.navigate(Routes.ATTENDANCE) },
                 onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
                 onNavigateToMembers = { navController.navigate(Routes.CLUB_MEMBERS) },
                 onNavigateToReports = { navController.navigate(Routes.DIRECTOR_REPORTS) },
@@ -245,6 +253,7 @@ fun PathfinderNavHost(
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -260,6 +269,7 @@ fun PathfinderNavHost(
                 onNavigateToMeetings = { navController.navigate(Routes.PARENT_MEETINGS) },
                 onNavigateToConsents = { navController.navigate(Routes.PARENT_CONSENTS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -301,6 +311,7 @@ fun PathfinderNavHost(
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -312,6 +323,7 @@ fun PathfinderNavHost(
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -364,6 +376,8 @@ fun PathfinderNavHost(
                 onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onNavigateToSabbathSchoolSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
                 onOpenClubInfo = { clubId -> navController.navigate(Routes.clubInfo(clubId)) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToAttendance = { navController.navigate(Routes.ATTENDANCE) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -1095,6 +1109,20 @@ fun PathfinderNavHost(
             )
         }
 
+        // ===== Attendance (B v13) =====
+        composable(Routes.ATTENDANCE) {
+            AttendanceScreen(
+                onBack = { navController.popBackStack() },
+                onOpenEvent = { eventId -> navController.navigate(Routes.attendanceEvent(eventId)) }
+            )
+        }
+        composable(
+            route = Routes.ATTENDANCE_EVENT,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) {
+            AttendanceEventScreen(onBack = { navController.popBackStack() })
+        }
+
         // ===== Events & Tasks =====
         composable(Routes.EVENTS) {
             EventsScreen(
@@ -1145,7 +1173,18 @@ fun PathfinderNavHost(
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
             )
         }
-        composable(Routes.SETTINGS) { SettingsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToClubSettings = { navController.navigate(Routes.CLUB_SETTINGS) },
+                onNavigateToConferenceSettings = { navController.navigate(Routes.CONFERENCE_SETTINGS) },
+                onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
+                onNavigateToHelp = { navController.navigate(Routes.HELP) }
+            )
+        }
+        composable(Routes.CONFERENCE_SETTINGS) { ConferenceSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ABOUT) { AboutScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.HELP) { HelpScreen(onBack = { navController.popBackStack() }) }
 
         // ===== Gamification =====
         composable(Routes.DIGITAL_UNIFORM) {
@@ -1267,7 +1306,15 @@ fun PathfinderNavHost(
             )
         }
 
-        composable(Routes.SYNC) { SyncScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.SYNC) {
+            SyncScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToConflicts = { navController.navigate(Routes.SYNC_CONFLICTS) }
+            )
+        }
+        composable(Routes.SYNC_CONFLICTS) {
+            SyncConflictScreen(onBack = { navController.popBackStack() })
+        }
 
         composable(
             route = Routes.CLUB_INFO,

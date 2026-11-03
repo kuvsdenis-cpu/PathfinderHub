@@ -9,16 +9,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -41,6 +47,10 @@ import com.pathfinder.hub.ui.theme.PathfinderBlue
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onNavigateToClubSettings: () -> Unit = {},
+    onNavigateToConferenceSettings: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
+    onNavigateToHelp: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -111,6 +121,44 @@ fun SettingsScreen(
                 )
             }
 
+            // Ролевые секции
+            if (state.role in listOf("director", "secretary", "instructor")) {
+                SettingsCard(title = "Клуб") {
+                    OutlinedButton(
+                        onClick = onNavigateToClubSettings,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Settings, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Настройки клуба")
+                    }
+                }
+            }
+
+            if (state.role == "parent") {
+                SettingsCard(title = "Платежи") {
+                    ToggleRow(
+                        title = "Уведомления о платежах",
+                        subtitle = "Напоминания о взносах",
+                        checked = state.prefs?.categoryPayments ?: true,
+                        onToggle = viewModel::onPaymentsToggle,
+                    )
+                }
+            }
+
+            if (state.role in listOf("conference_admin", "conference_secretary")) {
+                SettingsCard(title = "Конференция") {
+                    OutlinedButton(
+                        onClick = onNavigateToConferenceSettings,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Settings, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Настройки конференции")
+                    }
+                }
+            }
+
             SettingsCard(title = "Категории уведомлений") {
                 CategoryToggle("Задачи", "tasks", state.prefs?.categoryTasks, viewModel)
                 CategoryToggle("Модерация", "moderation", state.prefs?.categoryModeration, viewModel)
@@ -121,6 +169,26 @@ fun SettingsScreen(
                 CategoryToggle("Прогресс", "progress", state.prefs?.categoryProgress, viewModel)
                 CategoryToggle("Платежи", "payments", state.prefs?.categoryPayments, viewModel)
                 CategoryToggle("Контакты", "contact", state.prefs?.categoryContact, viewModel)
+            }
+
+            SettingsCard(title = "Приложение") {
+                OutlinedButton(
+                    onClick = onNavigateToAbout,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Info, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("О приложении")
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onNavigateToHelp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Help, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Справка")
+                }
             }
 
             Spacer(Modifier.height(16.dp))

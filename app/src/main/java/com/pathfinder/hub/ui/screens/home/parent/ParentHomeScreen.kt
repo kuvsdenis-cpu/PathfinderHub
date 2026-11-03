@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -61,6 +62,7 @@ fun ParentHomeScreen(
     onNavigateToConsents: () -> Unit = {},
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: ParentHomeViewModel = hiltViewModel(),
 ) {
@@ -75,6 +77,13 @@ fun ParentHomeScreen(
             TopAppBar(
                 title = { Text("Родительская панель") },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Настройки",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(Icons.Default.Notifications, "Уведомления",
                             tint = MaterialTheme.colorScheme.onPrimary)

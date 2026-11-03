@@ -21,11 +21,32 @@ val localProperties = Properties().apply {
     }
 }
 
+val gitCommit: String = try {
+    val proc = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+        .directory(rootProject.rootDir)
+        .redirectErrorStream(true)
+        .start()
+    proc.waitFor()
+    proc.inputStream.bufferedReader().use { it.readText() }.trim().ifEmpty { "unknown" }
+} catch (e: Exception) { "unknown" }
+
+val gitCommitDate: String = try {
+    val proc = ProcessBuilder("git", "log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M")
+        .directory(rootProject.rootDir)
+        .redirectErrorStream(true)
+        .start()
+    proc.waitFor()
+    proc.inputStream.bufferedReader().use { it.readText() }.trim().ifEmpty { "unknown" }
+} catch (e: Exception) { "unknown" }
+
 android {
     namespace = "com.pathfinder.hub"
     compileSdk = 36
 
     defaultConfig {
+
+        buildConfigField("String", "GIT_COMMIT", "\"$gitCommit\"")
+        buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
         applicationId = "com.pathfinder.hub"
         minSdk = 26
         targetSdk = 36

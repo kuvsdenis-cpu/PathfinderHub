@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Chat
@@ -72,6 +73,7 @@ fun InstructorHomeScreen(
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSabbathSchool: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -87,6 +89,13 @@ fun InstructorHomeScreen(
             TopAppBar(
                 title = { Text("Панель наставника") },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Настройки",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             Icons.Default.Notifications, "Уведомления",

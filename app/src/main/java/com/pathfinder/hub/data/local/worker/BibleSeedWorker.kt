@@ -11,11 +11,9 @@ import com.pathfinder.hub.data.local.dao.BibleDao
 import com.pathfinder.hub.data.local.entity.bible.BibleBookEntity
 import com.pathfinder.hub.data.local.entity.bible.BibleVerseEntity
 import com.pathfinder.hub.data.local.entity.bible.BibleVersionEntity
-import com.pathfinder.hub.data.local.entity.learning.ContentVersionEntity
 import com.pathfinder.hub.data.repository.HonorRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.Date
 
 /**
  * Засев Библии из assets/bible/rst.json (NDJSON, одна строка = один стих).
@@ -44,9 +42,19 @@ class BibleSeedWorker @AssistedInject constructor(
             val existingVerseCount = bibleDao.getVerseCount(versionId)
             Log.d(TAG, "STATE on start: books=$existingBookCount, verses=$existingVerseCount, " +
                     "version=$VERSION_KEY, current=${currentVersion?.version}")
+            // F.1: чистим мусорную строку bible_rst_v1 из content_versions,
+            // которую писали старые версии воркера.
+            if (currentVersion?.version == VERSION_KEY) {
+                try {
+                    honorRepository.deleteContentVersionByVersion(VERSION_KEY)
+                    Log.d(TAG, " Удалена мусорная строка $VERSION_KEY из content_versions")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Не удалось удалить $VERSION_KEY: ${e.message}")
+                }
+            }
             val alreadySeeded = existingVerseCount > 0
 
-            if (alreadySeeded && existingBookCount > 0 && currentVersion?.version == VERSION_KEY) {
+            if (alreadySeeded && existingBookCount > 0) {
                 Log.d(TAG, " Библия уже засеяна (books=$existingBookCount, verses=$existingVerseCount), skip")
                 return Result.success()
             }
@@ -142,17 +150,6 @@ class BibleSeedWorker @AssistedInject constructor(
             if (batch.isNotEmpty()) {
                 bibleDao.seedVersesInBatches(batch, batchSize = BATCH_SIZE)
             }
-
-            // 5. Помечаем версию
-            honorRepository.upsertContentVersion(
-                ContentVersionEntity(
-                    version = VERSION_KEY,
-                    updatedAt = Date(),
-                    levels = 0,
-                    honors = 0,
-                    changelog = "Bible RST seed"
-                )
-            )
 
             Log.d(TAG, " Библия засеяна: $totalVerses стихов, ${books.size} книг")
             Result.success()
