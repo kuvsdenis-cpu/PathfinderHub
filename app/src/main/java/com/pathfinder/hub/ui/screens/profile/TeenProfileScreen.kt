@@ -23,6 +23,7 @@ fun TeenProfileScreen(
     onBack: () -> Unit,
     onLogout: () -> Unit,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToParentalConsent: () -> Unit = {},
     viewModel: TeenProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -83,6 +84,16 @@ fun TeenProfileScreen(
             StatCard("Пройдено ступеней", state.completedLevels.toString())
             Spacer(Modifier.height(8.dp))
             StatCard("Достижений", state.achievements.toString())
+
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = onNavigateToParentalConsent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("Согласие родителей")
+            }
 
             Spacer(Modifier.height(32.dp))
 

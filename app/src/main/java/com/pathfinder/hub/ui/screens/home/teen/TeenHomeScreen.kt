@@ -313,7 +313,7 @@ fun TeenHomeScreen(
                 ) {
                     ActionTile(Icons.Default.Bolt, "Активность", onNavigateToActivity, Modifier.weight(1f))
                     ActionTile(Icons.Default.Public, "Межклубные", onNavigateToCrossClub, Modifier.weight(1f))
-
+                    ActionTile(Icons.Default.WorkspacePremium, "Мои специализации", onNavigateToMyHonors, Modifier.weight(1f))
                 }
             }
 

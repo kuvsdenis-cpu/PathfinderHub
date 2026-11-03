@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -28,6 +29,7 @@ fun RegisterScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    var parentalConsent by remember { mutableStateOf(false) }
 
     // После успешной регистрации — сообщаем наружу роль и uid.
     // Навигация на онбординг делается в PathfinderNavHost.
@@ -203,9 +205,23 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            if (state.role == "teen") {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = parentalConsent,
+                        onCheckedChange = { parentalConsent = it }
+                    )
+                    Text(
+                        text = "Я подтверждаю, что мои родители/опекуны согласны на обработку персональных данных",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             Button(
                 onClick = viewModel::register,
-                enabled = state.clubId != null && !state.isLoading,
+                enabled = state.clubId != null && !state.isLoading && (state.role != "teen" || parentalConsent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

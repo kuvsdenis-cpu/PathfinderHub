@@ -107,6 +107,7 @@ import com.pathfinder.hub.ui.learning.content.ContentSectionScreen
 import com.pathfinder.hub.ui.learning.editor.RequirementEditorScreen
 import com.pathfinder.hub.ui.screens.onboarding.OnboardingScreen
 import com.pathfinder.hub.ui.screens.profile.TeenProfileScreen
+import com.pathfinder.hub.ui.screens.profile.ParentalConsentScreen
 import com.pathfinder.hub.ui.screens.settings.SettingsScreen
 import com.pathfinder.hub.ui.screens.sync.SyncScreen
 import com.pathfinder.hub.ui.screens.tasks.CreateTaskScreen

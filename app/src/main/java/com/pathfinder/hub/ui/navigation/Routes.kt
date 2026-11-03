@@ -120,6 +120,7 @@ object Routes {
     // === Teen - Profile ===
     const val TEEN_PROFILE = "teen_profile"
     const val SETTINGS = "settings"
+    const val PARENTAL_CONSENT = "parental_consent"
 
     // === Teen - Gamification ===
     const val DIGITAL_UNIFORM = "digital_uniform"
