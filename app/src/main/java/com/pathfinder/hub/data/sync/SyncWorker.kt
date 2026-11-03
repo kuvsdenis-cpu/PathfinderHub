@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.gson.Gson
 import com.pathfinder.hub.data.local.dao.ModerationDao
 import com.pathfinder.hub.data.local.entity.offline.SyncQueueItemEntity
+import com.pathfinder.hub.data.local.entity.offline.SyncConflictEntity
 import com.pathfinder.hub.data.local.entity.planning.CommentEntity
 import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
 import com.pathfinder.hub.data.local.dao.RequirementMaterialDao
@@ -35,6 +36,7 @@ import com.pathfinder.hub.data.repository.RequirementContentRepository
 import com.pathfinder.hub.data.repository.TaskAnswerRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import com.pathfinder.hub.data.repository.EventRepository
+import com.pathfinder.hub.data.repository.SyncConflictRepository
 import com.pathfinder.hub.data.local.dao.EventParticipantDao
 import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.repository.ClubRepository
@@ -86,6 +88,7 @@ class SyncWorker @AssistedInject constructor(
     private val infoDataSource: com.pathfinder.hub.data.remote.FirestoreInfoDataSource,
     private val eventRepository: EventRepository,
     private val participantDao: EventParticipantDao,
+    private val syncConflictRepository: SyncConflictRepository,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -277,6 +280,8 @@ class SyncWorker @AssistedInject constructor(
                 for (remote in snapshot.items) {
                     val local = bookRepository.getById(remote.id)
                     if (local != null && local.deletedAt != null) continue
+                    // TODO (D v13, next iteration): при local.pendingSync && remote новее —
+                    // создавать SyncConflictEntity(entityType="book") и не перезаписывать.
                     if (local != null && local.pendingSync) continue
                     if (local != null && (local.createdAt ?: 0L) >= (remote.createdAt ?: 0L)) continue
                     val refreshed = if (remote.contentUrl != null) {
@@ -850,6 +855,8 @@ class SyncWorker @AssistedInject constructor(
                         val id = doc["id"] as? String ?: continue
                         val remote = mapToCustomGroup(id, clubId, doc)
                         val local = customGroupDao.getById(id)
+                        // TODO (D v13, next iteration): при local.pendingSync && remote.updatedAt > local.updatedAt —
+                        // создавать SyncConflictEntity(entityType="custom_group").
                         if (local != null && local.pendingSync) continue
                         if (local != null && local.updatedAt.time >= remote.updatedAt.time) continue
                         if (local != null && local.archivedAt != null && remote.archivedAt == null) continue
@@ -1130,7 +1137,43 @@ class SyncWorker @AssistedInject constructor(
                         val pUserId = doc["userId"] as? String ?: continue
                         val status = doc["status"] as? String ?: continue
                         val local = participantDao.getParticipant(e.id, pUserId)
-                        if (local != null && local.pendingSync) continue
+                        if (local != null && local.pendingSync) {
+                            // Конфликт: локальные правки не отправлены, но remote изменился.
+                            // Создаём запись в журнале, пользователь разрешит в SyncConflictScreen.
+                            if (local.status != status) {
+                                val conflictId = "event_participant:${e.id}:$pUserId"
+                                val existing = syncConflictRepository.getById(conflictId)
+                                if (existing == null || existing.status != "resolved") {
+                                    val remoteEntity = EventParticipantEntity(
+                                        id = "${e.id}:$pUserId",
+                                        eventId = e.id,
+                                        userId = pUserId,
+                                        status = status,
+                                        invitedAt = parseDate(doc["invitedAt"]) ?: java.util.Date(),
+                                        respondedAt = parseDate(doc["respondedAt"]),
+                                        attendedAt = parseDate(doc["attendedAt"]),
+                                        pendingSync = false,
+                                    )
+                                    syncConflictRepository.upsert(SyncConflictEntity(
+                                        id = conflictId,
+                                        userId = uid,
+                                        entityType = "event_participant",
+                                        entityId = "${e.id}:$pUserId",
+                                        localValue = gson.toJson(local),
+                                        serverValue = gson.toJson(remoteEntity),
+                                        localUpdatedAt = local.respondedAt ?: local.invitedAt,
+                                        serverUpdatedAt = parseDate(doc["respondedAt"]) ?: parseDate(doc["invitedAt"]) ?: java.util.Date(),
+                                        strategy = "lww",
+                                        status = "pending",
+                                        resolvedBy = null,
+                                        resolvedAt = null,
+                                        resolution = null,
+                                    ))
+                                    Log.d(TAG, "pullParticipants: CONFLICT ${e.id}/$pUserId (local=${local.status}, remote=$status)")
+                                }
+                            }
+                            continue
+                        }
                         if (local != null && local.status == status) continue
                         if (local == null) {
                             participantDao.upsert(
