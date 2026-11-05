@@ -1,77 +1,90 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# === Gradle / Android ===
+.gradle/
+build/
+*/build/
 local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
 
-# Firebase Admin SDK keys
-pathfinder-hub-c495d-firebase-adminsdk-*.json
+# === IDE ===
+.idea/
+*.iml
+.vscode/
+.DS_Store
 
-# ============================================================
-# Добавлено fix_gitignore.py
-# ============================================================
-# === Service account keys (НЕ КОММИТИТЬ) ===
-*firebase-adminsdk*.json
-*service-account*.json
-*serviceAccount*.json
-gcp-key*.json
-# === Бэкапы патчей ===
+# === Python (одноразовые скрипты правок) ===
+*.py
+!parse_sabbath_pdf.py
+
+# === Backup / временные ===
 *.bak
 *.bak_*
-*.bak-*
+old_*.kt
+*.old_draft
 .fix_*_backup/
-# === Мусор ===
+RequirementDao.py
+test_invite.mjs
+commit_msg.txt
+
+# === Node / прочее ===
 node_modules/
 apk_extracted/
-db.b64*
-*.log
-pdf_sabbath/
+log/
+
+# === SQLite / локальные БД ===
 *.db
-*.db-shm
+*.db-journal
+*.sqlite
+
+# === PDF-исходники (только для парсера, не в git) ===
+pdf_sabbath/
+
+# === Service account keys (НЕ КОММИТИТЬ) ===
+*serviceAccountKey*.json
+google-services.json.bak
+
+# === 🔴 СЕКРЕТЫ — НИКОГДА НЕ КОММИТИТЬ ===
+*firebase-adminsdk*.json
+*serviceAccountKey*.json
+google-services.json.bak
+*-adminsdk-*.json
+
+# === Дампы БД (для отладки) ===
+db.b64
+db.b64-*
 *.db-wal
-# === Локальные конфиги ===
-.idea/deploymentTargetSelector.xml
-.idea/inspectionProfiles/
+*.db-shm
+*.db-journal
+*.b64
+*.b64-*
+bible_databases/
 
-# === Одноразовые скрипты (не коммитить) ===
-fix_*.py
-patch_*.py
-add_*.py
-cleanup_*.py
-parse_*.py
-patch_*.kt
-patch_updateuser_log.kt
-
-# === Диагностика / логи ===
+# === Логи отладки ===
+*.log
 log_*.txt
 pull_log*.txt
 club_log.txt
+logcat*.txt
+firestore-debug.log
+
+# === Иерархии UI (uiautomator dump) ===
+ui.xml
+ui2.xml
+ui_dump*.xml
+
+# === Отладочные деревья ===
 tree_*.txt
-ui*.xml
+
+# === Одноразовые скрипты ===
 dump_db.ps1
+patch_*.kt
+patch_*.py
 
-# === Бинарь, не в git ===
-*.apk
-*.pdf
-
-# === Дампы / временные БД ===
-bible_databases/
-pathfinder_hub.db
-
-# === Тестовые скрипты (уточни, если нужны в git) ===
-test_invite.mjstest_invite.mjs
-
-# === Old drafts / одноразовые ===
-*.old_draft
-RequirementDao.py
-test_invite.mjs
+# === PDF-исходники (если нужны — раскомментировать) ===
+# safety2016.pdf
+# форма.pdf
