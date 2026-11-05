@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,7 @@ fun DirectorHomeScreen(
     onNavigateToSabbathSchoolSettings: () -> Unit = {},
     onOpenClubInfo: (String) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     onNavigateToAttendance: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: DirectorHomeViewModel = hiltViewModel()
@@ -68,6 +70,10 @@ fun DirectorHomeScreen(
             TopAppBar(
                 title = { Text("Панель директора") },
                 actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, "Поиск",
+                            tint = MaterialTheme.colorScheme.onPrimary)
+                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Default.Settings,

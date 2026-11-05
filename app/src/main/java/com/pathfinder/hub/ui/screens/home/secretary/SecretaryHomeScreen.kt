@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Assignment
@@ -70,6 +71,7 @@ fun SecretaryHomeScreen(
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     onNavigateToAttendance: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
@@ -86,6 +88,10 @@ fun SecretaryHomeScreen(
             TopAppBar(
                 title = { Text("Панель секретаря") },
                 actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, "Поиск",
+                            tint = MaterialTheme.colorScheme.onPrimary)
+                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Default.Settings,
