@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -62,6 +64,7 @@ fun DirectorManagementScreen(
     onBack: () -> Unit,
     onCreateReport: () -> Unit = {},
     onOpenReport: (String) -> Unit = {},
+    onOpenEvent: (String) -> Unit = {},
     onNavigateToSync: () -> Unit = {},
     onOpenAppeals: () -> Unit = {},
     clubContextViewModel: ClubContextViewModel = hiltViewModel(),
@@ -74,6 +77,7 @@ fun DirectorManagementScreen(
         if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("Настройки")
     if (TilePermissions.isVisible(user, TilePermissions.SETTINGS)) add("Аудит")
         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Отчёты")
+        if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Аналитика")
         if (TilePermissions.isVisible(user, TilePermissions.ARCHIVE)) add("Архив")
         if (TilePermissions.isVisible(user, TilePermissions.MODERATION)) add("Апелляции")
         if (clubState.currentUser?.isOwnerClub == true) add("Удалённые")
@@ -139,6 +143,12 @@ fun DirectorManagementScreen(
                         onCreateReport = onCreateReport,
                         onReportClick = onOpenReport,
                     )
+                    "Аналитика" -> DirectorAnalyticsContent(
+                        onOpenEvent = onOpenEvent,
+                    )
+                    "Аналитика" -> DirectorAnalyticsContent(
+                        onOpenEvent = onOpenEvent,
+                    )
                     "Апелляции" -> {
                         androidx.compose.runtime.LaunchedEffect(Unit) {
                             onOpenAppeals()
@@ -158,6 +168,8 @@ private fun iconFor(title: String): ImageVector = when (title) {
     "Настройки" -> Icons.Default.Settings
     "Аудит" -> Icons.Default.History
     "Отчёты" -> Icons.Default.Description
+    "Аналитика" -> Icons.Default.Analytics
+    "Аналитика" -> Icons.Default.Analytics
     "Апелляции" -> Icons.Default.Gavel
     "Архив" -> Icons.Default.Archive
     "Удалённые" -> Icons.Default.Delete
