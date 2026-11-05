@@ -16,6 +16,12 @@ interface SyncDao {
     suspend fun updateItemStatus(id: String, status: String, retry: Int, at: Long, err: String?)
     @Query("DELETE FROM sync_queue WHERE id = :id")
     suspend fun deleteItem(id: String)
+
+    @Query("DELETE FROM sync_queue WHERE entityType = :entityType AND entityId = :entityId")
+    suspend fun deleteByEntity(entityType: String, entityId: String)
+
+    @Query("SELECT COUNT(*) FROM sync_queue WHERE entityType = :entityType AND entityId = :entityId")
+    suspend fun countByEntity(entityType: String, entityId: String): Int
     @Query("DELETE FROM sync_queue WHERE status = 'failed' AND createdAt < :before")
     suspend fun purgeFailed(before: Long)
     @Query("SELECT COUNT(*) FROM sync_queue WHERE status = 'pending'")

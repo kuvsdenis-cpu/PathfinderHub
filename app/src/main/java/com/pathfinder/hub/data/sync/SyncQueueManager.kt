@@ -72,6 +72,17 @@ class SyncQueueManager @Inject constructor(
         syncDao.deleteItem(id)
     }
 
+    /** Удалить все pending-записи по конкретной сущности (для разрешения конфликтов chooseServer). */
+    suspend fun removeByEntity(entityType: String, entityId: String) {
+        syncDao.deleteByEntity(entityType, entityId)
+        Log.d(TAG, "RemoveByEntity: $entityType/$entityId")
+    }
+
+    /** Есть ли pending-запись для этой сущности. */
+    suspend fun hasPendingForEntity(entityType: String, entityId: String): Boolean {
+        return syncDao.countByEntity(entityType, entityId) > 0
+    }
+
     suspend fun updateSyncStatus(
         isOnline: Boolean = true,
         isSyncing: Boolean = false,
