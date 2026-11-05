@@ -269,7 +269,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ReadingPlanDayEntity::class,
         ReadingPlanProgressEntity::class,
         SabbathAnswerEntity::class],
-    version = 57,
+    version = 58,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -311,6 +311,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Notifications
     abstract fun notificationDao(): NotificationDao
+
+    // Global Search
+    abstract fun globalSearchDao(): GlobalSearchDao
 
     // Offline
     abstract fun syncDao(): SyncDao
