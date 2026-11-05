@@ -33,6 +33,7 @@ import com.pathfinder.hub.ui.qr.quests.ManageQuestsScreen
 import com.pathfinder.hub.ui.qr.quests.QuestDetailScreen
 import com.pathfinder.hub.ui.qr.quests.QuestEditorScreen
 import com.pathfinder.hub.ui.navigation.Routes
+import com.pathfinder.hub.ui.screens.search.GlobalSearchScreen
 import com.pathfinder.hub.ui.reports.CreateReportScreen
 import com.pathfinder.hub.ui.reports.ReportDetailScreen
 import com.pathfinder.hub.ui.reports.ReportHistoryScreen
@@ -66,6 +67,7 @@ import com.pathfinder.hub.ui.screens.home.director.staff.ManagePermissionsScreen
 import com.pathfinder.hub.ui.screens.home.director.scout.ScoutDetailScreen
 import com.pathfinder.hub.ui.screens.home.teen.TeenHomeScreen
 import com.pathfinder.hub.ui.screens.home.instructor.InstructorHomeScreen
+import com.pathfinder.hub.ui.screens.mentees.MenteesScreen
 import com.pathfinder.hub.ui.screens.home.secretary.SecretaryHomeScreen
 import com.pathfinder.hub.ui.screens.home.parent.ParentHomeScreen
 import com.pathfinder.hub.ui.screens.home.parent.ChildProgressScreen
@@ -235,13 +237,20 @@ fun PathfinderNavHost(
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
+                onNavigateToMentees = { navController.navigate(Routes.MENTEES) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
+        }
+
+        composable(Routes.MENTEES) {
+            MenteesScreen(onBack = { navController.popBackStack() })
         }
 
         // ===== Secretary =====
         composable(Routes.SECRETARY_HOME) {
             SecretaryHomeScreen(
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onNavigateToAttendance = { navController.navigate(Routes.ATTENDANCE) },
                 onNavigateToInvites = { navController.navigate(Routes.DIRECTOR_INVITES) },
                 onNavigateToMembers = { navController.navigate(Routes.CLUB_MEMBERS) },
@@ -273,6 +282,7 @@ fun PathfinderNavHost(
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onNavigateToProfile = { navController.navigate(Routes.PARENT_PROFILE) },
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -313,6 +323,7 @@ fun PathfinderNavHost(
                 onNavigateToEvents = { navController.navigate(Routes.CONFERENCE_EVENTS) },
                 onNavigateToAnalytics = { navController.navigate(Routes.CONFERENCE_ANALYTICS) },
                 onNavigateToAppeals = { navController.navigate(Routes.APPEALS) },
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
@@ -328,6 +339,7 @@ fun PathfinderNavHost(
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
         }
@@ -381,6 +393,7 @@ fun PathfinderNavHost(
                 onNavigateToSabbathSchoolSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
                 onOpenClubInfo = { clubId -> navController.navigate(Routes.clubInfo(clubId)) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onNavigateToAttendance = { navController.navigate(Routes.ATTENDANCE) },
                 onLogout = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } }
             )
@@ -493,6 +506,9 @@ fun PathfinderNavHost(
                 },
                 onOpenReport = { reportId ->
                     navController.navigate(Routes.reportDetail(reportId))
+                },
+                onOpenEvent = { eventId ->
+                    navController.navigate(Routes.eventDetail(eventId))
                 },
                 onNavigateToSync = { navController.navigate(Routes.SYNC) },
                 onOpenAppeals = { navController.navigate(Routes.APPEALS) },
@@ -829,7 +845,8 @@ fun PathfinderNavHost(
                 onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
                 onNavigateToBooks = { navController.navigate(Routes.BOOKS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
-                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) } // <-- ДОБАВЛЕНО
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
+                onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) }
             )
         }
         composable(Routes.MY_CERTIFICATES) { MyCertificatesScreen(onBack = { navController.popBackStack() }) }
@@ -1276,6 +1293,17 @@ fun PathfinderNavHost(
         }
         composable(Routes.MODERATION) { ModerationScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.NOTIFICATIONS) { NotificationsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.GLOBAL_SEARCH) {
+            GlobalSearchScreen(
+                onBack = { navController.popBackStack() },
+                onOpenUser = { userId -> navController.navigate(Routes.childProgress(userId)) },
+                onOpenEvent = { eventId -> navController.navigate(Routes.eventDetail(eventId)) },
+                onOpenHonor = { honorId -> navController.navigate(Routes.honorDetail(honorId)) },
+                onOpenBook = { bookId -> navController.navigate(Routes.bookDetail(bookId)) },
+                onOpenTask = { _ -> navController.navigate(Routes.MY_TASKS) },
+                onOpenInfo = { _ -> navController.navigate(Routes.INFO_HUB) }
+            )
+        }
         // ===== Доп. информация =====
         composable(Routes.INFO_HUB) {
             InfoHubScreen(

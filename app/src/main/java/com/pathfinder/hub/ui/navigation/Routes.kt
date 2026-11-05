@@ -12,6 +12,10 @@ object Routes {
     // === Notifications ===
     const val NOTIFICATIONS = "notifications"
 
+
+    // === Global Search ===
+    const val GLOBAL_SEARCH = "global_search"
+
     // === Director ===
     const val DIRECTOR_HOME = "director_home"
     const val DIRECTOR_PEOPLE = "director_people"
@@ -64,6 +68,9 @@ object Routes {
     fun dmChat(dmId: String, otherUid: String) = "dm_chat/$dmId/$otherUid"
     const val GROUP_CHAT = "group_chat/{targetType}/{targetId}"
     const val MODERATION = "moderation"
+
+    // === Mentees (J) ===
+    const val MENTEES = "mentees"
 
     // === Role-specific home ===
     const val TEEN_HOME = "teen_home"
