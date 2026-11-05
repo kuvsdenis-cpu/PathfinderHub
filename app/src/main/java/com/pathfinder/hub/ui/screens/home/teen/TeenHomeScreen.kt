@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Card
@@ -89,6 +90,7 @@ fun TeenHomeScreen(
     onNavigateToBooks: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSabbathSchool: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -98,6 +100,10 @@ fun TeenHomeScreen(
             TopAppBar(
                 title = { Text("Pathfinder Hub") },
                 actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, "Поиск",
+                            tint = MaterialTheme.colorScheme.onPrimary)
+                    }
                     IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
