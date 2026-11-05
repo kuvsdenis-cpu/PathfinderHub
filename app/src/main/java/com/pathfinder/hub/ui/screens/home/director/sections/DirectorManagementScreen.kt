@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.domain.permissions.TilePermissions
 import com.pathfinder.hub.ui.reports.ReportHistoryContent
+import com.pathfinder.hub.ui.screens.moderation.ModerationReasonsContent
 import com.pathfinder.hub.ui.screens.archive.ArchiveContent
 import com.pathfinder.hub.ui.screens.home.director.ClubContextViewModel
 import com.pathfinder.hub.ui.screens.home.director.ClubSettingsContent
@@ -79,7 +81,10 @@ fun DirectorManagementScreen(
         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Отчёты")
         if (TilePermissions.isVisible(user, TilePermissions.REPORTS)) add("Аналитика")
         if (TilePermissions.isVisible(user, TilePermissions.ARCHIVE)) add("Архив")
-        if (TilePermissions.isVisible(user, TilePermissions.MODERATION)) add("Апелляции")
+        if (TilePermissions.isVisible(user, TilePermissions.MODERATION)) {
+            add("Апелляции")
+            add("Причины модерации")
+        }
         if (clubState.currentUser?.isOwnerClub == true) add("Удалённые")
     }
 
@@ -154,6 +159,7 @@ fun DirectorManagementScreen(
                             onOpenAppeals()
                         }
                     }
+                    "Причины модерации" -> ModerationReasonsContent()
                     "Архив" -> ArchiveContent()
                     "Удалённые" -> DeletedClubsContent()
                     else -> {}
@@ -171,6 +177,7 @@ private fun iconFor(title: String): ImageVector = when (title) {
     "Аналитика" -> Icons.Default.Analytics
     "Аналитика" -> Icons.Default.Analytics
     "Апелляции" -> Icons.Default.Gavel
+    "Причины модерации" -> Icons.Default.Flag
     "Архив" -> Icons.Default.Archive
     "Удалённые" -> Icons.Default.Delete
     else -> Icons.Default.Settings

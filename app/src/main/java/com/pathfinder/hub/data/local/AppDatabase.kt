@@ -106,6 +106,7 @@ import com.pathfinder.hub.data.local.entity.planning.EventHonorEntity
 import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
 import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.local.entity.planning.ModerationHistoryEntity
+import com.pathfinder.hub.data.local.entity.planning.ModerationReasonEntity
 import com.pathfinder.hub.data.local.entity.planning.ModerationRequestEntity
 import com.pathfinder.hub.data.local.entity.planning.TaskEntity
 import com.pathfinder.hub.data.local.entity.reports.AnalyticsSnapshotEntity
@@ -183,6 +184,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ModerationRequestEntity::class,
         AppealEntity::class,
         ModerationHistoryEntity::class,
+        ModerationReasonEntity::class,
 
         // Custom Groups (B1)
         CustomGroupEntity::class,
@@ -269,7 +271,7 @@ import com.pathfinder.hub.data.local.migration.ALL_MIGRATIONS
         ReadingPlanDayEntity::class,
         ReadingPlanProgressEntity::class,
         SabbathAnswerEntity::class],
-    version = 58,
+    version = 59,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -308,6 +310,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Moderation
     abstract fun moderationDao(): ModerationDao
+    abstract fun moderationReasonDao(): ModerationReasonDao
 
     // Notifications
     abstract fun notificationDao(): NotificationDao

@@ -149,6 +149,47 @@ val MIGRATION_57_58 = object : Migration(57, 58) {
     }
 }
 
+/**
+ * 58 -> 59: справочник причин модерации (moderation_reasons).
+ * Seed 9 системных причин.
+ */
+val MIGRATION_58_59 = object : Migration(58, 59) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `moderation_reasons` (
+                `code` TEXT NOT NULL,
+                `title` TEXT NOT NULL,
+                `description` TEXT NOT NULL,
+                `isActive` INTEGER NOT NULL DEFAULT 1,
+                `sortOrder` INTEGER NOT NULL DEFAULT 0,
+                `isSystem` INTEGER NOT NULL DEFAULT 0,
+                `createdAt` INTEGER NOT NULL,
+                PRIMARY KEY(`code`)
+            )
+            """.trimIndent()
+        )
+        val now = System.currentTimeMillis()
+        val seeds = listOf(
+            arrayOf("spam", "Спам", "Реклама, навязчивые ссылки, массовые рассылки", 1),
+            arrayOf("off_topic", "Не по теме", "Сообщение не относится к теме обсуждения", 2),
+            arrayOf("inappropriate", "Неприемлемое содержание", "Оскорбления, взрослый контент", 3),
+            arrayOf("profanity", "Нецензурная лексика", "Мат, грубые выражения", 4),
+            arrayOf("advertising", "Реклама", "Продвижение товаров и услуг", 5),
+            arrayOf("duplicate", "Дубликат", "Повторяющееся сообщение", 6),
+            arrayOf("low_quality", "Низкое качество", "Бессмысленный, пустой контент", 7),
+            arrayOf("review_timeout", "Истёк срок проверки", "Автоматическое скрытие по таймауту", 8),
+            arrayOf("custom", "Другое", "Причина указана вручную", 9)
+        )
+        for (s in seeds) {
+            db.execSQL(
+                "INSERT OR IGNORE INTO `moderation_reasons` (`code`, `title`, `description`, `isActive`, `sortOrder`, `isSystem`, `createdAt`) VALUES (?, ?, ?, 1, ?, 1, ?)",
+                arrayOf(s[0], s[1], s[2], s[3], now)
+            )
+        }
+    }
+}
+
 val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_1_2,
     MIGRATION_2_3,
@@ -206,5 +247,6 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_54_55,
     MIGRATION_55_56,
     MIGRATION_56_57,
-    MIGRATION_57_58
+    MIGRATION_57_58,
+    MIGRATION_58_59
 )

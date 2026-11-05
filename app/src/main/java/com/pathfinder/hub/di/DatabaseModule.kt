@@ -24,6 +24,7 @@ object DatabaseModule {
     @Provides fun provideTestDao(db: AppDatabase): TestDao = db.testDao()
     @Provides fun provideAchievementDao(db: AppDatabase): AchievementDao = db.achievementDao()
     @Provides fun provideModerationDao(db: AppDatabase): ModerationDao = db.moderationDao()
+    @Provides fun provideModerationReasonDao(db: AppDatabase): ModerationReasonDao = db.moderationReasonDao()
     @Provides fun provideNotificationDao(db: AppDatabase): NotificationDao = db.notificationDao()
     @Provides fun provideSyncDao(db: AppDatabase): SyncDao = db.syncDao()
     @Provides fun provideGlobalSearchDao(db: AppDatabase): GlobalSearchDao = db.globalSearchDao()

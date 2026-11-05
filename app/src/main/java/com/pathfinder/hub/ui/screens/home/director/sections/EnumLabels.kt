@@ -88,6 +88,16 @@ object EnumLabels {
         "instructor" to "Наставник",
         "director" to "Директор",
         "secretary" to "Секретарь",
+        // Причины модерации (fallback для аудита старых записей)
+        "spam" to "Спам",
+        "off_topic" to "Не по теме",
+        "inappropriate" to "Неприемлемое содержание",
+        "profanity" to "Нецензурная лексика",
+        "advertising" to "Реклама",
+        "duplicate" to "Дубликат",
+        "low_quality" to "Низкое качество",
+        "review_timeout" to "Истёк срок проверки",
+        "custom" to "Другое",
     )
 
     val MEETING_DAY: Map<String, String> = mapOf(
