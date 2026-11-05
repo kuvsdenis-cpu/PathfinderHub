@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Assignment
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Shield
@@ -74,6 +76,8 @@ fun InstructorHomeScreen(
     onNavigateToInfo: () -> Unit = {},
     onNavigateToSabbathSchool: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
+    onNavigateToMentees: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeHeaderViewModel = hiltViewModel(),
 ) {
@@ -89,6 +93,10 @@ fun InstructorHomeScreen(
             TopAppBar(
                 title = { Text("Панель наставника") },
                 actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, "Поиск",
+                            tint = MaterialTheme.colorScheme.onPrimary)
+                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Default.Settings,
@@ -268,6 +276,16 @@ fun InstructorHomeScreen(
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                         Tile(Icons.Default.FactCheck, "Открытые ответы", "Проверка long_text", onNavigateToOpenAnswers, Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+
+            // J: «Мои подопечные»
+            if (TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Tile(Icons.Default.Person, "Мои подопечные", "Дети, закреплённые за вами", onNavigateToMentees, Modifier.weight(1f))
                         Spacer(Modifier.weight(1f))
                     }
                 }

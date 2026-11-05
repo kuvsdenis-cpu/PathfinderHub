@@ -98,7 +98,8 @@ class FirestoreUserDataSource @Inject constructor() {
             onboardingCompleted = data["onboardingCompleted"] as? Boolean ?: false,
             createdAt = parseDate(data["createdAt"]) ?: Date(),
             lastLoginAt = parseDate(data["lastLoginAt"]),
-            syncedAt = parseDate(data["syncedAt"])
+            syncedAt = parseDate(data["syncedAt"]),
+            mentorId = data["mentorId"] as? String
         )
     }
 
@@ -134,6 +135,10 @@ class FirestoreUserDataSource @Inject constructor() {
         map["createdAt"] = user.createdAt
         map["lastLoginAt"] = user.lastLoginAt
         map["syncedAt"] = user.syncedAt
+        // mentorId: пишем ВСЕГДА (в т.ч. null), чтобы снятие подопечного
+        // синхронизировалось через SetOptions.merge() — merge не удаляет
+        // отсутствующие ключи, поэтому null нужен явно.
+        map["mentorId"] = user.mentorId
         return map
     }
 

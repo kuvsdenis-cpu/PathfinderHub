@@ -7,19 +7,13 @@ import kotlinx.coroutines.flow.Flow
 interface UserDao {
     @Query("SELECT * FROM users WHERE id = :userId")
     fun observeUser(userId: String): Flow<UserEntity?>
+
     @Query("SELECT * FROM users WHERE id = :userId")
     suspend fun getUser(userId: String): UserEntity?
-    /**
-     * Поиск по email без учёта регистра.
-     * Email — регистронезависимый: Ivan@mail.ru == ivan@mail.ru.
-     */
+
     @Query("SELECT * FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
-    /**
-     * Участники клуба. Фильтр через user_clubs (мультиклубность),
-     * а не через users.clubId — чтобы юзеры с этим клубом во вторичном
-     * clubIds тоже попадали.
-     */
+
     @Transaction
     @Query("""
         SELECT u.* FROM users u
@@ -30,6 +24,7 @@ interface UserDao {
         ORDER BY u.role, u.firstName
     """)
     fun observeClubMembers(clubId: String): Flow<List<UserEntity>>
+
     @Transaction
     @Query("""
         SELECT u.* FROM users u
@@ -42,11 +37,6 @@ interface UserDao {
     """)
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>>
 
-    /**
-     * Список участников клуба с одной из указанных ролей.
-     * Используется для «Сотрудников»: director + instructor + secretary.
-     * Фильтр через user_clubs (мультиклубность).
-     */
     @Transaction
     @Query("""
         SELECT u.* FROM users u
@@ -58,37 +48,47 @@ interface UserDao {
         ORDER BY u.role, u.firstName
     """)
     fun observeClubMembersByRoles(clubId: String, roles: List<String>): Flow<List<UserEntity>>
+
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId")
     fun observeConferenceUsers(conferenceId: String): Flow<List<UserEntity>>
+
     @Query("SELECT * FROM users WHERE conferenceId = :conferenceId AND role = :role")
     fun observeConferenceMembersByRole(conferenceId: String, role: String): Flow<List<UserEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(user: UserEntity)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(users: List<UserEntity>)
-    @Update suspend fun update(user: UserEntity)
-    @Delete suspend fun delete(user: UserEntity)
+
+    @Update
+    suspend fun update(user: UserEntity)
+
+    @Delete
+    suspend fun delete(user: UserEntity)
+
     @Query("UPDATE users SET accessLevel = :level WHERE id = :userId")
     suspend fun updateAccessLevel(userId: String, level: String)
+
     @Query("UPDATE users SET onboardingCompleted = 1 WHERE id = :userId")
     suspend fun completeOnboarding(userId: String)
+
     @Query("UPDATE users SET status = :status, deletionRequestedAt = :at WHERE id = :userId")
     suspend fun requestDeletion(userId: String, status: String, at: Long)
+
     @Query("DELETE FROM users WHERE status = 'deleted' AND permanentDeletionAt < :now")
     suspend fun purgeDeleted(now: Long)
 
-    /** Для UserClubSeeder: все юзеры с непустым clubId или clubIds. */
     @Query("SELECT * FROM users WHERE clubId IS NOT NULL OR clubIds != '[]'")
     suspend fun getAllWithClubIds(): List<UserEntity>
 
-    /** Пакетный резолв имён: один запрос вместо N. */
     @Query("SELECT * FROM users WHERE id IN (:ids)")
     suspend fun getUsersByIds(ids: List<String>): List<UserEntity>
 
-    /**
-     * Owner клуба: director + isOwnerClub + клуб среди clubIds/clubId.
-     * Мультиклубность: проверяем и user_clubs.
-     */
+    /** Подопечные наставника. */
+    @Query("SELECT * FROM users WHERE mentorId = :mentorId ORDER BY firstName, lastName")
+    fun observeMentees(mentorId: String): Flow<List<UserEntity>>
+
     @Transaction
     @Query("""
         SELECT u.* FROM users u

@@ -15,5 +15,6 @@ data class UserEntity(
     val accessLevel: String, val status: String, val deletionRequestedBy: String?,
     val deletionRequestedAt: Date?, val anonymizedAt: Date?,
     val permanentDeletionAt: Date?, val onboardingCompleted: Boolean,
-    val createdAt: Date, val lastLoginAt: Date?, val syncedAt: Date? = null
+    val createdAt: Date, val lastLoginAt: Date?, val syncedAt: Date? = null,
+    val mentorId: String? = null
 )

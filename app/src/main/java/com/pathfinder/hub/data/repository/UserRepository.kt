@@ -51,6 +51,9 @@ class UserRepository @Inject constructor(
      */
     suspend fun getUserLocalOnly(id: String): UserEntity? = dao.getUser(id)
 
+    /** Owner клуба (director + isOwnerClub) — для карточки директора в профиле родителя. */
+    suspend fun getClubOwner(clubId: String): UserEntity? = dao.getClubOwner(clubId)
+
     suspend fun getUserByEmail(email: String): UserEntity? =
         dao.getUserByEmail(normalizeEmail(email))
 
@@ -60,6 +63,18 @@ class UserRepository @Inject constructor(
 
     fun observeClubMembers(clubId: String): Flow<List<UserEntity>> =
         dao.observeClubMembers(clubId)
+
+    fun observeMentees(mentorId: String): Flow<List<UserEntity>> =
+        dao.observeMentees(mentorId)
+
+    /** Назначить наставника (mentorId=null — снять). Синхронизируется через очередь. */
+    suspend fun setMentor(userId: String, mentorId: String?) {
+        val user = dao.getUser(userId) ?: return
+        val updated = user.copy(mentorId = mentorId)
+        dao.update(updated)
+        firestore.updateUser(updated)
+        syncQueueManager.enqueue("user", userId, "UPDATE", updated)
+    }
 
     fun observeClubMembersByRole(clubId: String, role: String): Flow<List<UserEntity>> =
         dao.observeClubMembersByRole(clubId, role)
@@ -113,6 +128,20 @@ class UserRepository @Inject constructor(
     suspend fun delete(u: UserEntity) {
         dao.delete(u)
         syncQueueManager.enqueue("user", u.id, "DELETE", u)
+    }
+
+    /**
+     * Применить пользователя локально БЕЗ постановки в очередь.
+     * Используется при разрешении sync-конфликта «взять серверное»:
+     * локально принимаем серверное значение, а pending из очереди удаляется
+     * через SyncQueueManager.removeByEntity.
+     */
+    suspend fun updateLocalOnly(u: UserEntity) {
+        val normalized = u.copy(email = normalizeEmail(u.email))
+        db.withTransaction {
+            dao.update(normalized)
+            syncUserClubs(normalized)
+        }
     }
 
     /**

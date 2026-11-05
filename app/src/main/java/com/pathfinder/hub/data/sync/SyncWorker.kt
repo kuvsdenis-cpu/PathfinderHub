@@ -280,9 +280,21 @@ class SyncWorker @AssistedInject constructor(
                 for (remote in snapshot.items) {
                     val local = bookRepository.getById(remote.id)
                     if (local != null && local.deletedAt != null) continue
-                    // TODO (D v13, next iteration): при local.pendingSync && remote новее —
-                    // создавать SyncConflictEntity(entityType="book") и не перезаписывать.
-                    if (local != null && local.pendingSync) continue
+                    if (local != null && local.pendingSync) {
+                        // Конфликт: локальные правки не отправлены, но remote новее.
+                        if ((remote.createdAt ?: 0L) > (local.createdAt ?: 0L)) {
+                            createSyncConflict(
+                                uid = uid,
+                                entityType = "book",
+                                entityId = local.id,
+                                localValue = gson.toJson(local),
+                                serverValue = gson.toJson(remote),
+                                localUpdatedAt = java.util.Date(local.createdAt ?: 0L),
+                                serverUpdatedAt = java.util.Date(remote.createdAt ?: 0L),
+                            )
+                        }
+                        continue
+                    }
                     if (local != null && (local.createdAt ?: 0L) >= (remote.createdAt ?: 0L)) continue
                     val refreshed = if (remote.contentUrl != null) {
                         try { bookRepository.refreshContentUrl(remote) }
@@ -416,10 +428,29 @@ class SyncWorker @AssistedInject constructor(
             Log.d(TAG, "pullUser: mergedClubIds=$mergedClubIds, mergedClubId=$mergedClubId")
 
             if (mergedClubIds != local.clubIds || mergedClubId != local.clubId) {
-                Log.d(TAG, "pullUser: ОБНОВЛЯЕМ local -> $mergedClubIds / $mergedClubId")
-                userRepository.update(local.copy(
-                    clubIds = mergedClubIds, clubId = mergedClubId,
-                ))
+                if (syncQueue.hasPendingForEntity("user", local.id)) {
+                    // Конфликт: есть неотправленные локальные правки user,
+                    // а remote уже обновился. Создаём запись для ручного разрешения.
+                    val serverEntity = local.copy(
+                        clubIds = mergedClubIds,
+                        clubId = mergedClubId,
+                    )
+                    createSyncConflict(
+                        uid = uid,
+                        entityType = "user",
+                        entityId = local.id,
+                        localValue = gson.toJson(local),
+                        serverValue = gson.toJson(serverEntity),
+                        localUpdatedAt = local.createdAt,
+                        serverUpdatedAt = java.util.Date(),
+                    )
+                    Log.d(TAG, "pullUser: CONFLICT user/${local.id} (есть pending)")
+                } else {
+                    Log.d(TAG, "pullUser: ОБНОВЛЯЕМ local -> $mergedClubIds / $mergedClubId")
+                    userRepository.update(local.copy(
+                        clubIds = mergedClubIds, clubId = mergedClubId,
+                    ))
+                }
             } else {
                 Log.d(TAG, "pullUser: без изменений")
             }
@@ -541,18 +572,17 @@ class SyncWorker @AssistedInject constructor(
         if (clubIds.isEmpty()) return
         val docsById = linkedMapOf<String, Map<String, Any?>>()
         for (clubId in clubIds) {
+            // B.1 (v13.4): индексированный whereEqualTo по clubId.
+            // whereArrayContains убран — правила Firestore падали на клубных
+            // юзерах с clubId=null; для мультиклуба тянем по активному clubId.
             val byClubId = try {
                 firestore.pullCollectionWhere("users", "clubId", clubId).getOrNull()
             } catch (e: Exception) {
-                Log.w(TAG, "pullClubMembers by clubId=" + clubId + " failed " + e.message); null
+                Log.w(TAG, "pullClubMembers clubId=$clubId failed: ${e.message}")
+                null
             }
             byClubId?.forEach { doc -> (doc["id"] as? String)?.let { docsById[it] = doc } }
-            val byClubIds = try {
-                emptyList<Map<String, Any?>>()
-            } catch (e: Exception) {
-                Log.w(TAG, "pullClubMembers by clubIds=" + clubId + " failed " + e.message); null
-            }
-            byClubIds?.forEach { doc -> (doc["id"] as? String)?.let { docsById[it] = doc } }
+            Log.d(TAG, "pullClubMembers: club=$clubId -> ${byClubId?.size ?: 0} doc(s)")
         }
         var inserted = 0
         for (doc in docsById.values) {
@@ -601,6 +631,7 @@ class SyncWorker @AssistedInject constructor(
             createdAt = parseDate(d["createdAt"]) ?: java.util.Date(),
             lastLoginAt = parseDate(d["lastLoginAt"]),
             syncedAt = parseDate(d["syncedAt"]),
+            mentorId = d["mentorId"] as? String,
         )
     }
 
@@ -855,9 +886,21 @@ class SyncWorker @AssistedInject constructor(
                         val id = doc["id"] as? String ?: continue
                         val remote = mapToCustomGroup(id, clubId, doc)
                         val local = customGroupDao.getById(id)
-                        // TODO (D v13, next iteration): при local.pendingSync && remote.updatedAt > local.updatedAt —
-                        // создавать SyncConflictEntity(entityType="custom_group").
-                        if (local != null && local.pendingSync) continue
+                        if (local != null && local.pendingSync) {
+                            // Конфликт: локальные правки не отправлены, но remote новее.
+                            if (remote.updatedAt.time > local.updatedAt.time) {
+                                createSyncConflict(
+                                    uid = uid,
+                                    entityType = "custom_group",
+                                    entityId = local.id,
+                                    localValue = gson.toJson(local),
+                                    serverValue = gson.toJson(remote),
+                                    localUpdatedAt = local.updatedAt,
+                                    serverUpdatedAt = remote.updatedAt,
+                                )
+                            }
+                            continue
+                        }
                         if (local != null && local.updatedAt.time >= remote.updatedAt.time) continue
                         if (local != null && local.archivedAt != null && remote.archivedAt == null) continue
                         customGroupDao.upsert(remote)
@@ -1196,6 +1239,47 @@ class SyncWorker @AssistedInject constructor(
                     Log.w(TAG, "pullParticipants skip ${e.id}: ${e2.message}")
                 }
             }
+        }
+    }
+
+    /**
+     * Создать запись о конфликте в журнале.
+     * Если для этого entity уже есть resolved-запись — не пересоздаём
+     * (пользователь уже принял решение, повторно его не спрашиваем).
+     */
+    private suspend fun createSyncConflict(
+        uid: String,
+        entityType: String,
+        entityId: String,
+        localValue: String,
+        serverValue: String,
+        localUpdatedAt: java.util.Date,
+        serverUpdatedAt: java.util.Date,
+    ) {
+        val conflictId = "$entityType:$entityId"
+        try {
+            val existing = syncConflictRepository.getById(conflictId)
+            if (existing != null && existing.status == "resolved") {
+                return
+            }
+            syncConflictRepository.upsert(SyncConflictEntity(
+                id = conflictId,
+                userId = uid,
+                entityType = entityType,
+                entityId = entityId,
+                localValue = localValue,
+                serverValue = serverValue,
+                localUpdatedAt = localUpdatedAt,
+                serverUpdatedAt = serverUpdatedAt,
+                strategy = "lww",
+                status = "pending",
+                resolvedBy = null,
+                resolvedAt = null,
+                resolution = null,
+            ))
+            Log.d(TAG, "createSyncConflict: $entityType/$entityId")
+        } catch (e: Exception) {
+            Log.w(TAG, "createSyncConflict skip $entityType/$entityId: ${e.message}")
         }
     }
 
