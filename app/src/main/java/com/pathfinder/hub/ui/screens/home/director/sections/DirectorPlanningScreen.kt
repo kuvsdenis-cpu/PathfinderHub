@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Public
@@ -73,6 +75,7 @@ fun DirectorPlanningScreen(
     val tabs = buildList {
         if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
             add("События")
+            add("Календарь")
             add("Встречи")
         }
         if (TilePermissions.isVisible(user, TilePermissions.QR)) {
@@ -129,6 +132,12 @@ fun DirectorPlanningScreen(
                         onOpenEvent = onOpenEvent,
                         onCreateEvent = onCreateEvent,
                     )
+                    "Календарь" -> DirectorCalendarContent(
+                        onOpenEvent = onOpenEvent,
+                    )
+                    "Календарь" -> DirectorCalendarContent(
+                        onOpenEvent = onOpenEvent,
+                    )
                     "Встречи" -> CreateParentMeetingContent(
                         onCreated = onCreateParentMeeting,
                     )
@@ -150,6 +159,8 @@ fun DirectorPlanningScreen(
 
 private fun iconFor(title: String): ImageVector = when (title) {
     "События" -> Icons.Default.Event
+    "Календарь" -> Icons.Default.CalendarMonth
+    "Календарь" -> Icons.Default.CalendarMonth
     "Встречи" -> Icons.Default.MeetingRoom
     "QR-станции" -> Icons.Default.QrCodeScanner
     "QR-квесты" -> Icons.Default.Map
