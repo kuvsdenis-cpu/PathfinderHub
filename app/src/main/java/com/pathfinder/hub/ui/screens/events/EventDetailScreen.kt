@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -80,6 +82,7 @@ fun EventDetailScreen(
     val fmt = remember { SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.forLanguageTag("ru")) }
     val snackbar = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showOccurrencesDialog by remember { mutableStateOf(false) }
     var showEditAgendaDialog by remember { mutableStateOf(false) }
     var showDeleteMeetingDialog by remember { mutableStateOf(false) }
     var editedAgenda by remember { mutableStateOf("") }
@@ -165,6 +168,20 @@ fun EventDetailScreen(
                 "Дата: " + fmt.format(e.dateStart),
                 style = MaterialTheme.typography.bodyLarge
             )
+            if (e.isRecurring) {
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AssistChip(
+                        onClick = { showOccurrencesDialog = true },
+                        label = {
+                            Text(
+                                "🔄 " + (state.recurrenceLabel ?: "Повторяется") +
+                                        " · ${state.occurrences.size} дат(ы)"
+                            )
+                        },
+                    )
+                }
+            }
             if (e.location.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -540,6 +557,37 @@ fun EventDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteMeetingDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showOccurrencesDialog) {
+        val occFmt = remember { SimpleDateFormat("d MMM yyyy, HH:mm", Locale.forLanguageTag("ru")) }
+        AlertDialog(
+            onDismissRequest = { showOccurrencesDialog = false },
+            title = { Text("Все даты серии (${state.occurrences.size})") },
+            text = {
+                if (state.occurrences.isEmpty()) {
+                    Text("Даты серии не сгенерированы")
+                } else {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        state.occurrences.forEach { occ ->
+                            Text(
+                                occFmt.format(occ.dateStart),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(vertical = 2.dp),
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showOccurrencesDialog = false }) { Text("Закрыть") }
             }
         )
     }

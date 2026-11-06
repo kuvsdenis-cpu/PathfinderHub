@@ -240,6 +240,17 @@ object Routes {
     fun readingPlanDetail(scheduleId: String) = "reading_plans/${Uri.encode(scheduleId)}"
     fun readingPlanDay(dayId: String) = "reading_plans/day/${Uri.encode(dayId)}"
 
+    // === Духовное (UX-15) ===
+    const val SPIRITUAL_HUB = "spiritual_hub/{showAdmin}"
+    fun spiritualHub(showAdmin: Boolean) = "spiritual_hub/$showAdmin"
+
+    // === Основы веры (2.5) ===
+    const val BELIEFS_HUB = "beliefs_hub"
+    const val COMMANDMENTS = "commandments"
+    const val DOCTRINES = "doctrines"
+    const val DOCTRINE_DETAIL = "doctrine_detail/{number}"
+    fun doctrineDetail(number: Int) = "doctrine_detail/$number"
+    const val BELIEF_FOUNDATION = "belief_foundation"
     // === Sabbath School ===
     const val SABBATH_SCHOOL_LIST = "sabbath_school_list"
     const val SABBATH_SCHOOL = "sabbath_school/{lessonId}"

@@ -27,6 +27,7 @@ import com.pathfinder.hub.ui.components.ClubTabsRow
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import androidx.compose.material.icons.filled.School
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material3.CardDefaults
 
 @Suppress("DEPRECATION")
@@ -42,14 +43,8 @@ fun DirectorHomeScreen(
     onNavigateToCreateClub: () -> Unit = {},
     onNavigateToDeletedClubs: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
-    onNavigateToBible: () -> Unit = {},
-    onNavigateToPearls: () -> Unit = {},
-    onNavigateToPearlsAdmin: () -> Unit = {},
-    onNavigateToReadingPlan: () -> Unit = {},
-    onNavigateToReadingPlanAdmin: () -> Unit = {},
+    onNavigateToSpiritualHub: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
-    onNavigateToSabbathSchool: () -> Unit = {},
-    onNavigateToSabbathSchoolSettings: () -> Unit = {},
     onOpenClubInfo: (String) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
@@ -239,7 +234,7 @@ fun DirectorHomeScreen(
                 item {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
                     ) {
                         if (TilePermissions.isVisible(user, TilePermissions.MEMBERS)) {
                             SectionTile(
@@ -261,7 +256,7 @@ fun DirectorHomeScreen(
                 item {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
                     ) {
                         if (TilePermissions.isVisible(user, TilePermissions.EVENTS)) {
                             SectionTile(
@@ -282,7 +277,7 @@ fun DirectorHomeScreen(
                     item {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
                         ) {
                             SectionTile(
                                 Icons.Default.FactCheck,
@@ -299,7 +294,7 @@ fun DirectorHomeScreen(
                 item {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
                     ) {
                         if (TilePermissions.isVisible(user, TilePermissions.FINANCE)) {
                             SectionTile(
@@ -318,10 +313,10 @@ fun DirectorHomeScreen(
                     }
                 }
 
-                // ---------- Библия (B2) ----------
+                // ---------- Духовное (хаб) ----------
                 item {
                     Card(
-                        onClick = onNavigateToBible,
+                        onClick = onNavigateToSpiritualHub,
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -332,246 +327,26 @@ fun DirectorHomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Book, null,
+                                Icons.Default.MenuBook, null,
                                 tint = PathfinderBlue,
                                 modifier = Modifier.size(32.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    "Библия",
+                                    "Духовное",
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
-                                    "Чтение и закладки",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // ---------- Субботняя школа ----------
-                item {
-                    Card(
-                        onClick = onNavigateToSabbathSchool,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.School, null,
-                                tint = PathfinderBlue,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "Субботняя школа",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                                Text(
-                                    "Уроки для подростков",
+                                    "Библия, СШ, жемчужины, план чтения",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
                     }
-                }
-
-                // ---------- Настройки Субботней школы ----------
-                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
-                    item {
-                        Card(
-                            onClick = onNavigateToSabbathSchoolSettings,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-                            Row(
-                                Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Settings, null,
-                                    tint = PathfinderBlue,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                                Spacer(Modifier.width(12.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(
-                                        "Настройки Субботней школы",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        "Год, квартал, текущий урок",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // ---------- Жемчужины (B3.1) ----------
-                item {
-                    Card(
-                        onClick = onNavigateToPearls,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.AutoStories, null,
-                                tint = PathfinderBlue,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "Жемчужины",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                                Text(
-                                    "Стихи недели на 2026 год",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // ---------- План чтения (B4.1) ----------
-                item {
-                    Card(
-                        onClick = onNavigateToReadingPlan,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.CalendarMonth, null,
-                                tint = PathfinderBlue,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "План чтения",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    "Библия и EGW на 2026",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // ---------- Графики жемчужин (админ) ----------
-                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
-                    item {
-                    Card(
-                        onClick = onNavigateToPearlsAdmin,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Settings, null,
-                                tint = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "Графики жемчужин",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                                Text(
-                                    "Импорт / экспорт JSON",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
-                        }
-                    }
-                }
-                }
-
-                // ---------- Графики чтения (админ) ----------
-                if (TilePermissions.isVisible(user, TilePermissions.CONTENT)) {
-                    item {
-                    Card(
-                        onClick = onNavigateToReadingPlanAdmin,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Settings, null,
-                                tint = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    "Графики чтения",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                                Text(
-                                    "Импорт / экспорт JSON",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
-                        }
-                    }
-                }
                 }
 
                 // ---------- Создать ещё один клуб ----------
@@ -699,15 +474,16 @@ private fun SectionTile(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.height(112.dp),
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column(
-            modifier = Modifier.padding(8.dp).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize().padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(icon, contentDescription = null, tint = PathfinderBlue, modifier = Modifier.size(20.dp))
             Spacer(Modifier.height(2.dp))
@@ -715,14 +491,20 @@ private fun SectionTile(
                 title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                minLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 description,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                minLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
         }
     }

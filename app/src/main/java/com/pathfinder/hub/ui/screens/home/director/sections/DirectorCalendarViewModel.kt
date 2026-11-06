@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
+import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
 import com.pathfinder.hub.data.repository.EventRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,6 +43,7 @@ class DirectorCalendarViewModel @Inject constructor(
 
     private var clubId: String? = null
     private var allEvents: List<EventEntity> = emptyList()
+    private var allOccurrences: List<EventOccurrenceEntity> = emptyList()
     private var currentMonthCal: Calendar = Calendar.getInstance()
 
     init {
@@ -93,6 +95,10 @@ class DirectorCalendarViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 allEvents = eventRepository.observeEventsInRange(cid, from, to).first()
+                val recurringIds = allEvents.filter { it.isRecurring }.map { it.id }
+                allOccurrences = if (recurringIds.isEmpty()) emptyList()
+                    else try { eventRepository.getOccurrencesForEvents(recurringIds, from, to) }
+                         catch (_: Exception) { emptyList() }
                 applyEventsToState()
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, errorMessage = e.message) }
@@ -110,15 +116,36 @@ class DirectorCalendarViewModel @Inject constructor(
             }
             daySet.add(cal.timeInMillis)
         }
+        allOccurrences.forEach { occ ->
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = occ.dateStart.time
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            daySet.add(cal.timeInMillis)
+        }
         val selected = _state.value.selectedDayMillis
-        val selectedEvents = allEvents
-            .filter { isSameDay(it.dateStart.time, selected) }
-            .sortedBy { it.dateStart }
+        val eventById = allEvents.associateBy { it.id }
+        val items = mutableListOf<EventEntity>()
+        // События, у которых dateStart в этом дне
+        allEvents.forEach { e ->
+            if (isSameDay(e.dateStart.time, selected)) items.add(e)
+        }
+        // Occurrence в этом дне — клон event с dateStart = occurrence.dateStart
+        allOccurrences.forEach { occ ->
+            if (isSameDay(occ.dateStart.time, selected)) {
+                val e = eventById[occ.eventId] ?: return@forEach
+                if (items.none { it.id == e.id && it.dateStart.time == occ.dateStart.time }) {
+                    items.add(e.copy(dateStart = occ.dateStart, dateEnd = occ.dateEnd))
+                }
+            }
+        }
+        items.sortBy { it.dateStart }
         _state.update {
             it.copy(
                 isLoading = false,
                 eventDays = daySet,
-                eventsForSelectedDay = selectedEvents,
+                eventsForSelectedDay = items,
             )
         }
     }

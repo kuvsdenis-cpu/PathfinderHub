@@ -84,12 +84,9 @@ fun TeenHomeScreen(
     onNavigateToCrossClub: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToClubInfo: (clubId: String) -> Unit = {},
-    onNavigateToBible: () -> Unit = {},
-    onNavigateToPearls: () -> Unit = {},
-    onNavigateToReadingPlan: () -> Unit = {},
+    onNavigateToSpiritualHub: () -> Unit = {},
     onNavigateToBooks: () -> Unit = {},
     onNavigateToInfo: () -> Unit = {},
-    onNavigateToSabbathSchool: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     viewModel: TeenHomeViewModel = hiltViewModel()
 ) {
@@ -323,11 +320,11 @@ fun TeenHomeScreen(
                 }
             }
 
-            // Библия
+            // ---------- Духовное (хаб) ----------
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onNavigateToBible,
+                    onClick = onNavigateToSpiritualHub,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
@@ -337,90 +334,19 @@ fun TeenHomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.Book, null,
+                            Icons.Default.MenuBook, null,
                             tint = PathfinderBlue,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(Modifier.size(16.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                "Библия",
+                                "Духовное",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Чтение и закладки",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // ---------- Субботняя школа ----------
-            item {
-                Card(
-                    onClick = onNavigateToSabbathSchool,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.School, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "Субботняя школа",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Text(
-                                "Уроки для подростков",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Жемчужины
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onNavigateToPearls,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    )
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.AutoStories, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(Modifier.size(16.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "Жемчужины",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Стихи недели на 2026 год",
+                                "Библия, СШ, жемчужины, план чтения",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -449,43 +375,13 @@ fun TeenHomeScreen(
                         )
                         Spacer(Modifier.size(16.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Книги", style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold)
-                            Text("Чтение и задания по книгам",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-            }
-
-            // План чтения
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onNavigateToReadingPlan,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Row(
-                        Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Outlined.CalendarMonth, null,
-                            tint = PathfinderBlue,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(Modifier.size(16.dp))
-                        Column(Modifier.weight(1f)) {
                             Text(
-                                "План чтения",
+                                "Книги",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Библия и труды Духа Пророчества на 2026",
+                                "Чтение и задания по книгам",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -616,7 +512,14 @@ private fun ActionTile(
         ) {
             Icon(icon, contentDescription = null)
             Spacer(Modifier.height(4.dp))
-            Text(text = label, style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 2,
+                minLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
         }
     }
 }

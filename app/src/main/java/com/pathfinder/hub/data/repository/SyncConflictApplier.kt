@@ -31,6 +31,7 @@ class SyncConflictApplier @Inject constructor(
     private val customGroupDao: CustomGroupDao,
     private val userRepository: UserRepository,
     private val syncQueueManager: SyncQueueManager,
+    private val eventRepository: EventRepository,
 ) {
     companion object { private const val TAG = "SyncConflictApplier" }
     private val gson = Gson()
@@ -57,6 +58,29 @@ class SyncConflictApplier @Inject constructor(
         val json = if (chooseLocal) conflict.localValue else conflict.serverValue
         val participant = gson.fromJson(json, EventParticipantEntity::class.java) ?: return
         eventParticipantDao.upsert(participant.copy(pendingSync = chooseLocal))
+        if (chooseLocal) {
+            // Баг 0.1: при chooseLocal нужно поставить в очередь, иначе pull затрёт.
+            // clubId в entity нет — берём из события.
+            try {
+                val event = eventRepository.getEvent(participant.eventId)
+                if (event != null && !event.clubId.isNullOrBlank()) {
+                    syncQueueManager.enqueue(
+                        "event_participant", participant.id, "UPDATE",
+                        mapOf(
+                            "id" to participant.id,
+                            "eventId" to participant.eventId,
+                            "userId" to participant.userId,
+                            "status" to participant.status,
+                            "invitedAt" to participant.invitedAt.time,
+                            "respondedAt" to participant.respondedAt?.time,
+                            "attendedAt" to participant.attendedAt?.time,
+                            "clubId" to event.clubId,
+                            "pendingSync" to false,
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
+        }
         Log.d(TAG, "applyEventParticipant: ${conflict.entityId} chooseLocal=$chooseLocal")
     }
 
@@ -64,6 +88,10 @@ class SyncConflictApplier @Inject constructor(
         val json = if (chooseLocal) conflict.localValue else conflict.serverValue
         val book = gson.fromJson(json, BookEntity::class.java) ?: return
         bookRepository.upsert(book.copy(pendingSync = chooseLocal))
+        if (chooseLocal) {
+            // Баг 0.1: pushClubBook ставит в sync_queue (book-ветка), иначе pull затрёт.
+            try { bookRepository.pushClubBook(book.copy(pendingSync = true)) } catch (_: Exception) {}
+        }
         Log.d(TAG, "applyBook: ${conflict.entityId} chooseLocal=$chooseLocal")
     }
 
@@ -71,6 +99,14 @@ class SyncConflictApplier @Inject constructor(
         val json = if (chooseLocal) conflict.localValue else conflict.serverValue
         val group = gson.fromJson(json, CustomGroupEntity::class.java) ?: return
         customGroupDao.upsert(group.copy(pendingSync = chooseLocal))
+        if (chooseLocal) {
+            // Баг 0.1: enqueue custom_group, иначе pull затрёт.
+            try {
+                syncQueueManager.enqueue(
+                    "custom_group", group.id, "upsert", group.copy(pendingSync = false)
+                )
+            } catch (_: Exception) {}
+        }
         Log.d(TAG, "applyCustomGroup: ${conflict.entityId} chooseLocal=$chooseLocal")
     }
 

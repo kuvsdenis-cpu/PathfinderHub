@@ -73,6 +73,16 @@ interface EventDao {
     suspend fun upsertOccurrences(items: List<EventOccurrenceEntity>)
     @Query("SELECT * FROM event_occurrences WHERE eventId = :eventId ORDER BY dateStart")
     suspend fun getOccurrences(eventId: String): List<EventOccurrenceEntity>
+
+    @Query("DELETE FROM event_occurrences WHERE eventId = :eventId")
+    suspend fun deleteOccurrencesForEvent(eventId: String)
+
+    @Query("SELECT * FROM event_occurrences WHERE dateStart >= :from AND dateStart <= :to ORDER BY dateStart")
+    suspend fun getOccurrencesInRange(from: Long, to: Long): List<EventOccurrenceEntity>
+
+    @Query("SELECT * FROM event_occurrences WHERE eventId IN (:eventIds) AND dateStart >= :from AND dateStart <= :to")
+    suspend fun getOccurrencesForEvents(eventIds: List<String>, from: Long, to: Long): List<EventOccurrenceEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertEventHonors(items: List<EventHonorEntity>)
     @Query("SELECT * FROM event_honors WHERE eventId = :eventId")

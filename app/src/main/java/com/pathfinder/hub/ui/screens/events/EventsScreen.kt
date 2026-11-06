@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,6 +69,7 @@ fun EventsContent(
     val clubState by clubContextViewModel.state.collectAsState()
     val fmt = remember { SimpleDateFormat("d MMMM, HH:mm", Locale.forLanguageTag("ru")) }
 
+    var eventsQuery by remember { mutableStateOf("") }
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = state.activeTab) {
@@ -81,8 +83,39 @@ fun EventsContent(
                     onClick = { viewModel.setTab(1) },
                     text = { Text("Архив (${state.archived.size})") }
                 )
+                Tab(
+                    selected = state.activeTab == 2,
+                    onClick = { viewModel.setTab(2) },
+                    text = { Text("Календарь") }
+                )
             }
+            if (state.activeTab == 2) {
+                CommonCalendarContent(
+                    events = state.events,
+                    occurrences = state.occurrences,
+                    onOpenEvent = onOpenEvent,
+                )
+                return@Column
+            }
+
             val current = if (state.activeTab == 0) state.events else state.archived
+            val filtered = remember(eventsQuery, current) {
+                if (eventsQuery.isBlank()) current
+                else current.filter {
+                    it.title.contains(eventsQuery, ignoreCase = true) ||
+                    it.location.contains(eventsQuery, ignoreCase = true)
+                }
+            }
+            OutlinedTextField(
+                value = eventsQuery,
+                onValueChange = { eventsQuery = it },
+                placeholder = { Text("Поиск по названию или месту") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
             if (current.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -102,12 +135,20 @@ fun EventsContent(
                         }
                     }
                 }
+            } else if (filtered.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
+                    Text(
+                        "Ничего не найдено",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(current, key = { it.id }) { e ->
+                    items(filtered, key = { it.id }) { e ->
                         if (state.activeTab == 1) {
                             ArchivedEventCard(e, fmt.format(e.dateStart), onRestore = {
                                 viewModel.restoreEvent(e.id)
@@ -179,7 +220,19 @@ private fun ArchivedEventCard(
 private fun EventCard(event: EventEntity, dateStr: String, onClick: () -> Unit) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(Modifier.padding(16.dp)) {
-            Text(event.title, style = MaterialTheme.typography.titleLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    event.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                if (event.isRecurring) {
+                    AssistChip(
+                        onClick = {},
+                        label = { Text("серия", style = MaterialTheme.typography.labelSmall) },
+                    )
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 dateStr,

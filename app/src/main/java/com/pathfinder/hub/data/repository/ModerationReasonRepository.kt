@@ -2,11 +2,13 @@ package com.pathfinder.hub.data.repository
 
 import com.pathfinder.hub.data.local.dao.ModerationReasonDao
 import com.pathfinder.hub.data.local.entity.planning.ModerationReasonEntity
+import com.pathfinder.hub.data.sync.SyncQueueManager
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class ModerationReasonRepository @Inject constructor(
     private val dao: ModerationReasonDao,
+    private val syncQueueManager: SyncQueueManager,
 ) {
     companion object {
         val SYSTEM_REASONS: List<ModerationReasonEntity> = listOf(
@@ -26,14 +28,28 @@ class ModerationReasonRepository @Inject constructor(
     fun observeActive(): Flow<List<ModerationReasonEntity>> = dao.observeActive()
     suspend fun getByCode(code: String): ModerationReasonEntity? = dao.getByCode(code)
 
-    suspend fun upsert(reason: ModerationReasonEntity) = dao.upsert(reason)
+    suspend fun upsert(reason: ModerationReasonEntity) {
+        dao.upsert(reason)
+        // Баг 0.2: без очереди изменение не уйдёт в Firestore.
+        syncQueueManager.enqueue("moderation_reason", reason.code, "upsert", reason)
+    }
 
     suspend fun setActive(code: String, active: Boolean) {
         val r = dao.getByCode(code) ?: return
-        dao.upsert(r.copy(isActive = active))
+        val updated = r.copy(isActive = active)
+        dao.upsert(updated)
+        syncQueueManager.enqueue("moderation_reason", code, "UPDATE", updated)
     }
 
-    suspend fun deleteCustom(code: String): Boolean = dao.deleteCustom(code) > 0
+    suspend fun deleteCustom(code: String): Boolean {
+        val r = dao.getByCode(code) ?: return false
+        if (r.isSystem) return false
+        val deleted = dao.deleteCustom(code) > 0
+        if (deleted) {
+            syncQueueManager.enqueue("moderation_reason", code, "delete", r)
+        }
+        return deleted
+    }
 
     suspend fun ensureSeed() {
         if (dao.count() == 0) {

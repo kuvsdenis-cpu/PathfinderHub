@@ -19,6 +19,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material.icons.filled.QrCodeScanner
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +38,39 @@ fun RegisterScreen(
     val state by viewModel.state.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
     var parentalConsent by remember { mutableStateOf(false) }
+
+    // UX-10: сканирование QR-кода инвайта
+    val ctx = LocalContext.current
+    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+        val contents = result.contents
+        if (!contents.isNullOrBlank()) {
+            val code = contents.trim()
+            viewModel.onInviteCodeChange(code)
+            viewModel.validateInvite()
+        }
+    }
+    fun launchScanner() {
+        val opts = ScanOptions().apply {
+            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            setPrompt("Наведите камеру на QR-код инвайта")
+            setBeepEnabled(false)
+            setOrientationLocked(true)
+        }
+        scanLauncher.launch(opts)
+    }
+    val permLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) launchScanner()
+    }
+    fun requestAndScan() {
+        val camera = ContextCompat.checkSelfPermission(ctx, Manifest.permission.CAMERA)
+        if (camera == PackageManager.PERMISSION_GRANTED) {
+            launchScanner()
+        } else {
+            permLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     // После успешной регистрации — сообщаем наружу роль и uid.
     // Навигация на онбординг делается в PathfinderNavHost.
@@ -72,7 +113,12 @@ fun RegisterScreen(
                 label = { Text("Код") },
                 singleLine = true,
                 enabled = !state.isLoading,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { requestAndScan() }) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = "Сканировать QR")
+                    }
+                }
             )
             Spacer(Modifier.height(8.dp))
             OutlinedButton(

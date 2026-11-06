@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pathfinder.hub.data.local.SessionManager
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
+import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
 import com.pathfinder.hub.data.repository.EventRepository
 import com.pathfinder.hub.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ data class EventsUiState(
     val activeTab: Int = 0,
     val events: List<EventEntity> = emptyList(),
     val archived: List<EventEntity> = emptyList(),
+    val occurrences: List<EventOccurrenceEntity> = emptyList(),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,16 +53,31 @@ class EventsViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.observeUser(userId).collect { user ->
                 val clubId = user?.clubId
-                if (clubId.isNullOrBlank()) {
+                if (user == null || clubId.isNullOrBlank()) {
                     _state.update { it.copy(isLoading = false, events = emptyList(), archived = emptyList()) }
                     return@collect
                 }
                 val now = System.currentTimeMillis()
                 val end = now + 365L * 24 * 3600 * 1000
 
+                // UX-8: teen видит только свои события (participant/created),
+                // parent / instructor / secretary — все события клуба (расписание / управление).
+                // Director сюда не попадает — у него DirectorPlanningScreen.
+                val eventsFlow = if (user.role == "teen") {
+                    eventRepository.observeEventsForUser(clubId, userId, 0L, end)
+                } else {
+                    eventRepository.observeActiveInRange(clubId, 0L, end)
+                }
+
                 launch {
-                    eventRepository.observeEventsForUser(clubId, userId, 0L, end).collect { list ->
+                    eventsFlow.collect { list ->
                         _state.update { it.copy(isLoading = false, events = list) }
+                        val recurringIds = list.filter { it.isRecurring }.map { it.id }
+                        val occs = if (recurringIds.isEmpty()) emptyList() else
+                            try {
+                                eventRepository.getOccurrencesForEvents(recurringIds, 0L, end)
+                            } catch (_: Exception) { emptyList() }
+                        _state.update { it.copy(occurrences = occs) }
                     }
                 }
                 launch {

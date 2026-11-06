@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.AlertDialog
@@ -49,6 +50,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -113,9 +117,28 @@ fun StaffContent(
     val state by viewModel.state.collectAsState()
     val clubState by clubContextViewModel.state.collectAsState()
 
+    var staffQuery by remember { mutableStateOf("") }
+    val filteredDirectors = remember(staffQuery, state.directors) {
+        if (staffQuery.isBlank()) state.directors
+        else state.directors.filter {
+            "${it.firstName} ${it.lastName}".contains(staffQuery, ignoreCase = true)
+        }
+    }
     Column(
         modifier = modifier.fillMaxSize()
     ) {
+        if (!state.isLoading && state.directors.isNotEmpty()) {
+            OutlinedTextField(
+                value = staffQuery,
+                onValueChange = { staffQuery = it },
+                placeholder = { Text("Поиск по имени") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator()
@@ -139,7 +162,7 @@ fun StaffContent(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.directors, key = { it.id }) { d ->
+                items(filteredDirectors, key = { it.id }) { d ->
                     val isOwner = state.currentUser?.isOwnerClub == true
                     val canEditPermissions = isOwner && !d.isOwnerClub && d.id != state.currentUserId
                     StaffRow(
@@ -151,12 +174,21 @@ fun StaffContent(
                         },
                     )
                 }
+                if (filteredDirectors.isEmpty() && staffQuery.isNotBlank()) {
+                    item {
+                        Text(
+                            "Ничего не найдено",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
 
                 val me = state.currentUser
                 val candidates = state.directors.filter {
                     !it.isOwnerClub && it.id != state.currentUserId
                 }
-                if (me?.isOwnerClub == true) {
+                if (staffQuery.isBlank() && me?.isOwnerClub == true) {
                     item {
                         Card(
                             onClick = {
@@ -196,7 +228,7 @@ fun StaffContent(
                     }
                 }
 
-                if (me?.isOwnerClub == true) {
+                if (staffQuery.isBlank() && me?.isOwnerClub == true) {
                     item {
                         Card(
                             onClick = viewModel::openInviteDialog,
@@ -233,7 +265,7 @@ fun StaffContent(
                     }
                 }
 
-                if (me?.isOwnerClub == true) {
+                if (staffQuery.isBlank() && me?.isOwnerClub == true) {
                     item {
                         Card(
                             onClick = viewModel::openStaffInviteDialog,
@@ -270,7 +302,7 @@ fun StaffContent(
                     }
                 }
 
-                if (me?.isOwnerClub == true) {
+                if (staffQuery.isBlank() && me?.isOwnerClub == true) {
                     item {
                         Card(
                             onClick = viewModel::openTransferByEmailDialog,

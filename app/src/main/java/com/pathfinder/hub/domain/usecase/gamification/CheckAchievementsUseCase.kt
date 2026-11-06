@@ -10,6 +10,8 @@ import com.pathfinder.hub.data.local.dao.UserDao
 import com.pathfinder.hub.data.local.entity.gamification.AchievementProgressEntity
 import com.pathfinder.hub.data.local.entity.gamification.DigitalUniformEntity
 import com.pathfinder.hub.data.local.entity.gamification.SpecialMarkItem
+import com.pathfinder.hub.data.local.entity.gamification.BadgeItem
+import com.pathfinder.hub.data.local.entity.gamification.ChevronItem
 import com.pathfinder.hub.data.repository.AchievementRepository
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
@@ -169,5 +171,64 @@ class CheckAchievementsUseCase @Inject constructor(
             achievementRepository.upsertUniformWithSync(updated)
         } catch (_: Exception) {}
     }
+    /**
+     * Восстанавливает digital_uniforms, если строки нет.
+     * Собирает нашивки из honor_completions, шевроны из level_completions,
+     * особые знаки из achievement_progress (status='earned').
+     * Идемпотентно: если строка уже есть — возвращает её без изменений.
+     */
+    suspend fun rebuildUniformIfMissing(userId: String): DigitalUniformEntity? {
+        return try {
+            achievementRepository.getUniform(userId)?.let { return it }
+
+            val levelCompletions = try {
+                levelRepository.observeCompletions(userId).first()
+            } catch (_: Exception) { emptyList() }
+            val honorCompletions = try {
+                honorRepository.observeCompletions(userId).first()
+            } catch (_: Exception) { emptyList() }
+            val earnedProgress = try {
+                achievementRepository.observeProgress(userId).first().filter { it.status == "earned" }
+            } catch (_: Exception) { emptyList() }
+            val allAchievements = try {
+                achievementRepository.observeAll().first().associateBy { it.id }
+            } catch (_: Exception) { emptyMap() }
+
+            val now = Date()
+            val badges = honorCompletions
+                .distinctBy { it.honorId }
+                .sortedBy { it.completedAt }
+                .mapIndexed { i, h -> BadgeItem(honorId = h.honorId, position = i, earnedAt = h.completedAt) }
+            val chevrons = levelCompletions
+                .distinctBy { it.levelId }
+                .sortedBy { it.completedAt }
+                .mapIndexed { i, l -> ChevronItem(levelId = l.levelId, position = i, earnedAt = l.completedAt) }
+            val marks = earnedProgress
+                .distinctBy { it.achievementId }
+                .mapNotNull { p ->
+                    val at = p.earnedAt ?: return@mapNotNull null
+                    SpecialMarkItem(
+                        achievementId = p.achievementId,
+                        icon = allAchievements[p.achievementId]?.icon ?: "",
+                        earnedAt = at,
+                    )
+                }
+
+            val uniform = DigitalUniformEntity(
+                userId = userId,
+                shirtColor = "#1E88E5",
+                tieColor = "#FFC107",
+                earnedBadges = badges,
+                earnedChevrons = chevrons,
+                specialMarks = marks,
+                updatedAt = now,
+            )
+            achievementRepository.upsertUniformWithSync(uniform)
+            uniform
+        } catch (_: Exception) {
+            null
+        }
+    }
+
 }
 

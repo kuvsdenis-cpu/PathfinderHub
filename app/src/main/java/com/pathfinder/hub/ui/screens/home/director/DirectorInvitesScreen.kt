@@ -24,9 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -56,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.domain.permissions.PermissionRegistry
 import com.pathfinder.hub.ui.components.CollapsibleSection
+import com.pathfinder.hub.ui.components.QrCodeImage
 import com.pathfinder.hub.ui.theme.PathfinderBlue
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -106,6 +110,7 @@ fun DirectorInvitesContent(
     val clubState by clubContextViewModel.state.collectAsState()
     val context = LocalContext.current
     var revokeDialogInvite by remember { mutableStateOf<InviteEntity?>(null) }
+    var qrDialogInvite by remember { mutableStateOf<InviteEntity?>(null) }
 
     LaunchedEffect(Unit) { viewModel.pullInvites() }
 
@@ -262,7 +267,32 @@ fun DirectorInvitesContent(
             )
             Spacer(Modifier.height(8.dp))
 
-            state.invites.forEach { invite ->
+            var invitesQuery by remember { mutableStateOf("") }
+            val filteredInvites = remember(invitesQuery, state.invites) {
+                if (invitesQuery.isBlank()) state.invites
+                else state.invites.filter {
+                    it.code.contains(invitesQuery, ignoreCase = true) ||
+                    roleLabel(it.role).contains(invitesQuery, ignoreCase = true)
+                }
+            }
+            OutlinedTextField(
+                value = invitesQuery,
+                onValueChange = { invitesQuery = it },
+                placeholder = { Text("Поиск по коду или роли") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            if (filteredInvites.isEmpty() && invitesQuery.isNotBlank()) {
+                Text(
+                    "Ничего не найдено",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+            filteredInvites.forEach { invite ->
                 Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Column(Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -298,6 +328,16 @@ fun DirectorInvitesContent(
                         if (invite.status == "active") {
                             Spacer(Modifier.height(4.dp))
                             OutlinedButton(
+                                onClick = { qrDialogInvite = invite },
+                                enabled = !state.isLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Icon(Icons.Default.QrCode, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("QR-код")
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            OutlinedButton(
                                 onClick = { revokeDialogInvite = invite },
                                 enabled = !state.isLoading,
                                 modifier = Modifier.fillMaxWidth(),
@@ -325,6 +365,58 @@ fun DirectorInvitesContent(
                     },
                     dismissButton = {
                         TextButton(onClick = { revokeDialogInvite = null }) { Text("Отмена") }
+                    }
+                )
+            }
+
+            qrDialogInvite?.let { inviteToShow ->
+                AlertDialog(
+                    onDismissRequest = { qrDialogInvite = null },
+                    title = { Text("QR-код инвайта") },
+                    text = {
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                inviteToShow.code,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Роль: ${roleLabel(inviteToShow.role)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            QrCodeImage(content = inviteToShow.code, size = 240.dp)
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                "Покажите QR для сканирования при регистрации",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { qrDialogInvite = null }) {
+                            Text("Закрыть")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    buildShareMessage(inviteToShow.code, inviteToShow.role),
+                                )
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Поделиться"))
+                        }) {
+                            Text("Поделиться")
+                        }
                     }
                 )
             }

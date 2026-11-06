@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
+import java.util.Calendar
 import javax.inject.Inject
 
 /**
@@ -49,6 +50,12 @@ data class CreateEventUiState(
     val customGroups: List<CustomGroupEntity> = emptyList(),
     val isEditMode: Boolean = false,
     val originalTargetGroup: String? = null,
+    // UX-5: повторяющиеся события
+    val isRecurring: Boolean = false,
+    val recurrenceFreq: String = "weekly",
+    val recurrenceUntil: Date? = null,
+    val recurrenceByDayOfWeek: Int? = null,
+    val recurrenceByDayOfMonth: Int? = null,
 )
 
 @HiltViewModel
@@ -88,6 +95,12 @@ class CreateEventViewModel @Inject constructor(
                 _state.update { it.copy(errorMessage = "Событие не найдено") }
                 return@launch
             }
+            // UX-5: восстановить серию из occurrences
+            val occurrences = if (e.isRecurring) {
+                try { eventRepository.getOccurrences(eventId) } catch (_: Exception) { emptyList() }
+            } else emptyList()
+            val lastOcc = occurrences.maxByOrNull { it.dateStart.time }
+            val (freq, byDay) = parseRecurrenceRule(e.recurrenceRule)
             _state.update {
                 it.copy(
                     title = e.title,
@@ -99,10 +112,29 @@ class CreateEventViewModel @Inject constructor(
                     longitude = e.longitude?.toString() ?: "",
                     targetGroup = e.targetGroup,
                     originalTargetGroup = e.targetGroup,
+                    isRecurring = e.isRecurring,
+                    recurrenceFreq = freq,
+                    recurrenceUntil = lastOcc?.dateStart,
+                    recurrenceByDayOfWeek = if (freq in listOf("weekly", "biweekly")) byDay else null,
+                    recurrenceByDayOfMonth = if (freq == "monthly") byDay else null,
                 )
             }
         }
     }
+
+    private fun parseRecurrenceRule(rule: String?): Pair<String, Int?> {
+        if (rule.isNullOrBlank()) return "weekly" to null
+        val freq = rule.substringBefore(":").ifBlank { "weekly" }
+        val byDay = rule.substringAfter(":byDay=", "").toIntOrNull()
+        return freq to byDay
+    }
+
+    private fun buildRecurrenceRule(freq: String, dayOfWeek: Int?, dayOfMonth: Int?): String =
+        when (freq) {
+            "weekly", "biweekly" -> if (dayOfWeek != null) "$freq:byDay=$dayOfWeek" else freq
+            "monthly" -> if (dayOfMonth != null) "monthly:byDay=$dayOfMonth" else "monthly"
+            else -> freq
+        }
 
     private fun loadClubMembers() {
         val userId = sessionManager.getUserId() ?: return
@@ -212,6 +244,24 @@ class CreateEventViewModel @Inject constructor(
     fun onLatitudeChange(v: String) = _state.update { it.copy(latitude = v) }
     fun onLongitudeChange(v: String) = _state.update { it.copy(longitude = v) }
 
+    // UX-5: повторяющиеся события
+    fun onIsRecurringChange(v: Boolean) = _state.update {
+        it.copy(
+            isRecurring = v,
+            recurrenceUntil = if (v && it.recurrenceUntil == null && it.dateStart != null) {
+                val cal = Calendar.getInstance().apply {
+                    timeInMillis = it.dateStart!!.time
+                    add(Calendar.YEAR, 1)
+                }
+                cal.time
+            } else it.recurrenceUntil,
+        )
+    }
+    fun onRecurrenceFreqChange(v: String) = _state.update { it.copy(recurrenceFreq = v) }
+    fun onRecurrenceUntilChange(v: Date) = _state.update { it.copy(recurrenceUntil = v) }
+    fun onRecurrenceDayOfWeekChange(v: Int?) = _state.update { it.copy(recurrenceByDayOfWeek = v) }
+    fun onRecurrenceDayOfMonthChange(v: Int?) = _state.update { it.copy(recurrenceByDayOfMonth = v) }
+
     fun saveEvent() {
         if (editEventId != null) updateEvent(editEventId) else createEvent()
     }
@@ -226,6 +276,14 @@ class CreateEventViewModel @Inject constructor(
         }
         if (s.dateEnd.before(s.dateStart)) {
             _state.update { it.copy(errorMessage = "Окончание раньше начала") }; return
+        }
+        if (s.isRecurring) {
+            if (s.recurrenceUntil == null) {
+                _state.update { it.copy(errorMessage = "Укажите дату окончания серии") }; return
+            }
+            if (s.recurrenceUntil.before(s.dateStart)) {
+                _state.update { it.copy(errorMessage = "Дата окончания серии раньше начала") }; return
+            }
         }
         _state.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
@@ -243,8 +301,22 @@ class CreateEventViewModel @Inject constructor(
                     dateEnd = s.dateEnd,
                     latitude = s.latitude.toDoubleOrNull(),
                     longitude = s.longitude.toDoubleOrNull(),
+                    isRecurring = s.isRecurring,
+                    recurrenceRule = if (s.isRecurring) buildRecurrenceRule(s.recurrenceFreq, s.recurrenceByDayOfWeek, s.recurrenceByDayOfMonth) else null,
                 )
-                eventRepository.update(updated)
+                if (existing.isRecurring || s.isRecurring) {
+                    eventRepository.saveRecurringEvent(
+                        event = updated,
+                        frequency = s.recurrenceFreq,
+                        until = if (s.isRecurring) s.recurrenceUntil else null,
+                        byDayOfWeek = s.recurrenceByDayOfWeek,
+                        byDayOfMonth = s.recurrenceByDayOfMonth,
+                        memberIds = null,
+                        isNew = false,
+                    )
+                } else {
+                    eventRepository.update(updated)
+                }
                 _state.update { it.copy(isLoading = false, isCreated = true) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка сохранения") }
@@ -265,6 +337,15 @@ class CreateEventViewModel @Inject constructor(
         if (s.dateEnd.before(s.dateStart)) {
             _state.update { it.copy(errorMessage = "Окончание раньше начала") }
             return
+        }
+
+        if (s.isRecurring) {
+            if (s.recurrenceUntil == null) {
+                _state.update { it.copy(errorMessage = "Укажите дату окончания серии") }; return
+            }
+            if (s.recurrenceUntil.before(s.dateStart)) {
+                _state.update { it.copy(errorMessage = "Дата окончания серии раньше начала") }; return
+            }
         }
 
         val userId = sessionManager.getUserId()
@@ -312,7 +393,25 @@ class CreateEventViewModel @Inject constructor(
                 )
 
                 val target = s.targetGroup
-                if (!target.isNullOrBlank()) {
+                if (s.isRecurring) {
+                    val memberIds = if (!target.isNullOrBlank()) {
+                        val ids = membersInGroup(target)
+                        if (ids.isEmpty()) {
+                            _state.update { it.copy(isLoading = false, errorMessage = "В группе нет участников") }
+                            return@launch
+                        }
+                        ids
+                    } else null
+                    eventRepository.saveRecurringEvent(
+                        event = event,
+                        frequency = s.recurrenceFreq,
+                        until = s.recurrenceUntil,
+                        byDayOfWeek = s.recurrenceByDayOfWeek,
+                        byDayOfMonth = s.recurrenceByDayOfMonth,
+                        memberIds = memberIds,
+                        isNew = true,
+                    )
+                } else if (!target.isNullOrBlank()) {
                     val memberIds = membersInGroup(target)
                     if (memberIds.isEmpty()) {
                         _state.update {

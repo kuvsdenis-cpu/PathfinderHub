@@ -11,6 +11,7 @@ import com.pathfinder.hub.data.local.dao.ModerationDao
 import com.pathfinder.hub.data.local.entity.offline.SyncQueueItemEntity
 import com.pathfinder.hub.data.local.entity.offline.SyncConflictEntity
 import com.pathfinder.hub.data.local.entity.planning.CommentEntity
+import com.pathfinder.hub.data.local.entity.planning.ModerationReasonEntity
 import com.pathfinder.hub.data.remote.FirestoreCommentDataSource
 import com.pathfinder.hub.data.local.dao.RequirementMaterialDao
 import com.pathfinder.hub.data.local.dao.RequirementTaskDao
@@ -89,6 +90,7 @@ class SyncWorker @AssistedInject constructor(
     private val eventRepository: EventRepository,
     private val participantDao: EventParticipantDao,
     private val syncConflictRepository: SyncConflictRepository,
+    private val moderationReasonDao: com.pathfinder.hub.data.local.dao.ModerationReasonDao,
 ) : CoroutineWorker(context, params) {
 
     private val gson = Gson()
@@ -258,6 +260,8 @@ class SyncWorker @AssistedInject constructor(
         pullCustomGroupExclusions(uid)
         pullInfoArticles()
         pullParticipants(uid)
+        pullModerationReasons()
+        pullEventOccurrences(uid)
     }
 
     private suspend fun pullClubBooks(uid: String) {
@@ -1077,6 +1081,174 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+
+
+    // ==================== EVENT OCCURRENCES (UX-5) ====================
+
+    private suspend fun processEventOccurrence(item: SyncQueueItemEntity): ProcessResult {
+        @Suppress("UNCHECKED_CAST")
+        val map = try {
+            gson.fromJson(item.payload, Map::class.java) as? Map<String, Any?>
+        } catch (e: Exception) {
+            Log.e(TAG, "event_occurrence deserialize failed", e)
+            return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+
+        val id = map["id"] as? String
+        val eventId = map["eventId"] as? String
+        val clubId = map["clubId"] as? String
+        if (id.isNullOrBlank() || eventId.isNullOrBlank() || clubId.isNullOrBlank()) {
+            Log.w(TAG, "event_occurrence: пустые id/eventId/clubId — skip")
+            return ProcessResult.PERMANENT_FAILURE
+        }
+
+        val collection = "clubs/$clubId/events/$eventId/occurrences"
+        return when (item.operation.lowercase()) {
+            "create", "update", "upsert" -> {
+                val payload = mapOf(
+                    "id" to id,
+                    "eventId" to eventId,
+                    "dateStart" to map["dateStart"],
+                    "dateEnd" to map["dateEnd"],
+                    "status" to (map["status"] as? String ?: "scheduled"),
+                )
+                val r = firestore.pushDocument(collection, id, payload)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, id)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    private suspend fun pullEventOccurrences(uid: String) {
+        val user = try {
+            userRepository.getUserLocalOnly(uid)
+        } catch (e: Exception) {
+            Log.w(TAG, "pullEventOccurrences: user failed ${e.message}"); return
+        } ?: return
+        val clubIds = user.clubIds.ifEmpty { listOfNotNull(user.clubId) }
+        if (clubIds.isEmpty()) return
+
+        val now = System.currentTimeMillis()
+        val from = now - 365L * 24 * 3600 * 1000
+        val to = now + 365L * 24 * 3600 * 1000
+
+        var totalPulled = 0
+        for (clubId in clubIds) {
+            val club = try { clubRepository.getClub(clubId) } catch (_: Exception) { null }
+            if (club?.deletedAt != null) continue
+            val events = try {
+                eventRepository.getPublishedInPeriod(clubId, from, to)
+            } catch (e: Exception) {
+                Log.w(TAG, "pullEventOccurrences: events failed $clubId: ${e.message}"); continue
+            }
+            for (e in events) {
+                if (!e.isRecurring) continue
+                try {
+                    val docs = firestore
+                        .pullCollection("clubs/$clubId/events/${e.id}/occurrences")
+                        .getOrNull() ?: continue
+                    val existing = eventRepository.getOccurrences(e.id).map { it.id }.toSet()
+                    val toInsert = mutableListOf<com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity>()
+                    for (doc in docs) {
+                        val occId = doc["id"] as? String ?: continue
+                        if (occId in existing) continue
+                        val dateStart = (doc["dateStart"] as? Number)?.toLong() ?: continue
+                        val dateEnd = (doc["dateEnd"] as? Number)?.toLong() ?: dateStart
+                        toInsert.add(
+                            com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity(
+                                id = occId,
+                                eventId = e.id,
+                                dateStart = java.util.Date(dateStart),
+                                dateEnd = java.util.Date(dateEnd),
+                                status = doc["status"] as? String ?: "scheduled",
+                                overrideData = null,
+                            )
+                        )
+                    }
+                    if (toInsert.isNotEmpty()) {
+                        eventRepository.upsertOccurrences(toInsert)
+                        totalPulled += toInsert.size
+                    }
+                } catch (ex: Exception) {
+                    Log.w(TAG, "pullEventOccurrences skip ${e.id}: ${ex.message}")
+                }
+            }
+        }
+        Log.d(TAG, "pullEventOccurrences: total inserted=$totalPulled")
+    }
+
+    // ==================== MODERATION REASONS (0.2) ====================
+
+    private suspend fun processModerationReason(item: SyncQueueItemEntity): ProcessResult {
+        val reason = try {
+            gson.fromJson(item.payload, ModerationReasonEntity::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "moderation_reason deserialize failed", e)
+            return ProcessResult.PERMANENT_FAILURE
+        } ?: return ProcessResult.PERMANENT_FAILURE
+        if (reason.code.isBlank()) return ProcessResult.PERMANENT_FAILURE
+
+        val collection = "moderation_reasons"
+        return when (item.operation.lowercase()) {
+            "upsert", "create", "update" -> {
+                val payload = mapOf(
+                    "code" to reason.code,
+                    "title" to reason.title,
+                    "description" to reason.description,
+                    "isActive" to reason.isActive,
+                    "sortOrder" to reason.sortOrder,
+                    "isSystem" to reason.isSystem,
+                    "createdAt" to reason.createdAt.time,
+                )
+                val r = firestore.pushDocument(collection, reason.code, payload)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            "delete" -> {
+                val r = firestore.deleteDocument(collection, reason.code)
+                if (r.isSuccess) ProcessResult.SUCCESS else classifyError(r.exceptionOrNull())
+            }
+            else -> ProcessResult.PERMANENT_FAILURE
+        }
+    }
+
+    /**
+     * Тянет причины модерации из Firestore (глобальная коллекция).
+     * Системные (isSystem=true) не перезаписываем с сервера — только локальные копии.
+     * Кастомные — LWW по createdAt (простое upsert, remote = источник истины для новых).
+     */
+    private suspend fun pullModerationReasons() {
+        val docs = try {
+            firestore.pullCollection("moderation_reasons").getOrNull()
+        } catch (e: Exception) {
+            Log.w(TAG, "pullModerationReasons failed: ${e.message}"); return
+        } ?: return
+
+        for (doc in docs) {
+            try {
+                val code = doc["code"] as? String ?: continue
+                val local = moderationReasonDao.getByCode(code)
+                if (local != null && local.isSystem) continue
+                val remote = ModerationReasonEntity(
+                    code = code,
+                    title = doc["title"] as? String ?: "",
+                    description = doc["description"] as? String ?: "",
+                    isActive = doc["isActive"] as? Boolean ?: true,
+                    sortOrder = (doc["sortOrder"] as? Number)?.toInt() ?: 0,
+                    isSystem = doc["isSystem"] as? Boolean ?: false,
+                    createdAt = parseDate(doc["createdAt"]) ?: java.util.Date(),
+                )
+                moderationReasonDao.upsert(remote)
+            } catch (e: Exception) {
+                Log.w(TAG, "pullModerationReasons skip: ${e.message}")
+            }
+        }
+        Log.d(TAG, "pullModerationReasons: ${docs.size} doc(s)")
+    }
+
     private suspend fun pullInfoArticles() {
         try {
             val list = infoDataSource.pullAll()
@@ -1337,11 +1509,17 @@ class SyncWorker @AssistedInject constructor(
             if (item.entityType == "event_participant") {
                 return processEventParticipant(item)
             }
+            if (item.entityType == "event_occurrence") {
+                return processEventOccurrence(item)
+            }
             if (item.entityType == "custom_group_exclusion") {
                 return processCustomGroupExclusion(item)
             }
             if (item.entityType == "info_article") {
                 return processInfoArticle(item)
+            }
+            if (item.entityType == "moderation_reason") {
+                return processModerationReason(item)
             }
 
             // ---------- Общая ветка для остальных сущностей ----------

@@ -1,6 +1,8 @@
 package com.pathfinder.hub.ui.screens.events
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FilterChip
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.Scaffold
@@ -46,6 +49,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.util.Calendar
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.pathfinder.hub.ui.components.DateTimeField
 import com.pathfinder.hub.ui.theme.PathfinderBlue
@@ -280,6 +284,114 @@ fun CreateEventScreen(
                 onValueChange = viewModel::onDateEndChange,
                 enabled = !state.isLoading
             )
+
+            // ---------- UX-5: повторяющееся событие ----------
+            Spacer(Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = state.isRecurring,
+                    onCheckedChange = viewModel::onIsRecurringChange,
+                    enabled = !state.isLoading,
+                )
+                Text("Повторяющееся событие")
+            }
+
+            if (state.isRecurring) {
+                Spacer(Modifier.height(12.dp))
+                var freqExpanded by remember { mutableStateOf(false) }
+                val freqLabel = when (state.recurrenceFreq) {
+                    "daily" -> "Ежедневно"
+                    "weekly" -> "Еженедельно"
+                    "biweekly" -> "Раз в 2 недели"
+                    "monthly" -> "Ежемесячно"
+                    "yearly" -> "Ежегодно"
+                    else -> state.recurrenceFreq
+                }
+                ExposedDropdownMenuBox(
+                    expanded = freqExpanded,
+                    onExpandedChange = { freqExpanded = !freqExpanded }
+                ) {
+                    OutlinedTextField(
+                        value = freqLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Частота") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(freqExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        enabled = !state.isLoading,
+                    )
+                    ExposedDropdownMenu(
+                        expanded = freqExpanded,
+                        onDismissRequest = { freqExpanded = false }
+                    ) {
+                        listOf(
+                            "daily" to "Ежедневно",
+                            "weekly" to "Еженедельно",
+                            "biweekly" to "Раз в 2 недели",
+                            "monthly" to "Ежемесячно",
+                            "yearly" to "Ежегодно",
+                        ).forEach { (v, l) ->
+                            DropdownMenuItem(text = { Text(l) }, onClick = {
+                                viewModel.onRecurrenceFreqChange(v)
+                                freqExpanded = false
+                            })
+                        }
+                    }
+                }
+
+                if (state.recurrenceFreq in listOf("weekly", "biweekly")) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("День недели", style = MaterialTheme.typography.labelLarge)
+                    Spacer(Modifier.height(4.dp))
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        listOf(
+                            Calendar.MONDAY to "Пн",
+                            Calendar.TUESDAY to "Вт",
+                            Calendar.WEDNESDAY to "Ср",
+                            Calendar.THURSDAY to "Чт",
+                            Calendar.FRIDAY to "Пт",
+                            Calendar.SATURDAY to "Сб",
+                            Calendar.SUNDAY to "Вс",
+                        ).forEach { (day, label) ->
+                            FilterChip(
+                                selected = state.recurrenceByDayOfWeek == day,
+                                onClick = {
+                                    val newVal = if (state.recurrenceByDayOfWeek == day) null else day
+                                    viewModel.onRecurrenceDayOfWeekChange(newVal)
+                                },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                }
+
+                if (state.recurrenceFreq == "monthly") {
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = state.recurrenceByDayOfMonth?.toString() ?: "",
+                        onValueChange = { v ->
+                            val n = v.toIntOrNull()?.takeIf { it in 1..31 }
+                            viewModel.onRecurrenceDayOfMonthChange(n)
+                        },
+                        label = { Text("Число месяца (1-31)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        enabled = !state.isLoading,
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+                DateTimeField(
+                    value = state.recurrenceUntil,
+                    label = "Повторять до",
+                    onValueChange = viewModel::onRecurrenceUntilChange,
+                    enabled = !state.isLoading,
+                )
+            }
 
             if (state.errorMessage != null) {
                 Spacer(Modifier.height(16.dp))

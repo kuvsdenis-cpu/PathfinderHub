@@ -9,6 +9,7 @@ import com.pathfinder.hub.data.local.entity.parent.EventConsentEntity
 import com.pathfinder.hub.data.local.entity.parent.ParentAttendee
 import com.pathfinder.hub.data.local.entity.parent.ParentMeetingEntity
 import com.pathfinder.hub.data.local.entity.planning.EventEntity
+import com.pathfinder.hub.data.local.entity.planning.EventOccurrenceEntity
 import com.pathfinder.hub.data.local.entity.planning.EventParticipantEntity
 import com.pathfinder.hub.data.repository.EventRepository
 import com.pathfinder.hub.data.repository.ParentRepository
@@ -66,6 +67,9 @@ data class EventDetailUiState(
     val canEdit: Boolean = false,
     val canDelete: Boolean = false,
     val isDeleting: Boolean = false,
+    // UX-5: серия
+    val occurrences: List<EventOccurrenceEntity> = emptyList(),
+    val recurrenceLabel: String? = null,
 )
 
 @HiltViewModel
@@ -90,12 +94,18 @@ class EventDetailViewModel @Inject constructor(
             val canManage = u != null && (
                 u.role in listOf("director", "co-director", "instructor") || u.isOwnerClub
             )
+            val occurrences = if (e != null && e.isRecurring) {
+                try { eventRepository.getOccurrences(e.id) } catch (_: Exception) { emptyList() }
+            } else emptyList()
+            val label = if (e?.isRecurring == true) parseRecurrenceLabel(e.recurrenceRule) else null
             _state.update {
                 it.copy(
                     isLoading = false, event = e, currentUser = u,
                     canManageAttendance = canManage,
                     canEdit = canManage,
                     canDelete = canManage,
+                    occurrences = occurrences,
+                    recurrenceLabel = label,
                 )
             }
         }
@@ -432,5 +442,32 @@ class EventDetailViewModel @Inject constructor(
     fun qrFilename(): String? {
         val e = _state.value.event ?: return null
         return "event_${e.id}.png"
+    }
+
+    private fun parseRecurrenceLabel(rule: String?): String? {
+        if (rule.isNullOrBlank()) return null
+        val freq = rule.substringBefore(":")
+        val base = when (freq) {
+            "daily" -> "Ежедневно"
+            "weekly" -> "Еженедельно"
+            "biweekly" -> "Раз в 2 недели"
+            "monthly" -> "Ежемесячно"
+            "yearly" -> "Ежегодно"
+            else -> freq
+        }
+        val byDay = rule.substringAfter(":byDay=", "").toIntOrNull()
+        val dayLabel = if (byDay != null && freq in listOf("weekly", "biweekly")) {
+            when (byDay) {
+                1 -> " · воскресенье"
+                2 -> " · понедельник"
+                3 -> " · вторник"
+                4 -> " · среда"
+                5 -> " · четверг"
+                6 -> " · пятница"
+                7 -> " · суббота"
+                else -> ""
+            }
+        } else ""
+        return base + dayLabel
     }
 }

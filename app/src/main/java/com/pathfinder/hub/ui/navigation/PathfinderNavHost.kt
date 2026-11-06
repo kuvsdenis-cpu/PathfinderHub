@@ -49,6 +49,12 @@ import com.pathfinder.hub.ui.screens.home.conference.analytics.ConferenceAnalyti
 import com.pathfinder.hub.ui.screens.home.conference.events.CreateConferenceEventScreen
 import com.pathfinder.hub.ui.screens.events.EventsScreen
 import com.pathfinder.hub.ui.screens.attendance.AttendanceScreen
+import com.pathfinder.hub.ui.screens.spiritual.SpiritualHubScreen
+import com.pathfinder.hub.ui.screens.beliefs.BeliefsHubScreen
+import com.pathfinder.hub.ui.screens.beliefs.CommandmentsScreen
+import com.pathfinder.hub.ui.screens.beliefs.DoctrinesScreen
+import com.pathfinder.hub.ui.screens.beliefs.DoctrineDetailScreen
+import com.pathfinder.hub.ui.screens.beliefs.BeliefFoundationScreen
 import com.pathfinder.hub.ui.screens.attendance.AttendanceEventScreen
 import com.pathfinder.hub.ui.screens.home.RoleHomeScreen
 import com.pathfinder.hub.ui.screens.home.director.ApprovalsScreen
@@ -383,14 +389,8 @@ fun PathfinderNavHost(
                 onNavigateToCreateClub = { navController.navigate(Routes.CREATE_CLUB) },
                 onNavigateToDeletedClubs = { navController.navigate(Routes.DELETED_CLUBS) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
-                onNavigateToBible = { navController.navigate(Routes.BIBLE) },
-                onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
-                onNavigateToPearlsAdmin = { navController.navigate(Routes.PEARLS_ADMIN) },
-                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
-                onNavigateToReadingPlanAdmin = { navController.navigate(Routes.READING_PLANS_ADMIN) },
+                onNavigateToSpiritualHub = { navController.navigate(Routes.spiritualHub(true)) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
-                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
-                onNavigateToSabbathSchoolSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
                 onOpenClubInfo = { clubId -> navController.navigate(Routes.clubInfo(clubId)) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                 onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) },
@@ -824,7 +824,7 @@ fun PathfinderNavHost(
                     navController.navigate(Routes.clubInfo(clubId))
                 },
                 onNavigateToLevels = { navController.navigate(Routes.MY_LEVELS) },
-                onNavigateToHonors = { navController.navigate(Routes.HONOR_CATALOG) },
+                onNavigateToHonors = { navController.navigate(Routes.MY_HONORS) },
                 onNavigateToMyHonors = { navController.navigate(Routes.MY_HONORS) },
                 onNavigateToEvents = { navController.navigate(Routes.EVENTS) },
                 onNavigateToTasks = { navController.navigate(Routes.MY_TASKS) },
@@ -840,12 +840,9 @@ fun PathfinderNavHost(
                 onNavigateToActivity = { navController.navigate(Routes.ACTIVITY) },
                 onNavigateToCrossClub = { navController.navigate(Routes.CROSS_CLUB_TEEN) },
                 onNavigateToNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
-                onNavigateToBible = { navController.navigate(Routes.BIBLE) },
-                onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
-                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
+                onNavigateToSpiritualHub = { navController.navigate(Routes.spiritualHub(false)) },
                 onNavigateToBooks = { navController.navigate(Routes.BOOKS) },
                 onNavigateToInfo = { navController.navigate(Routes.INFO_HUB) },
-                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) }, // <-- ДОБАВЛЕНО
                 onNavigateToSearch = { navController.navigate(Routes.GLOBAL_SEARCH) }
             )
         }
@@ -1413,9 +1410,67 @@ fun PathfinderNavHost(
             val vm: SabbathSchoolViewModel = hiltViewModel()
             SabbathLessonScreen(viewModel = vm, lessonId = lessonId)
         }
-        composable(Routes.SABBATH_SCHOOL_SETTINGS) {
+                // ===== Основы веры (2.5) =====
+        composable(Routes.BELIEFS_HUB) {
+            BeliefsHubScreen(
+                onBack = { navController.popBackStack() },
+                onOpenCommandments = { navController.navigate(Routes.COMMANDMENTS) },
+                onOpenDoctrines = { navController.navigate(Routes.DOCTRINES) },
+                onOpenFoundation = { navController.navigate(Routes.BELIEF_FOUNDATION) },
+            )
+        }
+        composable(Routes.COMMANDMENTS) {
+            CommandmentsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.DOCTRINES) {
+            DoctrinesScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDoctrine = { number -> navController.navigate(Routes.doctrineDetail(number)) },
+            )
+        }
+        composable(
+            route = Routes.DOCTRINE_DETAIL,
+            arguments = listOf(navArgument("number") { type = NavType.IntType })
+        ) {
+            DoctrineDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenVerse = { bookId, chapter, verseStart ->
+                    navController.navigate(
+                        Routes.bibleChapter(
+                            bookId = bookId,
+                            chapter = chapter,
+                            verseId = verseStart?.toString(),
+                        )
+                    )
+                },
+            )
+        }
+        composable(Routes.BELIEF_FOUNDATION) {
+            BeliefFoundationScreen(onBack = { navController.popBackStack() })
+        }
+composable(Routes.SABBATH_SCHOOL_SETTINGS) {
             SabbathSchoolSettingsScreen(
                 onBack = { navController.popBackStack() },
+            )
+        }
+
+        // ===== Духовное (UX-15) =====
+        composable(
+            route = Routes.SPIRITUAL_HUB,
+            arguments = listOf(navArgument("showAdmin") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val showAdmin = backStackEntry.arguments?.getBoolean("showAdmin") ?: false
+            SpiritualHubScreen(
+                showAdmin = showAdmin,
+                onBack = { navController.popBackStack() },
+                onNavigateToBible = { navController.navigate(Routes.BIBLE) },
+                onNavigateToSabbathSchool = { navController.navigate(Routes.SABBATH_SCHOOL_LIST) },
+                onNavigateToSabbathSettings = { navController.navigate(Routes.SABBATH_SCHOOL_SETTINGS) },
+                onNavigateToPearls = { navController.navigate(Routes.PEARLS) },
+                onNavigateToPearlsAdmin = { navController.navigate(Routes.PEARLS_ADMIN) },
+                onNavigateToReadingPlan = { navController.navigate(Routes.READING_PLANS) },
+                onNavigateToReadingPlanAdmin = { navController.navigate(Routes.READING_PLANS_ADMIN) },
+                onNavigateToBeliefsHub = { navController.navigate(Routes.BELIEFS_HUB) },
             )
         }
     }

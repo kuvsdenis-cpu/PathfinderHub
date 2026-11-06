@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.pathfinder.hub.data.repository.HonorRepository
 import com.pathfinder.hub.data.repository.LevelRepository
+import com.pathfinder.hub.domain.usecase.gamification.CheckAchievementsUseCase
 import com.pathfinder.hub.data.local.entity.learning.HonorEntity
 import com.pathfinder.hub.data.local.entity.learning.LevelEntity
 import com.pathfinder.hub.data.local.entity.gamification.AchievementEntity
@@ -38,6 +39,7 @@ class DigitalUniformViewModel @Inject constructor(
     private val achievementRepository: AchievementRepository,
     private val honorRepository: HonorRepository,
     private val levelRepository: LevelRepository,
+    private val checkAchievementsUseCase: CheckAchievementsUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DigitalUniformUiState())
@@ -55,7 +57,13 @@ class DigitalUniformViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            var rebuildAttempted = false
             achievementRepository.observeUniform(userId).collect { uniform ->
+                if (uniform == null && !rebuildAttempted) {
+                    rebuildAttempted = true
+                    try { checkAchievementsUseCase.rebuildUniformIfMissing(userId) } catch (_: Exception) {}
+                    return@collect
+                }
                 _state.update { it.copy(isLoading = false, uniform = uniform) }
                 if (uniform != null) resolveDetails(uniform)
             }

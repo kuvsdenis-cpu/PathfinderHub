@@ -25,6 +25,7 @@ import com.pathfinder.hub.data.local.entity.core.ClubEntity
 import com.pathfinder.hub.data.local.entity.core.UserEntity
 import com.pathfinder.hub.data.local.UserClubSeeder
 import com.pathfinder.hub.data.local.worker.BibleSeedWorker
+import com.pathfinder.hub.data.local.worker.BeliefsSeedWorker
 import com.pathfinder.hub.data.local.worker.BookSeedWorker
 import com.pathfinder.hub.data.local.worker.PearlSeedWorker
 import com.pathfinder.hub.data.local.worker.ReadingPlanSeedWorker
@@ -131,6 +132,7 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
                 seedAchievements()
                 scheduleContentUpdate()
                 scheduleBibleSeed()
+                scheduleBeliefsSeed()
                 schedulePearlSeed()
                 scheduleReadingPlanSeed()
                 scheduleBookSeed()
@@ -391,6 +393,22 @@ class PathfinderApp : Application(), Configuration.Provider, ImageLoaderFactory 
             UploadLocalBooksWorker.WORK_NAME, ExistingWorkPolicy.KEEP, r)
         Log.d(TAG, "UploadLocalBooksWorker → KEEP")
     }
+    private fun scheduleBeliefsSeed() {
+        val request = OneTimeWorkRequestBuilder<BeliefsSeedWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .build()
+            )
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            BeliefsSeedWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request,
+        )
+        Log.d(TAG, "Воркер BeliefsSeedWorker поставлен в очередь (REPLACE)")
+    }
+
     private fun scheduleBibleSeed() {
         val request = OneTimeWorkRequestBuilder<BibleSeedWorker>()
             .setConstraints(

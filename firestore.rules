@@ -153,6 +153,7 @@ service cloud.firestore {
                 'anonymizedAt', 'permanentDeletionAt',
                 'parentalConsentStatus', 'parentalConsentRequestedAt',
                 'parentalConsentApprovedAt',
+                'mentorId',
                 'createdAt',
                 // Поля, которые SyncWorker отправляет целиком через set().
                 // Разрешено ИХ ПРИСУТСТВИЕ в diff, но запрещено МЕНЯТЬ значения.
@@ -193,7 +194,7 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['firstName', 'lastName', 'avatar', 'birthDate',
                           'parentEmail', 'onboardingCompleted',
-                          'status', 'accessLevel', 'role',
+                          'status', 'accessLevel', 'role', 'mentorId',
                           'lastLoginAt', 'syncedAt'])
             && request.resource.data.role in ['teen', 'parent', 'instructor', 'secretary'])
       );
@@ -939,6 +940,33 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update, delete: if isSignedIn()
         && (isConferenceAdmin() || hasPerm("content.edit"));
+    }
+
+    // ============================================================
+    // MODERATION REASONS (глобальный справочник причин скрытия)
+    // ============================================================
+    // Читают все авторизованные (нужно для UI модерации/жалоб).
+    // Пишут: conference_admin или director с moderation.review.
+    // Системные (isSystem=true) нельзя удалить — только деактивировать (update).
+    match /moderation_reasons/{code} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn() && (
+        isConferenceAdmin() || hasPerm("moderation.review")
+      );
+
+      allow update: if isSignedIn() && (
+        isConferenceAdmin() || hasPerm("moderation.review")
+      );
+
+      allow delete: if isSignedIn()
+        && (isConferenceAdmin() || hasPerm("moderation.review"))
+        && (
+             // Идемпотентный delete: несуществующий документ разрешён
+             // (в delete resource == null, и resource.data.isSystem упал бы).
+             !exists(/databases/$(database)/documents/moderation_reasons/$(code))
+             || resource.data.isSystem == false
+           );
     }
 
     // ============================================================

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -123,26 +124,56 @@ fun ClubMembersContent(
                     }
                 }
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(state.members, key = { it.id }) { member ->
-                            MemberCard(
-                                member = member,
-                                isCurrentUser = member.id == state.currentUserId,
-                                currentUserRole = state.currentUserRole,
-                                onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
-                                onSuspend = { viewModel.suspendUser(member.id) },
-                                onRemove = { removeDialogUser = member },
-                                onWrite = { viewModel.openDM(member.id) },
-                                onLinkParent = { viewModel.openLinkDialog(member) },
-                                onOpenProgress = if (member.role == "teen" && member.id != state.currentUserId)
-                                    { { onOpenMember(member.id) } } else null,
-                            )
+                    var membersQuery by remember { mutableStateOf("") }
+                    val filteredMembers = remember(membersQuery, state.members) {
+                        if (membersQuery.isBlank()) state.members
+                        else state.members.filter {
+                            "${it.firstName} ${it.lastName}".contains(membersQuery, ignoreCase = true) ||
+                            it.email.contains(membersQuery, ignoreCase = true)
+                        }
+                    }
+                    Column(Modifier.fillMaxSize()) {
+                        OutlinedTextField(
+                            value = membersQuery,
+                            onValueChange = { membersQuery = it },
+                            placeholder = { Text("Поиск по имени или email") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                        )
+                        if (filteredMembers.isEmpty()) {
+                            Box(Modifier.fillMaxSize(), Alignment.Center) {
+                                Text(
+                                    "Ничего не найдено",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(vertical = 16.dp)
+                            ) {
+                                items(filteredMembers, key = { it.id }) { member ->
+                                    MemberCard(
+                                        member = member,
+                                        isCurrentUser = member.id == state.currentUserId,
+                                        currentUserRole = state.currentUserRole,
+                                        onChangeRole = { newRole -> viewModel.changeRole(member.id, newRole) },
+                                        onSuspend = { viewModel.suspendUser(member.id) },
+                                        onRemove = { removeDialogUser = member },
+                                        onWrite = { viewModel.openDM(member.id) },
+                                        onLinkParent = { viewModel.openLinkDialog(member) },
+                                        onOpenProgress = if (member.role == "teen" && member.id != state.currentUserId)
+                                            { { onOpenMember(member.id) } } else null,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
